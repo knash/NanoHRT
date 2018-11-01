@@ -56,14 +56,14 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
      svSource = cms.InputTag('slimmedSecondaryVertices'),
      muSource = cms.InputTag('slimmedMuons'),
      elSource = cms.InputTag('slimmedElectrons'),
-     btagDiscriminators = Bdiscs 
+     btagDiscriminators = Bdiscs
      )
 
 
     process.imageJetsAK8Puppi = cms.EDProducer('ImageProducer',
         src=cms.InputTag('boostedEventShapeJetsAK8Puppi'),
         sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagAK8PFPuppiSoftDropSubjets'),
-        dnn_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/BEST/BEST_mlp.json'),
+        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_10232018.pb'),
     )
 
     #process.dump=cms.EDAnalyzer('EventContentAnalyzer')
@@ -219,4 +219,3 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         process.schedule.associate(process.customizedAK8Task)
     else:
         getattr(process, path).associate(process.customizedAK8Task)
-
