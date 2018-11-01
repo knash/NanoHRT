@@ -126,7 +126,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<float> itopdisc = {};
   for (const auto &AK8pfjet : *jets)
 	{
-  	
         TLorentzVector curtlv;
 	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
 
@@ -175,7 +174,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	
   	for (const auto &subjet : *subjets)
 		{
-	       
 		sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
 		if (sublv.DeltaR(curtlv)>0.8 || sjlist.size()>=12) continue;
 
@@ -234,16 +232,16 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		{
 		for(uint j=0;j < grid[i].size();++j)
 			{
-				if(grid[i][j][0]>0.00000001)
+			if(grid[i][j][0]>0.00000001)
+				{
+				std::pair<std::vector<uint>,std::vector<double>> elem;
+				elem.first = {i,j};
+				for(uint k=0;k < grid[i][j].size();++k)
 					{
-					std::pair<std::vector<uint>,std::vector<double>> elem;
-					elem.first = {i,j};
-					for(uint k=0;k < grid[i][j].size();++k)
-					{
-						elem.second.push_back(grid[i][j][k]);					
+					elem.second.push_back(grid[i][j][k]);					
 					}
-					indexedimage.push_back(elem);
-					}
+				indexedimage.push_back(elem);
+				}
 			}
 		}
 
@@ -258,10 +256,9 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if(indexedimage[i].first[0]>half_img)right_sum+=indexedimage[i].second[0];
 		}
 	if(left_sum>right_sum)
-	{
-		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={npoints-2-indexedimage[i].first[0],indexedimage[i].first[1]};
-			
-	}
+		{
+		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={npoints-2-indexedimage[i].first[0],indexedimage[i].first[1]};	
+		}
        
 	float lower_sum=0.0;
 	float upper_sum=0.0;
@@ -299,7 +296,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			{
 			for(int k=0;k < ncolors;++k)
 				{
-					input_map(0,i,j,k) = 0.0;
+				input_map(0,i,j,k) = 0.0;
 				}
 				
 			}
@@ -310,7 +307,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		{
 		for(uint j=0;j < indexedimage[i].second.size();++j)
 			{
-				input_map(0,indexedimage[i].first[0], indexedimage[i].first[1], j) = indexedimage[i].second[j];
+			input_map(0,indexedimage[i].first[0], indexedimage[i].first[1], j) = indexedimage[i].second[j];
 			}	
 		}
 
