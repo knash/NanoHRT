@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(20))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(200))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
@@ -35,19 +35,15 @@ else:
     from PhysicsTools.NanoAOD.nano_cff import nanoAOD_customizeData
     process = nanoAOD_customizeData(process)
 
-from PhysicsTools.NanoHRT.ak8_cff import setupCustomizedAK8
-from PhysicsTools.NanoHRT.ca15_cff import setupCA15
-from PhysicsTools.NanoHRT.hotvr_cff import setupHOTVR
+from PhysicsTools.NanoHRT.ak8_slimmed_cff import setupCustomizedAK8
 setupCustomizedAK8(process, runOnMC=runOnMC, path='nanoPath')
-setupCA15(process, runOnMC=runOnMC, path='nanoPath')
-setupHOTVR(process, runOnMC=runOnMC, path='nanoPath')
 
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
 patTask = getPatAlgosToolsTask(process)
 
 process.out = cms.OutputModule("NanoAODOutputModule",
     fileName = cms.untracked.string('nano.root'),
-    outputCommands = process.NanoAODEDMEventContent.outputCommands,
+    outputCommands = cms.untracked.vstring("drop *","keep *_*customAK8Table*_*_*"),
     compressionLevel=cms.untracked.int32(9),
     compressionAlgorithm=cms.untracked.string("LZMA"),
 )
