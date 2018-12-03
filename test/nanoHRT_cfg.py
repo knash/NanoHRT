@@ -10,7 +10,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
-process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(1000))
+process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(50))
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
