@@ -7,6 +7,10 @@
 <use   name="lwtnn"/>
 <use   name="tensorflow-cc" />
 <use   name="PhysicsTools/TensorFlow" />
+<use   name="TrackingTools/IPTools"/>
+<use   name="TrackingTools/Records"/>
+<use   name="TrackingTools/TransientTrack"/>
+
 
 
 <export>

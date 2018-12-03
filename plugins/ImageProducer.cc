@@ -5,6 +5,13 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include <random>
 
+
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
+
+
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
@@ -73,6 +80,12 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 , src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
 {
+
+  ratiohist = (TH1F*)ratiofile->Get("ToQratio");
+  gplab = consumes<std::vector<reco::GenParticle>>(edm::InputTag("prunedGenParticles"));
+  float maxim = ratiohist->GetMaximum();
+  
+  ratiohist->Scale(0.4/maxim);
   
   vtx = consumes<reco::VertexCollection>(edm::InputTag("offlineSlimmedPrimaryVertices"));
   produces<pat::JetCollection>();
@@ -316,6 +329,11 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	std::vector<std::vector<float>> partlist = {{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}};
 	std::vector<float> sjlist = {};
+
+	double fullint = 0.0;
+        double etac=0;
+        double phic=0;
+
 	
 	int idaufill = 0;
 	for(int idau=0;idau<ndau;idau++)
@@ -351,6 +369,12 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			partlist[0].push_back(lPack->pt()*pw);
 			partlist[1].push_back(neweta-curtlv.Eta());
 			partlist[2].push_back(newphi-curtlv.Phi());
+
+
+			fullint+=partlist[0][idaufill];
+			etac += partlist[0][idaufill]*partlist[1][idaufill];
+			phic += partlist[0][idaufill]*partlist[2][idaufill];
+
 			if(pfcflav==13)partlist[3].push_back(lPack->pt()*pw);
 			else partlist[3].push_back(0.0);
 			if(pfcflav==11)partlist[4].push_back(lPack->pt()*pw);

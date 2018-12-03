@@ -15,7 +15,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 process.source.fileNames = [
-'file:///cms/knash/nanoHRT/CMSSW_9_4_10/src/PhysicsTools/NanoHRT/test/ZP.root',
+'file:///cms/knash/nanoHRT/Photonjet/CMSSW_9_4_11_cand1/src/PhysicsTools/NanoHRT/test/ZP.root',
 ]
 
 process.load("PhysicsTools.NanoAOD.nano_cff")
