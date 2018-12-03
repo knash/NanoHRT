@@ -70,8 +70,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     process.imageJetsAK8Puppi = cms.EDProducer('ImageProducer',
         src=cms.InputTag('boostedEventShapeJetsAK8Puppi'),
         sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagAK8PFPuppiSoftDropSubjets'),
-        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_12032018.pb'),
-
+        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_10232018.pb'),
     )
 
     #process.dump=cms.EDAnalyzer('EventContentAnalyzer')

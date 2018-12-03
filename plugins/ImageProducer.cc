@@ -11,11 +11,6 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
-#include "TrackingTools/Records/interface/TransientTrackRecord.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
-#include "TrackingTools/IPTools/interface/IPTools.h"
-
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "TLorentzVector.h"
 
@@ -79,19 +74,8 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
 {
   
-
-  ratiohist = (TH1F*)ratiofile->Get("ToQratio");
-  gplab = consumes<std::vector<reco::GenParticle>>(edm::InputTag("prunedGenParticles"));
-  float maxim = ratiohist->GetMaximum();
-  
-  ratiohist->Scale(0.4/maxim);
-  
   vtx = consumes<reco::VertexCollection>(edm::InputTag("offlineSlimmedPrimaryVertices"));
   produces<pat::JetCollection>();
-  //td::mt19937 gen(rd());
-
-  //std::uniform_real_distribution<>dis(0.0,1.0);
- 
   tensorflow::SessionOptions sessionOptions;
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
   textout.open("debugout"+iConfig.getParameter<edm::InputTag>("src").label()+".dat");
@@ -480,6 +464,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	double DRphi=1.6;
 	for(uint i=0;i < partlist[0].size();++i)
 		{
+		
 		double Reta = partlist[1][i]*std::cos(std::atan(tan_theta))+partlist[2][i]*std::sin(std::atan(tan_theta));
 		double Rphi = -1.0*partlist[1][i]*std::sin(std::atan(tan_theta))+partlist[2][i]*std::cos(std::atan(tan_theta));
 
@@ -489,6 +474,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		ietalist.push_back(int((partlist[1][i]+DReta)/(2.0*DReta/float(npoints-1))));
 		iphilist.push_back(int((partlist[2][i]+DRphi)/(2.0*DRphi/float(npoints-1))));
 		}
+	
 
   	//uint ncolors=6;
   	uint ncolors=14;
@@ -503,7 +489,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		for(uint j=0;j < partlist.size();++j)
 			{
-
 			if(((j>2) or (j==0)) and (j<8)) //1 and 2 are eta,phi
 				{
 				grid[ietalist[i]][iphilist[i]][filldex]+=partlist[j][i]/fullint;
@@ -511,10 +496,9 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				}
 			if(j>=8)
 				{
-				//std::cout<<"dex "<<filldex<<" val "<<partlist[j][i]<<std::endl;
+
 				if(partlist[j][i]>grid[ietalist[i]][iphilist[i]][filldex])
 					{
-					//std::cout<<"dex "<<filldex<<"setting "<<grid[ietalist[i]][iphilist[i]][filldex]<<" to "<<partlist[j][i]<<std::endl;
 					grid[ietalist[i]][iphilist[i]][filldex]=partlist[j][i];
 					}
 				filldex+=1;
@@ -567,6 +551,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		{
 		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={indexedimage[i].first[0],npoints-2-indexedimage[i].first[1]};		
 		}
+
 
 	//convert scalars to tensorflow
 	std::vector<tensorflow::Tensor> outputs1;
@@ -649,7 +634,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	if (!status.ok()) 
 		{
-		std::cout << "Tensorflow Failed:" << std::endl;
   		std::cout << status.ToString() << "\n";
   		return ;
 		}	
@@ -666,7 +650,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   jindex=0;
   for (const auto &jet : *jets){
     pat::Jet newJet(jet);
-    std::cout<<itopdisc[jindex]<<std::endl;
     newJet.addUserFloat("Image:top", itopdisc[jindex]);
     outputs->push_back(newJet);
     jindex+=1;
