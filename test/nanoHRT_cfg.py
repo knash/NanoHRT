@@ -10,12 +10,13 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 
 process.options = cms.untracked.PSet(wantSummary=cms.untracked.bool(True))
+
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(20))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 process.source.fileNames = [
-'file:///cms/knash/nanoHRT/CMSSW_9_4_10/src/PhysicsTools/NanoHRT/test/ZP.root',
+'/cms/knash/nanoHRT/CMSSW_9_4_10/src/PhysicsTools/NanoHRT/test/ZP.root',
 ]
 
 process.load("PhysicsTools.NanoAOD.nano_cff")

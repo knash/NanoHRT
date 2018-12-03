@@ -5,12 +5,8 @@
 <use   name="PhysicsTools/CandUtils"/>
 <use   name="fastjet"/>
 <use   name="lwtnn"/>
-<use name="tensorflow-cc" />
-
-<use name="FWCore/Framework" />
-<use name="FWCore/Utilities" />
-<use name="FWCore/Concurrency" />
-<use name="PhysicsTools/TensorFlow" />
+<use   name="tensorflow-cc" />
+<use   name="PhysicsTools/TensorFlow" />
 
 
 <export>

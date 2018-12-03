@@ -10,14 +10,6 @@
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
-
-#include "TrackingTools/Records/interface/TransientTrackRecord.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
-#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
-#include "TrackingTools/IPTools/interface/IPTools.h"
-
-
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "TLorentzVector.h"
@@ -45,6 +37,7 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     static void fillDescriptions(edm::ConfigurationDescriptions&);
     static void globalEndJob(const ImageTFCache*);
     static std::unique_ptr<ImageTFCache> initializeGlobalCache(const edm::ParameterSet&);
+
     std::random_device rd;
     std::mt19937 gen = std::mt19937(rd());
     std::uniform_real_distribution<> dis = std::uniform_real_distribution<>(0.0,1.0);
@@ -57,6 +50,7 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     void produce(edm::Event&, const edm::EventSetup&) override;
     void endStream() override {}
     tensorflow::Session* tfsession_;
+
     edm::EDGetTokenT<std::vector<reco::GenParticle>> gplab ;
     edm::EDGetTokenT<reco::VertexCollection> vtx ;
 
@@ -80,18 +74,8 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
 {
   
-  ratiohist = (TH1F*)ratiofile->Get("ToQratio");
-  gplab = consumes<std::vector<reco::GenParticle>>(edm::InputTag("prunedGenParticles"));
-  float maxim = ratiohist->GetMaximum();
-  
-  ratiohist->Scale(0.4/maxim);
-  
   vtx = consumes<reco::VertexCollection>(edm::InputTag("offlineSlimmedPrimaryVertices"));
   produces<pat::JetCollection>();
-  //td::mt19937 gen(rd());
-
-  //std::uniform_real_distribution<>dis(0.0,1.0);
- 
   tensorflow::SessionOptions sessionOptions;
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
   textout.open("debugout"+iConfig.getParameter<edm::InputTag>("src").label()+".dat");
@@ -102,7 +86,6 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 ImageProducer::~ImageProducer(){
  tensorflow::closeSession(tfsession_);
 }
-
 
 
 template <typename T> std::string to_string_pr(const T a_value, const int n = 10)
@@ -130,7 +113,7 @@ std::unique_ptr<ImageTFCache> ImageProducer::initializeGlobalCache(
   tensorflow::setLogging("3");
   ImageTFCache* cache = new ImageTFCache();
 
-  cache->graphDef = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_path", edm::FileInPath("PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_10232018.pb")).fullPath());
+  cache->graphDef = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_path", edm::FileInPath("PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_12032018.pb")).fullPath());
   return std::unique_ptr<ImageTFCache>(cache);
 }
 
@@ -172,6 +155,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   TLorentzVector curtlv;
   TLorentzVector sublv;
   
+
   bool match = false;
   int ttval=1;
   if(match)ttval=0;
@@ -337,12 +321,16 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	for(int idau=0;idau<ndau;idau++)
 		{
 	        const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>(AK8pfjet.daughter(idau) );
+
 	        //const pat::Jet* lPackjet = dynamic_cast<const pat::Jet *>(AK8pfjet.daughter(idau) );
 		//if(lPackjet!=nullptr)std::cout<<"isjet"<<std::endl;
         	TLorentzVector pfclv;
 		pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),lPack->phi(),lPack->mass());
 	  	if (lPack != nullptr)
 			{
+        		TLorentzVector pfclv;
+			pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),lPack->phi(),lPack->mass());
+			if ((pfclv.Pt()<=1.0) and (lPack->charge()!=0)) continue;
 			double funcval =(6.62733e-02) + (2.63732e+02)*(1.0/curtlv.Perp());
 			double drcorval = 0.6/(funcval);
 
@@ -356,6 +344,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 			if(std::sqrt(newdphifj*newdphifj+newdetafj*newdetafj)>1.6) continue;
 			float pw = lPack->puppiWeight();
+
     			//TrackInfoBuilder tinfo = lPack.buildTrackInfo(builder_, *lPack, AK8pfjet, vertices->at(0));
 
 			//std::cout<<lPack->pt()<<std::endl;
@@ -443,34 +432,50 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
 		}
+
+
 	uint sjlsize=sjlist.size();
 	for(uint isj=0;isj<(12-sjlsize);isj++) sjlist.push_back(0.);
+
         //sjlist.push_back(fabs(AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass"))/172.0);
         sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll))/172.0);
         sjlist.push_back(AK8pfjet.pt());
         sjlist.push_back(AK8pfjet.eta());
 	
-	double tan_theta=principal_axis(partlist); 
+
 
         int npoints=38;
 	std::vector<int> ietalist = {};
 	std::vector<int> iphilist = {};
 
-	double fullint = 0.0;
+
 
 	//centering and rotating 
+	etac/=fullint;
+	phic/=fullint;
+	for(uint i=0;i < partlist[0].size();++i)
+		{
+	        partlist[1][i] -= etac;
+	        partlist[2][i] -= phic;
+		}
+
+	double tan_theta=principal_axis(partlist); 
 	double DReta=1.6;
 	double DRphi=1.6;
 	for(uint i=0;i < partlist[0].size();++i)
 		{
-		fullint+=partlist[0][i];
-	
-		partlist[1][i] = partlist[1][i]*std::cos(std::atan(tan_theta))+partlist[2][i]*std::sin(std::atan(tan_theta));
-		partlist[2][i] = -1.0*partlist[1][i]*std::sin(std::atan(tan_theta))+partlist[2][i]*std::cos(std::atan(tan_theta));
+		
+		double Reta = partlist[1][i]*std::cos(std::atan(tan_theta))+partlist[2][i]*std::sin(std::atan(tan_theta));
+		double Rphi = -1.0*partlist[1][i]*std::sin(std::atan(tan_theta))+partlist[2][i]*std::cos(std::atan(tan_theta));
+
+		partlist[1][i] = Reta;
+		partlist[2][i] = Rphi;
+
 		ietalist.push_back(int((partlist[1][i]+DReta)/(2.0*DReta/float(npoints-1))));
 		iphilist.push_back(int((partlist[2][i]+DRphi)/(2.0*DRphi/float(npoints-1))));
 		}
 	
+
   	//uint ncolors=6;
   	uint ncolors=14;
 	std::vector<std::vector<std::vector<double>>> grid(37,std::vector<std::vector<double>>(37,std::vector<double>(ncolors,0.0)));
@@ -479,7 +484,9 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//normalization and digitization
 	for(uint i=0;i < partlist[0].size();++i)
 		{
+	        if((ietalist[i]>=37) or (iphilist[i]>=37) or (ietalist[i]<=0) or (iphilist[i]<=0))continue;
 		int filldex=0;
+
 		for(uint j=0;j < partlist.size();++j)
 			{
 			if(((j>2) or (j==0)) and (j<8)) //1 and 2 are eta,phi
@@ -489,18 +496,16 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				}
 			if(j>=8)
 				{
-				//std::cout<<"dex "<<filldex<<" val "<<partlist[j][i]<<std::endl;
+
 				if(partlist[j][i]>grid[ietalist[i]][iphilist[i]][filldex])
 					{
-					//std::cout<<"dex "<<filldex<<"setting "<<grid[ietalist[i]][iphilist[i]][filldex]<<" to "<<partlist[j][i]<<std::endl;
 					grid[ietalist[i]][iphilist[i]][filldex]=partlist[j][i];
 					}
 				filldex+=1;
 				}
 			}				
 		}
-	
-     
+
 	for(uint i=0;i < grid.size();++i)
 		{
 		for(uint j=0;j < grid[i].size();++j)
@@ -509,6 +514,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 					{
 					std::pair<std::vector<uint>,std::vector<double>> elem;
 					elem.first = {i,j};
+
 					for(uint k=0;k < grid[i][j].size();++k)
 					{
 						//std::cout<<"elem "<<i<<":"<<j<<"  -  "<<grid[i][j][k]<<std::endl;
@@ -519,7 +525,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			}
 		}
 
-
 	//flipping horiz and vert
 	uint half_img=(npoints-2)/2;
 	float left_sum=0.0;
@@ -529,21 +534,20 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if(indexedimage[i].first[0]<half_img)left_sum+=indexedimage[i].second[0];
 		if(indexedimage[i].first[0]>half_img)right_sum+=indexedimage[i].second[0];
 		}
-	if(left_sum>right_sum)
-	{
-		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={npoints-2-indexedimage[i].first[0],indexedimage[i].first[1]};
-			
-	}
-       
+	if(left_sum<right_sum)
+		{
+		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={npoints-2-indexedimage[i].first[0],indexedimage[i].first[1]};	
+		}
+
 	float lower_sum=0.0;
 	float upper_sum=0.0;
 	for(uint i=0;i < indexedimage.size();++i)
 		{
-		if(indexedimage[i].first[1]<half_img)lower_sum+=indexedimage[i].second[0];
-		if(indexedimage[i].first[1]>half_img)upper_sum+=indexedimage[i].second[0];
+		if(indexedimage[i].first[1]>half_img)lower_sum+=indexedimage[i].second[0];
+		if(indexedimage[i].first[1]<half_img)upper_sum+=indexedimage[i].second[0];
 		}
 
-	if(lower_sum>upper_sum)
+	if(lower_sum<upper_sum)
 		{
 		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={indexedimage[i].first[0],npoints-2-indexedimage[i].first[1]};		
 		}
@@ -653,7 +657,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // put into the event
   iEvent.put(std::move(outputs));
-
 }
 
 //define this as a plug-in
