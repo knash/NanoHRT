@@ -93,7 +93,6 @@ void MuSubProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			}
   		}
 	if(keepcand) allpf.push_back(cand);
-        //else allpf.push_back(cand);
 	}
 
   //Add to jet userfloats
