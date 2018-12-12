@@ -38,17 +38,12 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     static void fillDescriptions(edm::ConfigurationDescriptions&);
     static void globalEndJob(const ImageTFCache*);
     static std::unique_ptr<ImageTFCache> initializeGlobalCache(const edm::ParameterSet&);
-    std::uniform_real_distribution<> dis = std::uniform_real_distribution<>(0.0,1.0);
-
-    //just for debug text3
-    std::ofstream textout;
 
   private:
     void beginStream(edm::StreamID) override {}
     void produce(edm::Event&, const edm::EventSetup&) override;
     void endStream() override {}
     tensorflow::Session* tfsession_;
-    edm::EDGetTokenT<reco::VertexCollection> vtx ;
 
     std::string sdmcoll="ak8PFJetsPuppiSoftDropMass";
     const edm::EDGetTokenT<edm::View<pat::Jet>> src_;
@@ -63,8 +58,6 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 , src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
 {
-  
-  vtx = consumes<reco::VertexCollection>(edm::InputTag("offlineSlimmedPrimaryVertices"));
   
   produces<pat::JetCollection>();
 
@@ -145,8 +138,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   TLorentzVector curtlv;
   TLorentzVector sublv;
-  
-  edm::Handle<reco::VertexCollection> vtxs;
 
   int jindex=0;
   std::vector<float> itopdisc = {};
