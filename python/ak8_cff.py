@@ -73,10 +73,6 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_12032018.pb'),
     )
 
-    #process.dump=cms.EDAnalyzer('EventContentAnalyzer')
-    #process.p = cms.Path( process.dump)
-
-
     # src
     srcJets = cms.InputTag('imageJetsAK8Puppi')
 

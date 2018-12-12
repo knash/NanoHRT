@@ -7,7 +7,7 @@ from Configuration.Eras.Modifier_run2_miniAOD_80XLegacy_cff import run2_miniAOD_
 
 def setupCustomizedAK4(process, runOnMC=False, path=None):
 
-    # BEST
+    # Mu subtraction
     process.MuSubProducer = cms.EDProducer('MuSubProducer',
         src=cms.InputTag('slimmedMuons'),
         pfcs=cms.InputTag('packedPFCandidates'),
@@ -22,7 +22,6 @@ def setupCustomizedAK4(process, runOnMC=False, path=None):
         'pfDeepCSVJetTags:probbb'
     ]
     JETCorrLevels = ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']
-    #JETCorrLevels = ['L1Offset','L2Relative', 'L3Absolute', 'L2L3Residual']
 
     from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
     jetToolbox(process, 'ak4', 'dummySeq', 'out', associateTask=False,
@@ -31,14 +30,6 @@ def setupCustomizedAK4(process, runOnMC=False, path=None):
 	       newPFCollection=True, nameNewPFCollection="MuSubProducer",
                Cut='pt > 30.0 && abs(rapidity()) < 2.4',
                bTagDiscriminators=bTagDiscriminators)
-
-
-    #process.dump=cms.EDAnalyzer('EventContentAnalyzer')
-    #process.p = cms.Path( process.MuSubProducer)
-    #process.p1 = cms.Path( process.dump)
-
-
-
 
     srcJets = cms.InputTag('selectedPatJetsAK4PFCHSMuSub')
 
