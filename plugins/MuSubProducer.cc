@@ -4,23 +4,11 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
-
-
 #include "DataFormats/PatCandidates/interface/Muon.h"
-
-#include "TLorentzVector.h"
-
-#include <iostream>
-#include <fstream>
-
-#include <memory>
-#include <iostream>
-#include <Python.h>
 
 class MuSubProducer : public edm::stream::EDProducer<> {
 
@@ -79,16 +67,16 @@ void MuSubProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	bool keepcand=true;
 	for (const auto &curmuon : *muons)
 		{
-		if((curmuon.pt()>ptmin_) and (curmuon.isTightMuon(vtxs->at(0))))
+		if(vtxs->size()>0)
 			{
-			if(curmuon.numberOfSourceCandidatePtrs()>0) 
+			if((curmuon.pt()>ptmin_) and (curmuon.isTightMuon(vtxs->at(0))) and (curmuon.numberOfSourceCandidatePtrs()>0))
 				{
 				const auto mucand = curmuon.sourceCandidatePtr(0);
-				if ((mucand->px()==cand.px()) and (mucand->py()==cand.py()) and (mucand->pz()==cand.pz())) 
+				if ((abs(mucand->px()-cand.px())<0.0000001) and (abs(mucand->py()-cand.py())<0.0000001) and (abs(mucand->pz()-cand.pz())<0.0000001)) 
 					{
 					keepcand=false;
 					break;
-					}
+					}		
 				}
 			}
   		}

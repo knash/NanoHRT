@@ -7,11 +7,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
-
-#include "tensorflow/c/c_api.h"
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "TLorentzVector.h"
 
@@ -20,7 +17,7 @@
 
 #include <memory>
 #include <iostream>
-#include <Python.h>
+
 
 struct ImageTFCache {
   ImageTFCache() : graphDef(nullptr) {
@@ -34,7 +31,7 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
   public:
     explicit ImageProducer(const edm::ParameterSet&, const ImageTFCache*);
     ~ImageProducer() override;
-    double principal_axis(std::vector<std::vector<float>>);
+    double principal_axis(const std::vector<std::vector<float>> &);
     static void fillDescriptions(edm::ConfigurationDescriptions&);
     static void globalEndJob(const ImageTFCache*);
     static std::unique_ptr<ImageTFCache> initializeGlobalCache(const edm::ParameterSet&);
@@ -45,9 +42,9 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     void endStream() override {}
     tensorflow::Session* tfsession_;
 
-    std::string sdmcoll="ak8PFJetsPuppiSoftDropMass";
     const edm::EDGetTokenT<edm::View<pat::Jet>> src_;
     const edm::EDGetTokenT<edm::View<pat::Jet>> sj_;
+    std::string sdmcoll_;
     edm::FileInPath pb_path_;
 
 };
@@ -57,30 +54,19 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
  tfsession_(nullptr)
 , src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
+, sdmcoll_((iConfig.getParameter<std::string>("sdmcoll")))
 {
   
   produces<pat::JetCollection>();
 
   tensorflow::SessionOptions sessionOptions;
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
-
-  if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
+  //if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
 
 }
 ImageProducer::~ImageProducer(){
  tensorflow::closeSession(tfsession_);
 }
-
-
-
-template <typename T> std::string to_string_pr(const T a_value, const int n = 17)
-{
-    std::ostringstream out;
-    out.precision(n);
-    out << a_value;
-    return out.str();
-}
-
 
 void ImageProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
@@ -102,7 +88,7 @@ std::unique_ptr<ImageTFCache> ImageProducer::initializeGlobalCache(
   return std::unique_ptr<ImageTFCache>(cache);
 }
 
-double ImageProducer::principal_axis(std::vector<std::vector<float>> partlist)
+double ImageProducer::principal_axis(const std::vector<std::vector<float>> & partlist)
 	{
   	double tan_theta=0.0;
 	double M11=0.0;
@@ -224,7 +210,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	uint sjlsize=sjlist.size();
 	for(uint isj=0;isj<(12-sjlsize);isj++) sjlist.push_back(0.);
-        sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll))/172.0);
+        sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll_))/172.0);
         //sjlist.push_back(AK8pfjet.pt());
         //sjlist.push_back(AK8pfjet.eta());
 	

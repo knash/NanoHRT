@@ -28,7 +28,7 @@ def setupCustomizedAK4(process, runOnMC=False, path=None):
                PUMethod='CHS', JETCorrPayload='AK4PFchs', JETCorrLevels=JETCorrLevels,
 	       postFix='MuSub',	
 	       newPFCollection=True, nameNewPFCollection="MuSubProducer",
-               Cut='pt > 30.0 && abs(rapidity()) < 2.4',
+               Cut='pt > 20.0 && abs(rapidity()) < 2.4',
                bTagDiscriminators=bTagDiscriminators)
 
     srcJets = cms.InputTag('selectedPatJetsAK4PFCHSMuSub')

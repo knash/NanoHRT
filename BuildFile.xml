@@ -5,9 +5,7 @@
 <use   name="PhysicsTools/CandUtils"/>
 <use   name="fastjet"/>
 <use   name="lwtnn"/>
-<use   name="tensorflow-cc" />
 <use   name="PhysicsTools/TensorFlow" />
-
 
 <export>
   <lib   name="1"/>
