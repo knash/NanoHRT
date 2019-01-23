@@ -160,6 +160,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
             bestB=Var("userFloat('BEST:dnn_b')", float, doc="Boosted Event Shape Tagger score B", precision=-1),
             itop=Var("userFloat('Image:top')", float, doc="Image tagger score top", precision=-1),
             iMDtop=Var("userFloat('ImageMD:top')", float, doc="Image tagger score top", precision=-1),
+
         )
     )
     run2_miniAOD_80XLegacy.toModify(process.customAK8Table.variables, jetId=Var("userInt('tightId')*2+userInt('looseId')", int, doc="Jet ID flags bit1 is loose, bit2 is tight"))
