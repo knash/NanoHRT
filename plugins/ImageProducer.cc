@@ -86,7 +86,7 @@ std::unique_ptr<ImageTFCache> ImageProducer::initializeGlobalCache(
   tensorflow::setLogging("3");
   ImageTFCache* cache = new ImageTFCache();
 
-  cache->graphDef = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_path", edm::FileInPath("PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_12032018.pb")).fullPath());
+  cache->graphDef = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_path").fullPath());
   return std::unique_ptr<ImageTFCache>(cache);
 }
 
