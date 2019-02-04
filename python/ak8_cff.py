@@ -76,14 +76,6 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         extex=cms.string('')
     )
 
-    #process.imageJetsAK8PuppiMD = cms.EDProducer('ImageProducer',
-    #    src=cms.InputTag('imageJetsAK8Puppi'),
-    #    sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagAK8PFPuppiSoftDropSubjets'),
-    #    sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
-    #    pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
-    #    extex=cms.string('MD')
-    #)
-
 
     # src
     srcJets = cms.InputTag('imageJetsAK8Puppi')
