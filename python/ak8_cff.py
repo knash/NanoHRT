@@ -77,7 +77,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     )
 
     # src
-    srcJets = cms.InputTag('imageJetsAK8PuppiMD')
+    srcJets = cms.InputTag('imageJetsAK8Puppi')
 
     # jetID
     process.looseJetIdCustomAK8 = cms.EDProducer("PatJetIDValueMapProducer",
@@ -189,7 +189,6 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     process.customizedAK8Task = cms.Task(
         process.boostedEventShapeJetsAK8Puppi,
         process.imageJetsAK8Puppi,
-        process.imageJetsAK8PuppiMD,
         process.tightJetIdCustomAK8,
         process.tightJetIdLepVetoCustomAK8,
         process.customAK8WithUserData,
