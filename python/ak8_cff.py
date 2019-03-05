@@ -5,7 +5,7 @@ from Configuration.Eras.Modifier_run2_miniAOD_80XLegacy_cff import run2_miniAOD_
 # ---------------------------------------------------------
 
 
-def setupCustomizedAK8(process, runOnMC=False, path=None):
+def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
     # recluster Puppi jets, add N-Subjettiness and ECF
     bTagDiscriminators = [
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',
@@ -73,6 +73,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
         pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
         pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
+	stype=cms.string(Settype),
         extex=cms.string('')
     )
 

@@ -5,9 +5,9 @@ from PhysicsTools.NanoHRT.ca15_cff import setupCA15
 from PhysicsTools.NanoHRT.hotvr_cff import setupHOTVR
 
 
-def nanoHRT_customizeCommon(process, runOnMC):
+def nanoHRT_customizeCommon(process, runOnMC,Settype):
     setupCustomizedAK4(process, runOnMC=runOnMC)
-    setupCustomizedAK8(process, runOnMC=runOnMC)
+    setupCustomizedAK8(process, runOnMC=runOnMC, path=None, Settype=Settype)
     setupCA15(process, runOnMC=runOnMC)
     setupHOTVR(process, runOnMC=runOnMC)
     # fix genParticles: keep first gen decay product for all top/W/Z/H
@@ -51,7 +51,7 @@ def nanoHRT_customizeData_METMuEGClean(process):
     return process
 
 
-def nanoHRT_customizeMC(process):
-    process = nanoHRT_customizeCommon(process, True)
+def nanoHRT_customizeMC(process,Settype):
+    process = nanoHRT_customizeCommon(process, True, Settype)
     process.NANOAODSIMoutput.fakeNameForCrab = cms.untracked.bool(True)  # needed for crab publication
     return process

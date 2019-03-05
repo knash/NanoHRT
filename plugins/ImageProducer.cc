@@ -11,6 +11,8 @@
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "TLorentzVector.h"
+#include "TLorentzVector.h"
+#include "../interface/ImageProducer.hh"
 
 #include <iostream>
 #include <fstream>
@@ -36,6 +38,7 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     static void fillDescriptions(edm::ConfigurationDescriptions&);
     static void globalEndJob(const ImageTFCache*);
     static std::unique_ptr<ImageTFCache> initializeGlobalCache(const edm::ParameterSet&);
+    std::ofstream textout;
 
   private:
     void beginStream(edm::StreamID) override {}
@@ -43,14 +46,16 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     void endStream() override {}
     tensorflow::Session* tfsession_;
     tensorflow::Session* tfsessionMD_;
-
+    edm::EDGetTokenT<std::vector<reco::GenParticle>> gplab ;
     const edm::EDGetTokenT<edm::View<pat::Jet>> src_;
     const edm::EDGetTokenT<edm::View<pat::Jet>> sj_;
     std::string sdmcoll_;
     edm::FileInPath pb_path_;
     edm::FileInPath pb_pathMD_;
     std::string extex_;
+    std::string stype_;
 
+    const edm::EDGetTokenT<edm::View<reco::GenParticle>> genparts_;
 };
 
 ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCache* cache)
@@ -61,14 +66,17 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
 , sdmcoll_(iConfig.getParameter<std::string>("sdmcoll"))
 , extex_(iConfig.getParameter<std::string>("extex"))
+, stype_(iConfig.getParameter<std::string>("stype"))
 {
   
   produces<pat::JetCollection>();
+  gplab = consumes<std::vector<reco::GenParticle>>(edm::InputTag("prunedGenParticles"));
 
   tensorflow::SessionOptions sessionOptions;
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
   tfsessionMD_ = tensorflow::createSession(cache->graphDefMD,sessionOptions);
   //if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
+  textout.open("debugout"+iConfig.getParameter<edm::InputTag>("src").label()+".dat");
 
 }
 ImageProducer::~ImageProducer(){
@@ -96,6 +104,15 @@ std::unique_ptr<ImageTFCache> ImageProducer::initializeGlobalCache(
   cache->graphDefMD = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_pathMD").fullPath());
   return std::unique_ptr<ImageTFCache>(cache);
 }
+
+template <typename T> std::string to_string_pr(const T a_value, const int n = 10)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << a_value;
+    return out.str();
+}
+
 
 double ImageProducer::principal_axis(const std::vector<std::vector<float>> & partlist)
 	{
@@ -137,10 +154,17 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   TLorentzVector curtlv;
   TLorentzVector sublv;
 
+
+  edm::Handle<std::vector<reco::GenParticle>> genparts;
+  iEvent.getByToken(gplab, genparts);
+  const std::vector<reco::GenParticle>* genpartsvec  = genparts.product();
+
+
   int jindex=0;
   std::vector<float> itopdisc = {};
   std::vector<float> itopdiscMD = {};
   int ntopinit = -1;
+
   //std::cout<<std::endl;
   for (const auto &AK8pfjet : *jets)
 	{
@@ -150,6 +174,17 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         TLorentzVector curtlv;
 	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
+  	int ttval=1;
+
+	if(stype_!="QCD")
+		{  	
+			ttval=0;
+
+			bool matched = signalmatch(curtlv, genpartsvec,stype_);
+			std::cout<<matched<<std::endl;
+			if (not matched) continue;
+		}
+
 
 	int ndau = AK8pfjet.numberOfDaughters();
         std::vector<pat::PackedCandidate> allpf;
@@ -338,6 +373,54 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//convert image to tensorflow.  first create tensor of zeros, then fill.  Probably not optimal quite yet
 	tensorflow::Tensor input_image(tensorflow::DT_FLOAT, tensorflow::TensorShape({ 1,37, 37 , ncolors }));
 	auto input_map = input_image.tensor<float, 4>();
+
+
+
+
+	//Debug printing to ascii
+	std::string textevent = "[[";
+	for(uint i=0;i < indexedimage.size();++i)
+		{
+		if(i>0)textevent+=",";
+		textevent+="[[";
+		textevent+=to_string_pr(indexedimage[i].first[0]);
+		textevent+=",";
+		textevent+=to_string_pr(indexedimage[i].first[1]);
+		textevent+="],[";
+		for(uint j=0;j < indexedimage[i].second.size();++j)
+			{
+			if(j>0)textevent+=",";
+			textevent+=to_string_pr(indexedimage[i].second[j]);
+			}	
+		textevent+="]]";
+		}
+
+	textevent+="],";
+	textevent+=std::to_string(ttval);
+	textevent+=",1.0";
+	index=-1;
+	for(uint i=0;i < sjlist.size();++i,++d)
+		{
+		textevent+=",";
+		if(i<12)index = (i%6)*2 + i/6;
+		else index=i;
+		textevent+=to_string_pr(sjlist[index]);	
+		}	
+
+	textevent+="]";
+
+
+
+	textout<<textevent<<"\n";
+
+
+
+
+
+
+
+
+
 
 	for(uint i=0;i < 37;++i)
 		{
