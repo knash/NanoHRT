@@ -76,7 +76,7 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
   tfsessionMD_ = tensorflow::createSession(cache->graphDefMD,sessionOptions);
   //if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
-  textout.open("debugout"+iConfig.getParameter<edm::InputTag>("src").label()+".dat");
+  textout.open("debugout.dat");
 
 }
 ImageProducer::~ImageProducer(){
@@ -181,7 +181,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			ttval=0;
 
 			bool matched = signalmatch(curtlv, genpartsvec,stype_);
-			std::cout<<matched<<std::endl;
+			//std::cout<<matched<<std::endl;
 			if (not matched) continue;
 		}
 

@@ -216,8 +216,8 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 			
 
 				TLorentzVector gplv;
-				std::cout<<gpid<<std::endl;
-				if((gp.numberOfDaughters()>1)) std::cout<<(gp.daughter(0))->pdgId()<<","<<(gp.daughter(1))->pdgId()<<std::endl;
+				//std::cout<<gpid<<std::endl;
+				//if((gp.numberOfDaughters()>1)) std::cout<<(gp.daughter(0))->pdgId()<<","<<(gp.daughter(1))->pdgId()<<std::endl;
 				if(abs(gpid)==9000025)
 					{
 				
@@ -225,7 +225,7 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 				
 					if((gp.numberOfDaughters()>1)) 
 						{
-						if((abs(gp.daughter(0)->pdgId())==22) || (abs(gp.daughter(1)->pdgId())==22))
+						if((abs(gp.daughter(0)->pdgId())==24) && (abs(gp.daughter(1)->pdgId())==24))
 							{
 							ntops+=1;
 							if(gplv.DeltaR(curtlv)<0.6)gpmatch=true;
@@ -237,57 +237,60 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 			
 				if(gpmatch==true)
 					{
-					int wid = -1;
-					int bid = -1;
-					TLorentzVector gpblv;
-					if (abs(gp.daughter(1)->pdgId())==22)
-						{
-						wid=0;
-		  				bid=1;
-						}
-					if (abs(gp.daughter(0)->pdgId())==22)
-						{
-						wid=1;
-						bid=0;
-						}
-					gpblv.SetPtEtaPhiM(gp.daughter(bid)->pt(),gp.daughter(bid)->eta(),gp.daughter(bid)->phi(),gp.daughter(bid)->mass());
-					if(!(curtlv.DeltaR(gpblv)<0.8))continue;
+	
 				
-					auto gpw = gp.daughter(wid);
+					auto gpw0 = gp.daughter(0);
+					auto gpw1 = gp.daughter(1);
+					bool found0 = false;
+					bool found1 = false;
+
 					while(fulltopmatch==false)
 						{
-				
-						if(gpw->numberOfDaughters()==1)
+						//std::cout<<"curw0 "<<gpw0->pdgId()<<std::endl;
+						//std::cout<<"curw1 "<<gpw1->pdgId()<<std::endl;
+						
+						if(gpw0->numberOfDaughters()==1) gpw0=gpw0->daughter(0);	
+						else
 							{
-								gpw=gpw->daughter(0);
-								continue;
-							}
-						if(gpw->numberOfDaughters()>1)
-							{
-							if((abs(gpw->daughter(0)->pdgId())==23)) 
-								{
-								gpw=gpw->daughter(0);
-								continue;
-								}
-							if((abs(gpw->daughter(1)->pdgId())==23))
-								{
-								gpw=gpw->daughter(1);
-								continue;
-								}
-							if ((abs(gpw->daughter(0)->pdgId())<6) && (abs(gpw->daughter(1)->pdgId())<6)) 
+							//std::cout<<"twodecw0 "<<gpw0->daughter(0)->pdgId()<<","<<gpw0->daughter(1)->pdgId()<<std::endl;
+
+							if((abs(gpw0->daughter(0)->pdgId())==24)) gpw0=gpw0->daughter(0);	
+							else if((abs(gpw0->daughter(1)->pdgId())==24)) gpw0=gpw0->daughter(1);
+							else if ((abs(gpw0->daughter(0)->pdgId())<6) && (abs(gpw0->daughter(1)->pdgId())<6)) 
 								{
 								TLorentzVector gpq1lv;
-								gpq1lv.SetPtEtaPhiM(gpw->daughter(0)->pt(),gpw->daughter(0)->eta(),gpw->daughter(0)->phi(),gpw->daughter(0)->mass());
+								gpq1lv.SetPtEtaPhiM(gpw0->daughter(0)->pt(),gpw0->daughter(0)->eta(),gpw0->daughter(0)->phi(),gpw0->daughter(0)->mass());
 
 								TLorentzVector gpq2lv;
-								gpq2lv.SetPtEtaPhiM(gpw->daughter(1)->pt(),gpw->daughter(1)->eta(),gpw->daughter(1)->phi(),gpw->daughter(1)->mass());
-
-								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))fulltopmatch=true;
+								gpq2lv.SetPtEtaPhiM(gpw0->daughter(1)->pt(),gpw0->daughter(1)->eta(),gpw0->daughter(1)->phi(),gpw0->daughter(1)->mass());
+								//std::cout<<"DRS "<<curtlv.DeltaR(gpq1lv)<<","<<curtlv.DeltaR(gpq2lv)<<std::endl;
+								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))found0=true;
 								else break;
 								}
-
-							else break;
+							
 							}
+													
+						if(gpw1->numberOfDaughters()==1) gpw1=gpw1->daughter(0);	
+						else
+							{
+							//std::cout<<"twodecw1 "<<gpw1->daughter(0)->pdgId()<<","<<gpw1->daughter(1)->pdgId()<<std::endl;
+							if((abs(gpw1->daughter(0)->pdgId())==24)) gpw1=gpw1->daughter(0);	
+							else if((abs(gpw1->daughter(1)->pdgId())==24)) gpw1=gpw1->daughter(1);
+							else if ((abs(gpw1->daughter(0)->pdgId())<6) && (abs(gpw1->daughter(1)->pdgId())<6)) 
+								{
+								TLorentzVector gpq1lv;
+								gpq1lv.SetPtEtaPhiM(gpw1->daughter(0)->pt(),gpw1->daughter(0)->eta(),gpw1->daughter(0)->phi(),gpw1->daughter(0)->mass());
+
+								TLorentzVector gpq2lv;
+								gpq2lv.SetPtEtaPhiM(gpw1->daughter(1)->pt(),gpw1->daughter(1)->eta(),gpw1->daughter(1)->phi(),gpw1->daughter(1)->mass());
+								//std::cout<<"DRS "<<curtlv.DeltaR(gpq1lv)<<","<<curtlv.DeltaR(gpq2lv)<<std::endl;
+								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))found1=true;
+								else break;
+								}
+							
+							}
+						if(found0 and found1)fulltopmatch=true;
+
 						}
 					}
 				}
