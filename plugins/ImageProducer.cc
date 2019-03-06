@@ -159,8 +159,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(gplab, genparts);
   const std::vector<reco::GenParticle>* genpartsvec  = genparts.product();
 
-
-  int jindex=0;
   std::vector<float> itopdisc = {};
   std::vector<float> itopdiscMD = {};
   int ntopinit = -1;
@@ -181,7 +179,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			ttval=0;
 
 			bool matched = signalmatch(curtlv, genpartsvec,stype_);
-			//std::cout<<matched<<std::endl;
+			std::cout<<matched<<std::endl;
 			if (not matched) continue;
 		}
 
@@ -454,7 +452,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         float result_top = tfoutput[0].flat<float>()(0);
         float result_qcd = tfoutput[0].flat<float>()(1);
 
-	itopdisc[jindex]=result_top/(result_top+result_qcd);
+	itopdisc[ntopinit]=result_top/(result_top+result_qcd);
 
 
 
@@ -469,17 +467,13 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         float result_topMD = tfoutputMD[0].flat<float>()(0);
         float result_qcdMD = tfoutputMD[0].flat<float>()(1);
 
-	itopdiscMD[jindex]=result_topMD/(result_topMD+result_qcdMD);
-
-
-
-	jindex+=1;
+	itopdiscMD[ntopinit]=result_topMD/(result_topMD+result_qcdMD);
   }
 
 
   //Add to jet userfloats
   auto outputs = std::make_unique<pat::JetCollection>();
-  jindex=0;
+  int jindex=0;
   for (const auto &jet : *jets){
     pat::Jet newJet(jet);
     newJet.addUserFloat("Image"+extex_+":top", itopdisc[jindex]);

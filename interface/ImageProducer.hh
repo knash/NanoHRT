@@ -218,9 +218,10 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 				TLorentzVector gplv;
 				//std::cout<<gpid<<std::endl;
 				//if((gp.numberOfDaughters()>1)) std::cout<<(gp.daughter(0))->pdgId()<<","<<(gp.daughter(1))->pdgId()<<std::endl;
+				if(abs(gpid)==9000024) std::cout<<abs(gpid)<< " " <<gp.mass()<<std::endl;
 				if(abs(gpid)==9000025)
 					{
-				
+					std::cout<<abs(gpid)<< " " <<gp.mass()<<std::endl;
 					gplv.SetPtEtaPhiM(gp.pt(),gp.eta(),gp.phi(),gp.mass());
 				
 					if((gp.numberOfDaughters()>1)) 
