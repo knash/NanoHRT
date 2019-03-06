@@ -16,7 +16,7 @@ config.General.transferLogs = True
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'test_nanoHRT_mc_NANO.py'
 config.JobType.outputFiles = ['debugout.dat']
-config.JobType.pyCfgParams = ['Settype=ww','Recordevery=2']
+config.JobType.pyCfgParams = ['Settype=QCD','Recordevery=3']
 config.JobType.allowUndistributedCMSSW = True
 
 config.Data.inputDataset = "/"+curset

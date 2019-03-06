@@ -23,7 +23,6 @@ config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
 config.Data.unitsPerJob = 3000
-config.Data.ignoreLocality=True
 config.Data.outLFNDirBase = '/store/user/knash/EOS'
 config.Data.publication = False
 config.Data.outputDatasetTag = 'debugtext'+ver

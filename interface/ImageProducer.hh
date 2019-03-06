@@ -86,10 +86,10 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 								gpq2lv.SetPtEtaPhiM(gpw->daughter(1)->pt(),gpw->daughter(1)->eta(),gpw->daughter(1)->phi(),gpw->daughter(1)->mass());
 
 								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))fulltopmatch=true;
-								else break;
+								else return false;
 								}
 
-							else break;
+							else return false;
 							}
 			
 						}
@@ -188,10 +188,10 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 								gpq2lv.SetPtEtaPhiM(gpw->daughter(1)->pt(),gpw->daughter(1)->eta(),gpw->daughter(1)->phi(),gpw->daughter(1)->mass());
 
 								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))fulltopmatch=true;
-								else break;
+								else  return false;;
 								}
 
-							else break;
+							else return false;
 							}
 			
 						}
@@ -216,12 +216,11 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 			
 
 				TLorentzVector gplv;
-				//std::cout<<gpid<<std::endl;
 				//if((gp.numberOfDaughters()>1)) std::cout<<(gp.daughter(0))->pdgId()<<","<<(gp.daughter(1))->pdgId()<<std::endl;
-				if(abs(gpid)==9000024) std::cout<<abs(gpid)<< " " <<gp.mass()<<std::endl;
+				//if(abs(gpid)==9000024) std::cout<<abs(gpid)<< " " <<gp.mass()<<std::endl;
 				if(abs(gpid)==9000025)
 					{
-					std::cout<<abs(gpid)<< " " <<gp.mass()<<std::endl;
+					//std::cout<<abs(gpid)<< " " <<gp.mass()<<std::endl;
 					gplv.SetPtEtaPhiM(gp.pt(),gp.eta(),gp.phi(),gp.mass());
 				
 					if((gp.numberOfDaughters()>1)) 
@@ -266,8 +265,9 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 								gpq2lv.SetPtEtaPhiM(gpw0->daughter(1)->pt(),gpw0->daughter(1)->eta(),gpw0->daughter(1)->phi(),gpw0->daughter(1)->mass());
 								//std::cout<<"DRS "<<curtlv.DeltaR(gpq1lv)<<","<<curtlv.DeltaR(gpq2lv)<<std::endl;
 								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))found0=true;
-								else break;
+								else  return false;;
 								}
+							else return false;
 							
 							}
 													
@@ -286,8 +286,9 @@ bool signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* ge
 								gpq2lv.SetPtEtaPhiM(gpw1->daughter(1)->pt(),gpw1->daughter(1)->eta(),gpw1->daughter(1)->phi(),gpw1->daughter(1)->mass());
 								//std::cout<<"DRS "<<curtlv.DeltaR(gpq1lv)<<","<<curtlv.DeltaR(gpq2lv)<<std::endl;
 								if ((curtlv.DeltaR(gpq1lv)<0.8) && (curtlv.DeltaR(gpq2lv)<0.8))found1=true;
-								else break;
+								else  return false;;
 								}
+							else return false;
 							
 							}
 						if(found0 and found1)fulltopmatch=true;

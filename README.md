@@ -18,7 +18,7 @@ cmsenv
 ### Get customized NanoAOD producers for HeavyResTagging
 
 ```bash
-git clone https://github.com/hqucms/NanoHRT.git PhysicsTools/NanoHRT
+git clone https://github.com/knash/NanoHRT.git PhysicsTools/NanoHRT
 ```
 
 ### Compile

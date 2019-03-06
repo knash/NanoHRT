@@ -179,7 +179,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			ttval=0;
 
 			bool matched = signalmatch(curtlv, genpartsvec,stype_);
-			std::cout<<matched<<std::endl;
+			//std::cout<<matched<<std::endl;
 			if (not matched) continue;
 		}
 
