@@ -13,6 +13,11 @@ options.register('Settype',
      opts.VarParsing.multiplicity.singleton,
      opts.VarParsing.varType.string,
      'top, QCD, etc...')
+options.register('Recordevery',
+     1,
+     opts.VarParsing.multiplicity.singleton,
+     opts.VarParsing.varType.int,
+     'Record every Xth event (at random)')
 options.parseArguments()
 
 Settype = options.Settype
@@ -20,6 +25,8 @@ if Settype !="None":
 	print "running over",Settype
 else:
 	sys.exit("Need to specify a set type")
+if options.Recordevery>1:
+	print "recording every",options.Recordevery,"events"
 
 
 from Configuration.StandardSequences.Eras import eras
@@ -79,6 +86,14 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_mc2017_realistic_v6', '')
+
+
+
+
+process.Random_Filter = cms.EDFilter("Random_Filter",saveevery=cms.untracked.int32(options.Recordevery))
+process.f1 = cms.Path(process.Random_Filter)
+
+
 
 # Path and EndPath definitions
 process.nanoAOD_step = cms.Path(process.nanoSequenceMC)

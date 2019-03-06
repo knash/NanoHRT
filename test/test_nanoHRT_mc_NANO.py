@@ -13,6 +13,11 @@ options.register('Settype',
      opts.VarParsing.multiplicity.singleton,
      opts.VarParsing.varType.string,
      'top, QCD, etc...')
+options.register('Recordevery',
+     1,
+     opts.VarParsing.multiplicity.singleton,
+     opts.VarParsing.varType.int,
+     'Record every Xth event (at random)')
 options.parseArguments()
 
 Settype = options.Settype
@@ -20,6 +25,8 @@ if Settype !="None":
 	print "running over",Settype
 else:
 	sys.exit("Need to specify a set type")
+if options.Recordevery>1:
+	print "recording every",options.Recordevery,"events"
 
 from Configuration.StandardSequences.Eras import eras
 
@@ -83,6 +90,13 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v2', '')
 process.nanoAOD_step = cms.Path(process.nanoSequenceMC)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.NANOAODSIMoutput_step = cms.EndPath(process.NANOAODSIMoutput)
+
+
+
+process.Random_Filter = cms.EDFilter("Random_Filter",saveevery=cms.untracked.int32(options.Recordevery))
+process.f1 = cms.Path(process.Random_Filter)
+
+
 
 # Schedule definition
 process.schedule = cms.Schedule(process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
