@@ -258,8 +258,8 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	uint sjlsize=sjlist.size();
 	for(uint isj=0;isj<(12-sjlsize);isj++) sjlist.push_back(0.);
         sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll_))/172.0);
-        //sjlist.push_back(AK8pfjet.pt());
-        //sjlist.push_back(AK8pfjet.eta());
+        sjlist.push_back(AK8pfjet.pt());
+        sjlist.push_back(AK8pfjet.eta());
 	
 
 

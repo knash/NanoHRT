@@ -6,7 +6,7 @@ curset = "RSET"
 substr = curset.split('/')[0]
 print curset
 print substr
-ver ='_WWv1'
+ver ='_WWv2'
 
 config.General.requestName = substr+'imagednn'+ver
 config.General.workArea = 'crab_projects'
