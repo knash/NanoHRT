@@ -183,6 +183,8 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			if (not matched) continue;
 		}
 
+  	itopdisc[ntopinit]=-1.0;
+  	itopdiscMD[ntopinit]=-1.0;
 
 	int ndau = AK8pfjet.numberOfDaughters();
         std::vector<pat::PackedCandidate> allpf;
@@ -258,6 +260,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	uint sjlsize=sjlist.size();
 	for(uint isj=0;isj<(12-sjlsize);isj++) sjlist.push_back(0.);
         sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll_))/172.0);
+	int extravars = 2;
         sjlist.push_back(AK8pfjet.pt());
         sjlist.push_back(AK8pfjet.eta());
 	
@@ -358,7 +361,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//convert scalars to tensorflow
 	std::vector<tensorflow::Tensor> tfoutput;
 	std::vector<tensorflow::Tensor> tfoutputMD;
-	tensorflow::Tensor input_b(tensorflow::DT_FLOAT, { 1, int(sjlist.size()) });
+	tensorflow::Tensor input_b(tensorflow::DT_FLOAT, { 1, int(sjlist.size()-extravars) });
 	float* d = input_b.flat<float>().data();
 	uint index=-1;
 	for(uint i=0;i < sjlist.size();++i,++d)

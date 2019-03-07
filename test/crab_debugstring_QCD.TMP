@@ -6,7 +6,7 @@ curset = "RSET"
 substr = curset.split('/')[0]
 print curset
 print substr
-ver ='_WWv2'
+ver ='_WWv3'
 
 config.General.requestName = substr+'imagednn'+ver
 config.General.workArea = 'crab_projects'
@@ -16,7 +16,7 @@ config.General.transferLogs = True
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'test_nanoHRT_mc_102X_NANO.py'
 config.JobType.outputFiles = ['debugout.dat']
-config.JobType.pyCfgParams = ['Settype=QCD','Recordevery=3']
+config.JobType.pyCfgParams = ['Settype=QCD','Recordevery=5']
 config.JobType.allowUndistributedCMSSW = True
 
 config.Data.inputDataset = "/"+curset
@@ -28,3 +28,4 @@ config.Data.publication = False
 config.Data.outputDatasetTag = 'debugtext'+ver
 
 config.Site.storageSite = 'T3_US_Rutgers'
+config.Site.blacklist = ['T2_PL_Swierk']
