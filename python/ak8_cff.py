@@ -23,7 +23,8 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
                PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
                miniAOD=True, runOnMC=runOnMC,
-               addNsub=True, maxTau=3, addEnergyCorrFunc=True,
+               addNsub=True, maxTau=4, addEnergyCorrFunc=True,
+	       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
                addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
                bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators)
 
@@ -43,12 +44,6 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         postfix='AK8WithPuppiDaughters',
     )
 
-    # BEST
-    process.boostedEventShapeJetsAK8Puppi = cms.EDProducer('BESTProducer',
-        src=cms.InputTag('selectedUpdatedPatJetsAK8WithPuppiDaughters'),
-        config_path=cms.FileInPath('PhysicsTools/NanoHRT/data/BEST/config.txt'),
-        dnn_path=cms.FileInPath('PhysicsTools/NanoHRT/data/BEST/BEST_6bin_CHS.json'),
-    )
 
 
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
@@ -68,14 +63,16 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
 
 
     process.imageJetsAK8Puppi = cms.EDProducer('ImageProducer',
-        src=cms.InputTag('boostedEventShapeJetsAK8Puppi'),
+        src=cms.InputTag('selectedUpdatedPatJetsAK8WithPuppiDaughters'),
         sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagAK8PFPuppiSoftDropSubjets'),
-        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_12032018.pb'),
+        sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
+        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
+        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
+        pb_pathPho=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_Pho_01232018.pb'),
+        pb_pathPhoMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_PhoMD_03092018.pb'),
+        pb_pathWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_WWMD_03092018.pb'),
+        extex=cms.string('')
     )
-
-    #process.dump=cms.EDAnalyzer('EventContentAnalyzer')
-    #process.p = cms.Path( process.dump)
-
 
     # src
     srcJets = cms.InputTag('imageJetsAK8Puppi')
@@ -133,6 +130,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
             tau1=Var("userFloat('NjettinessAK8Puppi:tau1')", float, doc="Nsubjettiness (1 axis)", precision=10),
             tau2=Var("userFloat('NjettinessAK8Puppi:tau2')", float, doc="Nsubjettiness (2 axis)", precision=10),
             tau3=Var("userFloat('NjettinessAK8Puppi:tau3')", float, doc="Nsubjettiness (3 axis)", precision=10),
+            tau4=Var("userFloat('NjettinessAK8Puppi:tau4')", float, doc="Nsubjettiness (4 axis)", precision=10),
             n2b1=Var("userFloat('ak8PFJetsPuppiSoftDropValueMap:nb1AK8PuppiSoftDropN2')", float, doc="N2 with beta=1", precision=10),
             n3b1=Var("userFloat('ak8PFJetsPuppiSoftDropValueMap:nb1AK8PuppiSoftDropN3')", float, doc="N3 with beta=1", precision=10),
             msoftdrop=Var("groomedMass()", float, doc="Corrected soft drop mass with PUPPI", precision=10),
@@ -144,14 +142,12 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
                  doc="index of second subjet"),
             nBHadrons=Var("jetFlavourInfo().getbHadrons().size()", int, doc="number of b-hadrons"),
             nCHadrons=Var("jetFlavourInfo().getcHadrons().size()", int, doc="number of c-hadrons"),
-            # BEST Tagger
-            bestT=Var("userFloat('BEST:dnn_top')", float, doc="Boosted Event Shape Tagger score Top", precision=-1),
-            bestW=Var("userFloat('BEST:dnn_w')", float, doc="Boosted Event Shape Tagger score W", precision=-1),
-            bestZ=Var("userFloat('BEST:dnn_z')", float, doc="Boosted Event Shape Tagger score Z", precision=-1),
-            bestH=Var("userFloat('BEST:dnn_higgs')", float, doc="Boosted Event Shape Tagger score Higgs", precision=-1),
-            bestQCD=Var("userFloat('BEST:dnn_qcd')", float, doc="Boosted Event Shape Tagger score QCD", precision=-1),
-            bestB=Var("userFloat('BEST:dnn_b')", float, doc="Boosted Event Shape Tagger score B", precision=-1),
             itop=Var("userFloat('Image:top')", float, doc="Image tagger score top", precision=-1),
+            iMDtop=Var("userFloat('ImageMD:top')", float, doc="Image tagger score top, mass decorrelated", precision=-1),
+            iPho=Var("userFloat('Image:pho')", float, doc="Image tagger score pho", precision=-1),
+            iMDPho=Var("userFloat('ImageMD:pho')", float, doc="Image tagger score pho, mass decorrelated", precision=-1),
+            iMDWW=Var("userFloat('ImageMD:ww')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
+
         )
     )
     run2_miniAOD_80XLegacy.toModify(process.customAK8Table.variables, jetId=Var("userInt('tightId')*2+userInt('looseId')", int, doc="Jet ID flags bit1 is loose, bit2 is tight"))
@@ -186,7 +182,6 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     process.customAK8SubJetTable.variables.pt.precision = 10
 
     process.customizedAK8Task = cms.Task(
-        process.boostedEventShapeJetsAK8Puppi,
         process.imageJetsAK8Puppi,
         process.tightJetIdCustomAK8,
         process.tightJetIdLepVetoCustomAK8,

@@ -7,11 +7,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
-
-#include "tensorflow/c/c_api.h"
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 #include "TLorentzVector.h"
 
@@ -20,13 +17,17 @@
 
 #include <memory>
 #include <iostream>
-#include <Python.h>
+
 
 struct ImageTFCache {
   ImageTFCache() : graphDef(nullptr) {
   }
   //From deepflavour implementation, for consistency 
   std::atomic<tensorflow::GraphDef*> graphDef;
+  std::atomic<tensorflow::GraphDef*> graphDefMD;
+  std::atomic<tensorflow::GraphDef*> graphDefPho;
+  std::atomic<tensorflow::GraphDef*> graphDefPhoMD;
+  std::atomic<tensorflow::GraphDef*> graphDefWWMD;
 };
 
 class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCache>> {
@@ -34,60 +35,64 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
   public:
     explicit ImageProducer(const edm::ParameterSet&, const ImageTFCache*);
     ~ImageProducer() override;
-    double principal_axis(std::vector<std::vector<float>>);
+    double principal_axis(const std::vector<std::vector<float>> &);
     static void fillDescriptions(edm::ConfigurationDescriptions&);
     static void globalEndJob(const ImageTFCache*);
     static std::unique_ptr<ImageTFCache> initializeGlobalCache(const edm::ParameterSet&);
-    std::uniform_real_distribution<> dis = std::uniform_real_distribution<>(0.0,1.0);
-
-    //just for debug text3
-    std::ofstream textout;
 
   private:
     void beginStream(edm::StreamID) override {}
     void produce(edm::Event&, const edm::EventSetup&) override;
     void endStream() override {}
     tensorflow::Session* tfsession_;
-    edm::EDGetTokenT<reco::VertexCollection> vtx ;
+    tensorflow::Session* tfsessionMD_;
+    tensorflow::Session* tfsessionPho_;
+    tensorflow::Session* tfsessionPhoMD_;
+    tensorflow::Session* tfsessionWWMD_;
 
-    std::string sdmcoll="ak8PFJetsPuppiSoftDropMass";
     const edm::EDGetTokenT<edm::View<pat::Jet>> src_;
     const edm::EDGetTokenT<edm::View<pat::Jet>> sj_;
+    std::string sdmcoll_;
     edm::FileInPath pb_path_;
+    edm::FileInPath pb_pathMD_;
+    edm::FileInPath pb_pathPho_;
+    edm::FileInPath pb_pathPhoMD_;
+    edm::FileInPath pb_pathWWMD_;
+    std::string extex_;
 
 };
 
 ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCache* cache)
 : 
  tfsession_(nullptr)
+, tfsessionMD_(nullptr)
+, tfsessionPho_(nullptr)
+, tfsessionPhoMD_(nullptr)
+, tfsessionWWMD_(nullptr)
 , src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 , sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
+, sdmcoll_(iConfig.getParameter<std::string>("sdmcoll"))
+, extex_(iConfig.getParameter<std::string>("extex"))
 {
-  
-  vtx = consumes<reco::VertexCollection>(edm::InputTag("offlineSlimmedPrimaryVertices"));
   
   produces<pat::JetCollection>();
 
   tensorflow::SessionOptions sessionOptions;
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
-
-  if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
+  tfsessionMD_ = tensorflow::createSession(cache->graphDefMD,sessionOptions);
+  tfsessionPho_ = tensorflow::createSession(cache->graphDefPho,sessionOptions);
+  tfsessionPhoMD_ = tensorflow::createSession(cache->graphDefPhoMD,sessionOptions);
+  tfsessionWWMD_ = tensorflow::createSession(cache->graphDefWWMD,sessionOptions);
+  //if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
 
 }
 ImageProducer::~ImageProducer(){
  tensorflow::closeSession(tfsession_);
+ tensorflow::closeSession(tfsessionMD_);
+ tensorflow::closeSession(tfsessionPho_);
+ tensorflow::closeSession(tfsessionPhoMD_);
+ tensorflow::closeSession(tfsessionWWMD_);
 }
-
-
-
-template <typename T> std::string to_string_pr(const T a_value, const int n = 17)
-{
-    std::ostringstream out;
-    out.precision(n);
-    out << a_value;
-    return out.str();
-}
-
 
 void ImageProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
@@ -105,11 +110,15 @@ std::unique_ptr<ImageTFCache> ImageProducer::initializeGlobalCache(
   tensorflow::setLogging("3");
   ImageTFCache* cache = new ImageTFCache();
 
-  cache->graphDef = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_path", edm::FileInPath("PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_12032018.pb")).fullPath());
+  cache->graphDef = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_path").fullPath());
+  cache->graphDefMD = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_pathMD").fullPath());
+  cache->graphDefPho = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_pathPho").fullPath());
+  cache->graphDefPhoMD = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_pathPhoMD").fullPath());
+  cache->graphDefWWMD = tensorflow::loadGraphDef(iConfig.getUntrackedParameter<edm::FileInPath>("pb_pathWWMD").fullPath());
   return std::unique_ptr<ImageTFCache>(cache);
 }
 
-double ImageProducer::principal_axis(std::vector<std::vector<float>> partlist)
+double ImageProducer::principal_axis(const std::vector<std::vector<float>> & partlist)
 	{
   	double tan_theta=0.0;
 	double M11=0.0;
@@ -132,6 +141,19 @@ void ImageProducer::globalEndJob(const ImageTFCache* cache)
   if (cache->graphDef != nullptr) {
     delete cache->graphDef;
   }
+  if (cache->graphDefMD != nullptr) {
+    delete cache->graphDefMD;
+  }
+  if (cache->graphDefPho != nullptr) {
+    delete cache->graphDefPho;
+  }
+  if (cache->graphDefPhoMD != nullptr) {
+    delete cache->graphDefPhoMD;
+  }
+  if (cache->graphDefWWMD != nullptr) {
+    delete cache->graphDefWWMD;
+  }
+
 }
 
 void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -145,17 +167,23 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   TLorentzVector curtlv;
   TLorentzVector sublv;
-  
-  edm::Handle<reco::VertexCollection> vtxs;
 
   int jindex=0;
   std::vector<float> itopdisc = {};
+  std::vector<float> itopdiscMD = {};
+  std::vector<float> itopdiscPho = {};
+  std::vector<float> itopdiscPhoMD = {};
+  std::vector<float> itopdiscWWMD = {};
   int ntopinit = -1;
   //std::cout<<std::endl;
   for (const auto &AK8pfjet : *jets)
 	{
 	ntopinit+=1;
   	itopdisc.push_back(-10.0);
+  	itopdiscMD.push_back(-10.0);
+ 	itopdiscPho.push_back(-10.0);
+  	itopdiscPhoMD.push_back(-10.0);
+  	itopdiscWWMD.push_back(-10.0);
 
         TLorentzVector curtlv;
 	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
@@ -177,8 +205,10 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	  	if (lPack != nullptr)
 			{
+			float dphi = reco::deltaPhi(lPack->phi(),curtlv.Phi());
+
         		TLorentzVector pfclv;
-			pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),lPack->phi(),lPack->mass());
+			pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),curtlv.Phi()+dphi,lPack->mass());
 			if ((pfclv.Pt()<=1.0) and (lPack->charge()!=0)) continue;
 			double funcval =(6.62733e-02) + (2.63732e+02)*(1.0/curtlv.Perp());
 			double drcorval = 0.6/(funcval);
@@ -186,10 +216,10 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			int pfcflav = std::abs(lPack->pdgId());
 
 			double neweta = pfclv.Eta()+(pfclv.Eta()-curtlv.Eta())*(drcorval-1.0);
-			double newphi = pfclv.Phi()+(pfclv.Phi()-curtlv.Phi())*(drcorval-1.0);
+			double newphi = pfclv.Phi()+(dphi)*(drcorval-1.0);
 
 			double newdetafj = (pfclv.Eta()-curtlv.Eta())*drcorval;
-			double newdphifj = (pfclv.Phi()-curtlv.Phi())*drcorval;
+			double newdphifj = (dphi)*drcorval;
 
 			if(std::sqrt(newdphifj*newdphifj+newdetafj*newdetafj)>1.6) continue;
 			float pw = lPack->puppiWeight();
@@ -233,7 +263,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	uint sjlsize=sjlist.size();
 	for(uint isj=0;isj<(12-sjlsize);isj++) sjlist.push_back(0.);
-        sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll))/172.0);
+        sjlist.push_back(fabs(AK8pfjet.userFloat(sdmcoll_))/172.0);
         //sjlist.push_back(AK8pfjet.pt());
         //sjlist.push_back(AK8pfjet.eta());
 	
@@ -332,13 +362,23 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 
 	//convert scalars to tensorflow
-	std::vector<tensorflow::Tensor> outputs1;
+	std::vector<tensorflow::Tensor> tfoutput;
+	std::vector<tensorflow::Tensor> tfoutputMD;
+	std::vector<tensorflow::Tensor> tfoutputPho;
+	std::vector<tensorflow::Tensor> tfoutputPhoMD;
+	std::vector<tensorflow::Tensor> tfoutputWWMD;
 	tensorflow::Tensor input_b(tensorflow::DT_FLOAT, { 1, int(sjlist.size()) });
+	tensorflow::Tensor input_b_nomass(tensorflow::DT_FLOAT, { 1, int(sjlist.size())-1 });
 	float* d = input_b.flat<float>().data();
+	float* dnm = input_b_nomass.flat<float>().data();
 	uint index=-1;
 	for(uint i=0;i < sjlist.size();++i,++d)
 		{
-		if (i<12)index = (i%6)*2 + i/6;
+		if (i<12)
+			{
+			index = (i%6)*2 + i/6;
+			*dnm = sjlist[index];
+			}
 		else index=i;
 		*d = sjlist[index];	
 		}	
@@ -367,9 +407,8 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				input_map(0,indexedimage[i].first[0], indexedimage[i].first[1], j) = indexedimage[i].second[j];
 			}	
 		}
-
 	//Actually run tensorflow
-  	tensorflow::Status status = tfsession_->Run({ { "input_1", input_image }, {"input_2", input_b} },{ "k2tfout_0" }, {}, &outputs1);
+  	tensorflow::Status status = tfsession_->Run({ { "input_1", input_image }, {"input_2", input_b} },{ "k2tfout_0" }, {}, &tfoutput);
 
 	if (!status.ok()) 
 		{
@@ -377,10 +416,77 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   		std::cout << status.ToString() << "\n";
   		return ;
 		}	
-        float result_top = outputs1[0].flat<float>()(0);
-        float result_qcd = outputs1[0].flat<float>()(1);
+        float result_top = tfoutput[0].flat<float>()(0);
+        float result_qcd = tfoutput[0].flat<float>()(1);
 
 	itopdisc[jindex]=result_top/(result_top+result_qcd);
+
+
+
+  	tensorflow::Status statusMD = tfsessionMD_->Run({ { "input_1", input_image }, {"input_2", input_b} },{ "k2tfout_0" }, {}, &tfoutputMD);
+
+	if (!statusMD.ok()) 
+		{
+		std::cout << "Tensorflow Failed:" << std::endl;
+  		std::cout << statusMD.ToString() << "\n";
+  		return ;
+		}	
+        float result_topMD = tfoutputMD[0].flat<float>()(0);
+        float result_qcdMD = tfoutputMD[0].flat<float>()(1);
+
+	itopdiscMD[jindex]=result_topMD/(result_topMD+result_qcdMD);
+
+
+
+
+
+  	tensorflow::Status statusPho = tfsessionPho_->Run({ { "input_1", input_image }, {"input_2", input_b} },{ "k2tfout_0" }, {}, &tfoutputPho);
+
+	if (!status.ok()) 
+		{
+		std::cout << "Tensorflow Failed:" << std::endl;
+  		std::cout << statusPho.ToString() << "\n";
+  		return ;
+		}	
+        float result_topPho = tfoutputPho[0].flat<float>()(0);
+        float result_qcdPho = tfoutputPho[0].flat<float>()(1);
+
+	itopdiscPho[jindex]=result_topPho/(result_topPho+result_qcdPho);
+
+  	tensorflow::Status statusPhoMD = tfsessionPhoMD_->Run({ { "input_1", input_image }, {"input_2", input_b_nomass} },{ "k2tfout_0" }, {}, &tfoutputPhoMD);
+
+	if (!statusPhoMD.ok()) 
+		{
+		std::cout << "Tensorflow Failed:" << std::endl;
+  		std::cout << statusPhoMD.ToString() << "\n";
+  		return ;
+		}	
+        float result_topPhoMD = tfoutputPhoMD[0].flat<float>()(0);
+        float result_qcdPhoMD = tfoutputPhoMD[0].flat<float>()(1);
+
+	itopdiscPhoMD[jindex]=result_topPhoMD/(result_topPhoMD+result_qcdPhoMD);
+
+
+
+
+
+  	tensorflow::Status statusWWMD = tfsessionWWMD_->Run({ { "input_1", input_image }, {"input_2", input_b_nomass} },{ "k2tfout_0" }, {}, &tfoutputWWMD);
+
+	if (!statusWWMD.ok()) 
+		{
+		std::cout << "Tensorflow Failed:" << std::endl;
+  		std::cout << statusWWMD.ToString() << "\n";
+  		return ;
+		}	
+        float result_topWWMD = tfoutputWWMD[0].flat<float>()(0);
+        float result_qcdWWMD = tfoutputWWMD[0].flat<float>()(1);
+
+	itopdiscWWMD[jindex]=result_topWWMD/(result_topWWMD+result_qcdWWMD);
+
+
+
+
+
 	jindex+=1;
   }
 
@@ -390,7 +496,11 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   jindex=0;
   for (const auto &jet : *jets){
     pat::Jet newJet(jet);
-    newJet.addUserFloat("Image:top", itopdisc[jindex]);
+    newJet.addUserFloat("Image"+extex_+":top", itopdisc[jindex]);
+    newJet.addUserFloat("ImageMD"+extex_+":top", itopdiscMD[jindex]);
+    newJet.addUserFloat("Image"+extex_+":pho", itopdiscPho[jindex]);
+    newJet.addUserFloat("ImageMD"+extex_+":pho", itopdiscPhoMD[jindex]);
+    newJet.addUserFloat("ImageMD"+extex_+":ww", itopdiscWWMD[jindex]);
     outputs->push_back(newJet);
     jindex+=1;
   }
