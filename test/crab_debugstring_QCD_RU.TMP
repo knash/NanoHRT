@@ -22,10 +22,11 @@ config.section_('Data')
 config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 60000
-config.Data.outLFNDirBase = '/store/user/knash'
+config.Data.unitsPerJob = 30000
+config.Data.outLFNDirBase = '/store/user/knash/EOS'
 config.Data.publication = False
 config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver
 config.section_('Site')
-config.Site.storageSite = 'T2_CH_CERN'
+config.Site.storageSite = 'T3_US_Rutgers'
 config.Site.blacklist = ['T2_PL_Swierk','T1_RU_JINR','T2_US_Wisconsin']
+

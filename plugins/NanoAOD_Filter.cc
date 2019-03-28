@@ -77,7 +77,7 @@ bool NanoAOD_Filter::filter( edm::Event& iEvent, const edm::EventSetup& iSetup) 
 	}
   else return 0;
 
-
+  //std::cout<<"PASS"<<std::endl;
 
   edm::Handle<edm::View<pat::Muon>> mus;
   iEvent.getByToken(srcmu_, mus);

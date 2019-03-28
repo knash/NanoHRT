@@ -71,6 +71,8 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         pb_pathPho=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_Pho_01232018.pb'),
         pb_pathPhoMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_PhoMD_03092018.pb'),
         pb_pathWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_WWMD_03092018.pb'),
+        pb_pathW=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_Wtag_03152019.pb'),
+        pb_pathWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_WtagMD_03152019.pb'),
         extex=cms.string('')
     )
 
@@ -147,6 +149,8 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
             iPho=Var("userFloat('Image:pho')", float, doc="Image tagger score pho", precision=-1),
             iMDPho=Var("userFloat('ImageMD:pho')", float, doc="Image tagger score pho, mass decorrelated", precision=-1),
             iMDWW=Var("userFloat('ImageMD:ww')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
+            iW=Var("userFloat('Image:w')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
+            iMDW=Var("userFloat('ImageMD:w')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
 
         )
     )

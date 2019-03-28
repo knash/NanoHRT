@@ -2,12 +2,12 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: test_nanoHRT_data -n 1000 --data --eventcontent NANOAOD --datatier NANOAOD --conditions 102X_dataRun2_v8 --step NANO --nThreads 4 --era Run2_2017,run2_nanoAOD_94XMiniAODv2 --customise PhysicsTools/NanoHRT/nanoHRT_cff.nanoHRT_customizeData_METMuEGClean --filein /store/data/Run2016G/JetHT/MINIAOD/03Feb2017-v1/100000/006E7AF2-AEEC-E611-A88D-7845C4FC3B00.root --fileout file:nano_data.root --customise_commands process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) ) --no_exec
+# with command line options: 2018DATA --filein tsst --fileout file:NanoAODskim.root --data --eventcontent NANOAOD --datatier NANOAOD --conditions 102X_dataRun2_Prompt_v11 --step NANO --nThreads 4 --era Run2_2018,run2_nanoAOD_102Xv1 --customise PhysicsTools/NanoHRT/nanoHRT_cff.nanoHRT_customizeData_METMuEGClean --customise_commands process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) ) --no_exec
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('NANO',eras.Run2_2017,eras.run2_nanoAOD_94XMiniAODv2)
+process = cms.Process('NANO',eras.Run2_2018,eras.run2_nanoAOD_102Xv1)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -21,12 +21,12 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(30)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2017C/JetHT/MINIAOD/31Mar2018-v1/30000/322278A8-E038-E811-B051-9CB65482A8E8.root'),
+    fileNames = cms.untracked.vstring('/store/data/Run2018C/JetHT/MINIAOD/17Sep2018-v1/80000/7A3313B5-A16F-E046-8A25-9140E552350C.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -36,10 +36,11 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('test_nanoHRT_data nevts:1000'),
+    annotation = cms.untracked.string('2018DATA nevts:1'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
+
 
 
 # Path and EndPath definitions
@@ -62,6 +63,7 @@ outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
 outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
 outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
 
+
 # Output definition
 
 process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
@@ -71,7 +73,7 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAOD'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:nano_data.root'),
+    fileName = cms.untracked.string('file:NanoAODskim.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('filt_step')),
     outputCommands = outputCommandsHRT
 )
@@ -80,7 +82,7 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v8', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v11', '')
 
 # Path and EndPath definitions
 process.nanoAOD_step = cms.Path(process.nanoSequence)
@@ -92,7 +94,9 @@ process.schedule = cms.Schedule(process.filt_step,process.nanoAOD_step,process.e
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.
 
@@ -113,11 +117,6 @@ process =  nanoHRT_customizeData(process)
 # Customisation from command line
 
 process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) )
-
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(4)
-process.options.numberOfStreams=cms.untracked.uint32(0)
-
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)

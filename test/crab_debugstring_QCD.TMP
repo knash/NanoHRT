@@ -6,7 +6,7 @@ curset = "RSET"
 substr = curset.split('/')[0]
 print curset
 print substr
-ver ='_v6'
+ver ='_v7'
 config.section_('General')
 config.General.requestName = substr+'NanoSlimNtuples'+ver
 config.General.workArea = 'crab_projects'
@@ -28,3 +28,4 @@ config.Data.publication = False
 config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver
 config.section_('Site')
 config.Site.storageSite = 'T2_CH_CERN'
+config.Site.blacklist = ['T2_PL_Swierk','T1_RU_JINR','T2_US_Wisconsin']
