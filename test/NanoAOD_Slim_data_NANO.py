@@ -21,12 +21,12 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2016G/JetHT/MINIAOD/03Feb2017-v1/100000/006E7AF2-AEEC-E611-A88D-7845C4FC3B00.root'),
+    fileNames = cms.untracked.vstring('/store/data/Run2016D/JetHT/MINIAOD/17Jul2018-v1/50000/4C99F90C-0C9B-E811-ACC8-68CC6EA5BE0A.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -41,6 +41,28 @@ process.configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.19 $')
 )
 
+
+
+# Path and EndPath definitions
+process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
+			srcAK4 = cms.InputTag("slimmedJetsPuppi"),
+			srcAK8 = cms.InputTag("slimmedJetsAK8"),
+			srcmu = cms.InputTag("slimmedMuons"),
+			srcele = cms.InputTag("slimmedElectrons"))
+
+process.filt_step = cms.Path(process.NanoAOD_Filter)
+
+
+outputCommandsHRT = process.NANOAODEventContent.outputCommands
+outputCommandsHRT.append("drop *")
+outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
+outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
+
 # Output definition
 
 process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
@@ -51,7 +73,8 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
         filterName = cms.untracked.string('')
     ),
     fileName = cms.untracked.string('file:nano_data.root'),
-    outputCommands = process.NANOAODEventContent.outputCommands
+    SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('filt_step')),
+    outputCommands = outputCommandsHRT
 )
 
 # Additional output definition
@@ -73,7 +96,7 @@ process.NANOAODoutput.SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstr
 process.NANOAODoutput_step = cms.EndPath(process.NANOAODoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.nanoAOD_step,process.endjob_step,process.NANOAODoutput_step)
+process.schedule = cms.Schedule(process.filt_step,process.nanoAOD_step,process.endjob_step,process.NANOAODoutput_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

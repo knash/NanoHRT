@@ -43,12 +43,31 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 
+
 # Path and EndPath definitions
 process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
 			srcAK4 = cms.InputTag("slimmedJetsPuppi"),
-			srcAK8 = cms.InputTag("slimmedJetsAK8"))
+			srcAK8 = cms.InputTag("slimmedJetsAK8"),
+			srcmu = cms.InputTag("slimmedMuons"),
+			srcele = cms.InputTag("slimmedElectrons"))
 
 process.filt_step = cms.Path(process.NanoAOD_Filter)
+
+
+
+outputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
+outputCommandsHRT.append("drop *")
+outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_genParticleTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_genWeightsTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
+outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
+
+
 
 # Output definition
 process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
@@ -58,9 +77,9 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAODSIM'),
         filterName = cms.untracked.string('')
     ),
-    SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring("filt_step")),
     fileName = cms.untracked.string('file:nano_mc.root'),
-    outputCommands = process.NANOAODSIMEventContent.outputCommands
+    SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('filt_step')),
+    outputCommands = outputCommandsHRT
 )
 
 #outputCommands.append(drop)
