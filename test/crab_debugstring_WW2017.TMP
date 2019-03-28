@@ -4,8 +4,6 @@ config = config()
 
 curset = "RSET" 
 substr = curset.split('/')[0]
-substr1 = curset.split('/')[1]
-substr+=substr1
 print curset
 print substr
 ver ='_v7'
@@ -16,19 +14,18 @@ config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_Slim_data2018_NANO10_2_9.py'
-config.JobType.numCores = 4
+config.JobType.psetName = 'NanoAOD_Slim_mc2017_NANO10_2_9.py'
+config.JobType.numCores = 2
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 2500
 config.section_('Data')
 config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 50000
+config.Data.unitsPerJob = 10000
 config.Data.outLFNDirBase = '/store/user/knash'
 config.Data.publication = False
-config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver+substr1
-config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
+config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver
 config.section_('Site')
 config.Site.storageSite = 'T2_CH_CERN'
 config.Site.blacklist = ['T2_PL_Swierk','T1_RU_JINR','T2_US_Wisconsin']
