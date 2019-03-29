@@ -84,15 +84,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v4', '')
 
 # Path and EndPath definitions
-process.NFilter = cms.EDFilter('NanoAOD_Filter',
-				srcAK4 = cms.InputTag("slimmedJetsPuppi"),
-				srcAK8 = cms.InputTag("slimmedJetsAK8"))
-
-
-
-process.nanoAOD_step = cms.Path(process.NFilter*process.nanoSequence)
+process.nanoAOD_step = cms.Path(process.nanoSequence)
 process.endjob_step = cms.EndPath(process.endOfProcess)
-process.NANOAODoutput.SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('NFilter'))
 process.NANOAODoutput_step = cms.EndPath(process.NANOAODoutput)
 
 # Schedule definition
@@ -111,12 +104,15 @@ from PhysicsTools.NanoAOD.nano_cff import nanoAOD_customizeData
 
 #call to customisation function nanoAOD_customizeData imported from PhysicsTools.NanoAOD.nano_cff
 process = nanoAOD_customizeData(process)
+print dir(process)
+process.imageJetsAK8Puppi.sdmcoll=cms.string('TEST')
+
 
 # Automatic addition of the customisation function from PhysicsTools.NanoHRT.nanoHRT_cff
-from PhysicsTools.NanoHRT.nanoHRT_cff import nanoHRT_customizeData_METMuEGClean 
+from PhysicsTools.NanoHRT.nanoHRT_cff import nanoHRT_customizeData
 
 #call to customisation function nanoHRT_customizeData_METMuEGClean imported from PhysicsTools.NanoHRT.nanoHRT_cff
-process = nanoHRT_customizeData_METMuEGClean(process)
+process =  nanoHRT_customizeData(process)
 
 # End of customisation functions
 

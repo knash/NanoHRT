@@ -27,7 +27,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:///afs/cern.ch/user/k/knash/Workspace/NanoAODskim/CMSSW_9_4_11_cand1/src/PhysicsTools/NanoHRT/test/ZP.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv3/TT_Mtt-1000toInf_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/610000/AE2F07BA-E03A-E911-AB02-1866DA87A864.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
