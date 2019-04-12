@@ -10,7 +10,7 @@ print curset
 print substr
 ver ='_v7'
 config.section_('General')
-config.General.requestName = substr+'recov'+'NanoSlimNtuples'+ver
+config.General.requestName = substr+'recov1'+'NanoSlimNtuples'+ver
 config.General.workArea = 'crab_projects'
 config.General.transferLogs = False
 config.General.transferOutputs = True
@@ -28,8 +28,8 @@ config.Data.splitting = 'EventAwareLumiBased'
 config.Data.unitsPerJob = 80000
 config.Data.outLFNDirBase = '/store/user/knash'
 config.Data.publication = False
-config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver+substr1+'recov'
-config.Data.lumiMask = 'crab_projects/crab_'+substr+'NanoSlimNtuples'+ver+'/results/notFinishedLumis.json'
+config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver+substr1+'recov1'
+config.Data.lumiMask = 'crab_projects/crab_'+substr+'recov'+'NanoSlimNtuples'+ver+'/results/notFinishedLumis.json'
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = 'T2_CH_CERN'
