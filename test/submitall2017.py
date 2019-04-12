@@ -29,12 +29,13 @@ tosubmitWW = [
 
 
 tosubmitQCD = [
+"QCD_HT700to1000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/MINIAODSIM",
 #"QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM",
 #"QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM",
 #"QCD_HT2000toInf_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM",
 #"WJetsToQQ_HT400to600_qc19_3j_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
 #"WJetsToQQ_HT600to800_qc19_3j_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
-"WJetsToQQ_HT-800toInf_qc19_3j_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
+#"WJetsToQQ_HT-800toInf_qc19_3j_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
 #"GJets_HT-400To600_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
 #"GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM",
 ]
@@ -61,7 +62,7 @@ for iset in tosubmit:
 	print iset
 	commands.append("echo "+ iset)
 	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring.TMP > "+tempname)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_SIG2017.TMP > "+tempname)
 	#commands.append("crab submit "+tempname)
 
 for iset in tosubmitWW:
@@ -69,7 +70,7 @@ for iset in tosubmitWW:
 	print iset
 	commands.append("echo "+ iset)
 	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_WW.TMP > "+tempname)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_WW2017.TMP > "+tempname)
 	#commands.append("crab submit "+tempname)
 
 
@@ -78,7 +79,7 @@ for iset in tosubmitQCD:
 	print iset
 	commands.append("echo "+ iset)
 	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_QCD.TMP > "+tempname)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_QCD2017_RU.TMP > "+tempname)
         commands.append("crab submit "+tempname)
 
 
@@ -87,7 +88,7 @@ for iset in tosubmitTT:
 	print iset
 	commands.append("echo "+ iset)
 	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_TT.TMP > "+tempname)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_TT2017.TMP > "+tempname)
         #commands.append("crab submit "+tempname)
 
 
@@ -96,10 +97,17 @@ for iset in tosubmitDATA:
 	iset = iset.replace("/","\/")
 	print iset
 	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
+	tempname = "crab3_TEMP"+iset.split("/")[0]+iset.split("/")[1]+".py"
 	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_DATA2017.TMP > "+tempname)
         #commands.append("crab submit "+tempname)
 
+for iset in tosubmitDATA:
+	iset = iset.replace("/","\/")
+	print iset
+	commands.append("echo "+ iset)
+	tempname = "crab3_TEMP"+iset.split("/")[0]+iset.split("/")[1]+"recov.py"
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_DATA2017_recov.TMP > "+tempname)
+        #commands.append("crab submit "+tempname)
 
 
 for s in commands :

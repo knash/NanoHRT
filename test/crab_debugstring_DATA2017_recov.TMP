@@ -4,17 +4,19 @@ config = config()
 
 curset = "RSET" 
 substr = curset.split('/')[0]
+substr1 = curset.split('/')[1]
+substr+=substr1
 print curset
 print substr
 ver ='_v7'
 config.section_('General')
-config.General.requestName = substr+'NanoSlimNtuples'+ver
+config.General.requestName = substr+'recov'+'NanoSlimNtuples'+ver
 config.General.workArea = 'crab_projects'
 config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_Slim_mc2016_NANO.py'
+config.JobType.psetName = 'NanoAOD_Slim_data2017_NANO10_2_9.py'
 config.JobType.numCores = 2
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 5000
@@ -23,10 +25,11 @@ config.section_('Data')
 config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 20000
+config.Data.unitsPerJob = 80000
 config.Data.outLFNDirBase = '/store/user/knash'
 config.Data.publication = False
-config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver
+config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver+substr1+'recov'
+config.Data.lumiMask = 'crab_projects/crab_'+substr+'NanoSlimNtuples'+ver+'/results/notFinishedLumis.json'
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = 'T2_CH_CERN'
