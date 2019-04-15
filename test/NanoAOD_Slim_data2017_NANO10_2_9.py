@@ -21,12 +21,14 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2017C/JetHT/MINIAOD/31Mar2018-v1/30000/322278A8-E038-E811-B051-9CB65482A8E8.root'),
+    fileNames = cms.untracked.vstring('/store/data/Run2017D/JetHT/MINIAOD/31Mar2018-v1/60000/E68B6D32-CF39-E811-97C3-0CC47A7C34C4.root'),
+    #firstEvent = cms.untracked.uint32(867013995),
+    #firstRun  = cms.untracked.uint32(302393),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -115,7 +117,7 @@ process =  nanoHRT_customizeData(process)
 process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) )
 
 #Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(2)
+process.options.numberOfThreads=cms.untracked.uint32(1)
 process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # Add early deletion of temporary data products to reduce peak memory need
