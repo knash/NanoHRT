@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 
-curset = "RSET" 
+curset = "JetHT/Run2018B-17Sep2018-v1/MINIAOD" 
 substr = curset.split('/')[0]
 substr1 = curset.split('/')[1]
 substr+=substr1
@@ -16,8 +16,8 @@ config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_Slim_data2017_NANO10_2_9.py'
-config.JobType.numCores = 2
+config.JobType.psetName = 'NanoAOD_Slim_data2018_NANO10_2_9.py'
+config.JobType.numCores = 4
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 5000
 config.JobType.allowUndistributedCMSSW = True
@@ -29,8 +29,8 @@ config.Data.unitsPerJob =40
 config.Data.outLFNDirBase = '/store/user/knash'
 config.Data.publication = False
 config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver+substr1
-config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt'
+config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = 'T2_CH_CERN'
-config.Site.whitelist = ["T2_US*"] 
+config.Site.whitelist = ["T2_US*"]
