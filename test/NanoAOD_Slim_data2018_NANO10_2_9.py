@@ -26,7 +26,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2018C/JetHT/MINIAOD/17Sep2018-v1/80000/7A3313B5-A16F-E046-8A25-9140E552350C.root'),
+    fileNames = cms.untracked.vstring('/store/data/Run2018C/JetHT/MINIAOD/17Sep2018-v1/00000/494EE019-B4CE-7A4B-9383-746DEEA6896E.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -82,7 +82,7 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v11', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Sep2018Rereco_v1', '')
 
 # Path and EndPath definitions
 process.nanoAOD_step = cms.Path(process.nanoSequence)
@@ -94,9 +94,7 @@ process.schedule = cms.Schedule(process.filt_step,process.nanoAOD_step,process.e
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(4)
-process.options.numberOfStreams=cms.untracked.uint32(0)
+
 
 # customisation of the process.
 
@@ -117,6 +115,11 @@ process =  nanoHRT_customizeData(process)
 # Customisation from command line
 
 process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) )
+
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)

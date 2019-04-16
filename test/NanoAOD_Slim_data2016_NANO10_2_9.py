@@ -93,10 +93,6 @@ process.schedule = cms.Schedule(process.filt_step,process.nanoAOD_step,process.e
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(4)
-process.options.numberOfStreams=cms.untracked.uint32(0)
-
 # customisation of the process.
 
 # Automatic addition of the customisation function from PhysicsTools.NanoAOD.nano_cff
@@ -114,6 +110,13 @@ process = nanoAOD_customizeData(process)
 # End of customisation functions
 
 # Customisation from command line
+
+process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) )
+
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+
 
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete

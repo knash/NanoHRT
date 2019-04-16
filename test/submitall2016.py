@@ -97,7 +97,7 @@ for iset in tosubmitDATA:
 	iset = iset.replace("/","\/")
 	print iset
 	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
+	tempname = "crab3_TEMP"+iset.split("/")[0]+iset.split("/")[1]+".py"
 	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_DATA2016.TMP > "+tempname)
 #        commands.append("crab submit "+tempname)
 
