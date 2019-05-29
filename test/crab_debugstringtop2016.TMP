@@ -6,7 +6,7 @@ curset = "RSET"
 substr = curset.split('/')[0]
 print curset
 print substr
-ver ='_QCDv8'
+ver ='_2016topv8'
 
 config.General.requestName = substr+'imagednn'+ver
 config.General.workArea = 'crab_projects'
@@ -14,7 +14,9 @@ config.General.transferOutputs = True
 config.General.transferLogs = True
 
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'test_nanoHRT_mc_102X_NANO.py'
+config.JobType.psetName = 'test_nanoHRT_mc_NANO.py'
+config.JobType.pyCfgParams = ['Settype=top','Recordevery=1']
+config.JobType.allowUndistributedCMSSW = True
 ncore=4
 config.JobType.numCores = ncore
 outf = []
@@ -23,14 +25,12 @@ for ifi in xrange(ncore):
 	outf.append("debugoutHotVR"+str(ifi)+".dat")
 print outf
 config.JobType.outputFiles = outf
-config.JobType.pyCfgParams = ['Settype=QCD','Recordevery=3']
-config.JobType.allowUndistributedCMSSW = True
 config.JobType.maxMemoryMB = 5000
 
 config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 50000
+config.Data.unitsPerJob = 4000
 config.Data.outLFNDirBase = '/store/user/knash/EOS'
 config.Data.publication = False
 config.Data.outputDatasetTag = 'debugtext'+ver

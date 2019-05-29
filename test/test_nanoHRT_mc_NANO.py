@@ -45,16 +45,17 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(1000)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToTT_M-3000_W-30_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/D6D620EF-73BE-E611-8BFB-B499BAA67780.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/110000/9484AC5F-5EB7-E611-9410-00266CF94D50.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R300_WW_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190123_161539/0000/B2G-RunIIFall17DRPremix-00528_583.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R200_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190120_224229/0000/B2G-RunIIFall17DRPremix-00528_10.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/WkkToWRadionToWWW_M3000-R0-5-TuneCUEP8M1_13TeV-madgraph/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/110000/D2A5E61D-06CF-E811-9145-842B2B6F550A.root'),
-    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_9_4_12/src/PhysicsTools/NanoHRT/test/kkwww5000_06.root'),
+    #fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_9_4_12/src/PhysicsTools/NanoHRT/test/kkwww5000_06.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -78,6 +79,7 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAODSIM'),
         filterName = cms.untracked.string('')
     ),
+    SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('f1')),
     fileName = cms.untracked.string('file:nano_mc.root'),
     outputCommands = process.NANOAODSIMEventContent.outputCommands
 )
@@ -88,11 +90,6 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v2', '')
 
-# Path and EndPath definitions
-process.nanoAOD_step = cms.Path(process.nanoSequenceMC)
-process.endjob_step = cms.EndPath(process.endOfProcess)
-process.NANOAODSIMoutput_step = cms.EndPath(process.NANOAODSIMoutput)
-
 
 
 process.Random_Filter = cms.EDFilter("Random_Filter",saveevery=cms.untracked.int32(options.Recordevery))
@@ -100,14 +97,20 @@ process.f1 = cms.Path(process.Random_Filter)
 
 
 
+# Path and EndPath definitions
+process.nanoAOD_step = cms.Path(process.Random_Filter*process.nanoSequenceMC)
+process.endjob_step = cms.EndPath(process.endOfProcess)
+process.NANOAODSIMoutput_step = cms.EndPath(process.NANOAODSIMoutput)
+
+process.dump=cms.EDAnalyzer('EventContentAnalyzer')
+process.p = cms.Path(process.dump)
 # Schedule definition
-process.schedule = cms.Schedule(process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
+#process.schedule = cms.Schedule(process.nanoAOD_step,process.p,process.endjob_step,process.NANOAODSIMoutput_step)
+process.schedule = cms.Schedule(process.f1,process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
+
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(4)
-process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.
 
@@ -128,6 +131,13 @@ process = nanoHRT_customizeMC(process,Settype)
 # Customisation from command line
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
+
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+
+
+
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)

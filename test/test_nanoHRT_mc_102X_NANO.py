@@ -46,7 +46,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(20)
+    input = cms.untracked.int32(200)
 )
 
 # Input source
@@ -54,8 +54,13 @@ process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToTT_M-3000_W-30_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/D6D620EF-73BE-E611-8BFB-B499BAA67780.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R300_WW_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190123_161539/0000/B2G-RunIIFall17DRPremix-00528_583.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R200_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190120_224229/0000/B2G-RunIIFall17DRPremix-00528_10.root'),
-    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_10_2_9/src/PhysicsTools/NanoHRT/test/kkwww4000_06.root'),
-    secondaryFileNames = cms.untracked.vstring()
+    #fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_10_2_9/src/PhysicsTools/NanoHRT/test/kkwww4000_06.root'),
+    #fileNames = cms.untracked.vstring('file:///afs/cern.ch/user/k/knash/Workspace/NanoHRT/CMSSW_10_2_9/src/PhysicsTools/NanoHRT/test/Failfile.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M1000_W100_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/AE3459E4-B525-E911-817F-0CC47AACFCDE.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/F450DBD1-7841-E811-BB7A-B499BAA67BB8.root'),
+    secondaryFileNames = cms.untracked.vstring(),
+    #firstEvent = cms.untracked.uint32(820)
+
 )
 
 process.options = cms.untracked.PSet(
@@ -71,6 +76,13 @@ process.configurationMetadata = cms.untracked.PSet(
 
 # Output definition
 
+
+outputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
+outputCommandsHRT.append("drop *")
+outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
+
+
 process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
     compressionLevel = cms.untracked.int32(9),
@@ -78,8 +90,9 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAODSIM'),
         filterName = cms.untracked.string('')
     ),
+    SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('f1')),
     fileName = cms.untracked.string('file:nano_mc.root'),
-    outputCommands = process.NANOAODSIMEventContent.outputCommands
+    outputCommands = outputCommandsHRT
 )
 
 # Additional output definition
@@ -97,18 +110,19 @@ process.f1 = cms.Path(process.Random_Filter)
 
 
 # Path and EndPath definitions
-process.nanoAOD_step = cms.Path(process.nanoSequenceMC)
+process.nanoAOD_step = cms.Path(process.Random_Filter*process.nanoSequenceMC)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.NANOAODSIMoutput_step = cms.EndPath(process.NANOAODSIMoutput)
 
+process.dump=cms.EDAnalyzer('EventContentAnalyzer')
+process.p = cms.Path(process.dump)
 # Schedule definition
-process.schedule = cms.Schedule(process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
+#process.schedule = cms.Schedule(process.nanoAOD_step,process.p,process.endjob_step,process.NANOAODSIMoutput_step)
+process.schedule = cms.Schedule(process.f1,process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
+
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(4)
-process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.
 
@@ -129,6 +143,13 @@ process = nanoHRT_customizeMC(process,Settype)
 # Customisation from command line
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
+
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+
+
+
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)

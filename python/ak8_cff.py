@@ -34,42 +34,59 @@ def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
     # DeepAK8
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
     from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsProbs
-    updateJetCollection(
+    '''updateJetCollection(
         process,
         jetSource=cms.InputTag('packedPatJetsAK8PFPuppiSoftDrop'),
         rParam=0.8,
         jetCorrections=('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
         btagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
         postfix='AK8WithPuppiDaughters',
-    )
+    )'''
+
+    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags']
+
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
+		updateCollection='packedPatJetsAK8PFPuppiSoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
+		updateCollectionSubjets='selectedPatJetsAK8PFPuppiSoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
+		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix='AK8WithPuppiDaughters')
+
+
+
+
 
     # BEST
     process.boostedEventShapeJetsAK8Puppi = cms.EDProducer('BESTProducer',
-        src=cms.InputTag('selectedUpdatedPatJetsAK8WithPuppiDaughters'),
+        src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughters'),
         config_path=cms.FileInPath('PhysicsTools/NanoHRT/data/BEST/config.txt'),
         dnn_path=cms.FileInPath('PhysicsTools/NanoHRT/data/BEST/BEST_6bin_CHS.json'),
     )
 
 
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-
-    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags']
+    '''
     updateJetCollection(
      process,
      labelName = 'UpdatebtagAK8PFPuppiSoftDropSubjets',
      jetSource = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropSubjets'),
-     jetCorrections = ('AK4PFchs', cms.vstring([]), 'None'),
+     jetCorrections = ('AK4PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
      pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
      svSource = cms.InputTag('slimmedSecondaryVertices'),
      muSource = cms.InputTag('slimmedMuons'),
      elSource = cms.InputTag('slimmedElectrons'),
+     explicitJTA = True,         
+     svClustering = False,  
+     rParam = 0.8,
+     #fatJets = cms.InputTag('boostedEventShapeJetsAK8Puppi'), 
+     algo = 'ak',
      btagDiscriminators = Bdiscs
      )
-
+    '''
 
     process.imageJetsAK8Puppi = cms.EDProducer('ImageProducer',
         src=cms.InputTag('boostedEventShapeJetsAK8Puppi'),
-        sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagAK8PFPuppiSoftDropSubjets'),
+        sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughtersSoftDropPacked'),
         sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
         pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
         pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
@@ -154,6 +171,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
             bestB=Var("userFloat('BEST:dnn_b')", float, doc="Boosted Event Shape Tagger score B", precision=-1),
             itop=Var("userFloat('Image:top')", float, doc="Image tagger score top", precision=-1),
             iMDtop=Var("userFloat('ImageMD:top')", float, doc="Image tagger score top", precision=-1),
+            itopdr=Var("userFloat('Image:DRave')", float, doc="Image tagger score top", precision=-1),
 
         )
     )
