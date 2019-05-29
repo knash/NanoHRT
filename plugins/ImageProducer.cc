@@ -166,7 +166,7 @@ void ImageProducer::beginStream(edm::StreamID ID)
 	else
 		{
 		nsubs=2;
-	  	textout.open("debugout"+std::to_string(streamnum_)+".dat");
+	  	textout.open("debugoutAK8"+std::to_string(streamnum_)+".dat");
 		}
 	}
 

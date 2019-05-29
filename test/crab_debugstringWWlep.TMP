@@ -19,7 +19,7 @@ ncore=4
 config.JobType.numCores = ncore
 outf = []
 for ifi in xrange(ncore):
-	outf.append("debugout"+str(ifi)+".dat")
+	outf.append("debugoutAK8"+str(ifi)+".dat")
 	outf.append("debugoutHotVR"+str(ifi)+".dat")
 print outf
 config.JobType.outputFiles = outf
