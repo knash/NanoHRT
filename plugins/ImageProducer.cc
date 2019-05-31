@@ -122,6 +122,7 @@ template <typename T> std::string to_string_pr(const T a_value, const int n = 10
 
 void ImageProducer::threadwrite(std::ofstream & wfile,std::string towrite)
     {
+        std::lock_guard<std::mutex> lock(write_mutex);
 	wfile<<towrite<<"\n";
 	wfile.flush();
 
@@ -205,21 +206,30 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
   	int ttval=1;
 	std::pair<int,float> matched(0,-10.0);
-	//std::cout << extex_ << std::endl;
 
-	if(stype_!="QCD")
-		{  	
-			ttval=0;
-			//if (stype_="WW" and isHotVR)
-			float mergeval=0.8;
-			if(isHotVR) mergeval=1.2;
-			//std::cout<<"stype_ "<<stype_<<" extex_ "<<extex_<<" mergeval "<<mergeval<<std::endl;
-			matched = signalmatch(curtlv, genpartsvec,stype_,mergeval);
-			//std::cout<<"match "<<matched.first<<std::endl;
-			
-			DRaves[ntopinit]=matched.second;
-			if (not matched.first) continue;
-		}
+	//if (stype_="WW" and isHotVR)
+	float mergeval=0.8;
+	if(isHotVR) mergeval=1.2;
+	//std::cout<<"stype_ "<<stype_<<" extex_ "<<extex_<<" mergeval "<<mergeval<<std::endl;
+
+	if(stype_!="QCD") 	{
+				matched = signalmatch(curtlv, genpartsvec,stype_,mergeval);			
+				DRaves[ntopinit]=matched.second;
+				ttval=0;
+				if (not matched.first) continue;
+				matched.first+=3;
+
+				}
+	else 			{
+				//std::cout<<"partonFlavour "<<AK8pfjet.partonFlavour()<<std::endl;
+				if(abs(AK8pfjet.partonFlavour())<4  && abs(AK8pfjet.partonFlavour())>0)matched.first=0;
+				else if(abs(AK8pfjet.partonFlavour())==4)matched.first=1;
+				else if(abs(AK8pfjet.partonFlavour())==5)matched.first=2;
+				else if(abs(AK8pfjet.partonFlavour())==21)matched.first=3;
+				else continue;
+				DRaves[ntopinit]=matched.second;
+				}				
+	//std::cout<<"TT "<<ttval<<" "<< matched.first << std::endl;
 
   	itopdisc[ntopinit]=-1.0;
   	itopdiscMD[ntopinit]=-1.0;
@@ -297,34 +307,28 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	int nsjh = 0;
 	float mmin = 0.;
 	float fpt = 0.;
+
+	TLorentzVector gjet;
+        std::vector<pat::Jet> sjvec;
+	//auto sjhv =  AK8pfjet.subjets();
+  	for (const auto &subjet : *subjets)
+		{
+			sjvec.push_back(subjet);
+			sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
+			//std::cout<<sublv.DeltaR(curtlv)<<std::endl;
+			if (sublv.DeltaR(curtlv)>mergeval || sjlist.size()>=(nsubs*6)) continue;
+			if(sjlist.size()==0)gjet=sublv;
+			else gjet+=sublv;
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probuds"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
+			
+		}
 	if(isHotVR)	
 		{
-		TLorentzVector gjet;
-        	std::vector<pat::Jet> sjvec;
-		//auto sjhv =  AK8pfjet.subjets();
-  		for (const auto &subjet : *subjets)
-			{
-				sjvec.push_back(subjet);
-				sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
-				//std::cout<<sublv.DeltaR(curtlv)<<std::endl;
-				if (sublv.DeltaR(curtlv)>0.8 || sjlist.size()>=(nsubs*6)) continue;
-				if(sjlist.size()==0)gjet=sublv;
-				else gjet+=sublv;
-				sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
-				sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb"));
-				sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probuds"));
-				sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
-				sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
-				sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
-											
-
-	  		//for (const auto &clsubjet : sjhv)
-			//	{
-			//	if(reco::deltaR2( clsubjet->p4(),subjet.p4())<1e-5) 	{
-										
-				
-			}
-
 		nsjh = sjvec.size();
 		mmin = 0.;
 		fpt = 0.;
@@ -341,24 +345,8 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//std::cout<<"M "<<gmass<<std::endl;
 
 		}
-
-
-	else	{
-	  	for (const auto &subjet : *subjets)
-			{
-	  		//const auto constituents = subjet.getPFConstituents();
-		        //std::cout<<"stdau3 "<<constituents.size()<<std::endl;
-			sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
-			if (sublv.DeltaR(curtlv)>0.8 || sjlist.size()>=(nsubs*6)) continue;
-			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
-			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb"));
-			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probuds"));
-			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
-			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
-			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
-			}
-		gmass=fabs(AK8pfjet.userFloat(sdmcoll_));
-		}
+	else	gmass=fabs(AK8pfjet.userFloat(sdmcoll_));
+		
 			
 	uint sjlsize=sjlist.size();
 	//std::cout<<"bef"<<std::endl;
@@ -482,14 +470,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//else index=i;
 		*d = sjlist[i];	
 		}	
-	
-	//convert image to tensorflow.  first create tensor of zeros, then fill.  Probably not optimal quite yet
-	tensorflow::Tensor input_image(tensorflow::DT_FLOAT, tensorflow::TensorShape({ 1,37, 37 , ncolors }));
-	auto input_map = input_image.tensor<float, 4>();
-
-        std::lock_guard<std::mutex> lock(write_mutex);
-
-
 
 	//Debug printing to ascii
 	std::string textevent = "[[";
@@ -525,63 +505,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	textevent+="]";
 
 	threadwrite(textout,textevent);
-
-	for(uint i=0;i < 37;++i)
-		{
-		for(uint j=0;j < 37;++j)
-			{
-			for(uint k=0;k < ncolors;++k)
-				{
-					input_map(0,i,j,k) = 0.0;
-				}
-				
-			}
-			
-		}
-	
-	for(uint i=0;i < indexedimage.size();++i)
-		{
-		for(uint j=0;j < indexedimage[i].second.size();++j)
-			{
-				input_map(0,indexedimage[i].first[0], indexedimage[i].first[1], j) = indexedimage[i].second[j];
-			}	
-		}
-
-
-	if(false)
-	{
-	//Actually run tensorflow
-  	tensorflow::Status status = tfsession_->Run({ { "input_1", input_image }, {"input_2", input_b} },{ "k2tfout_0" }, {}, &tfoutput);
-
-	if (!status.ok()) 
-		{
-		std::cout << "Tensorflow Failed:" << std::endl;
-  		std::cout << status.ToString() << "\n";
-  		return ;
-		}	
-        float result_top = tfoutput[0].flat<float>()(0);
-        float result_qcd = tfoutput[0].flat<float>()(1);
-
-	itopdisc[ntopinit]=result_top/(result_top+result_qcd);
-
-
-
-  	tensorflow::Status statusMD = tfsessionMD_->Run({ { "input_1", input_image }, {"input_2", input_b} },{ "k2tfout_0" }, {}, &tfoutputMD);
-
-	if (!statusMD.ok()) 
-		{
-		std::cout << "Tensorflow Failed:" << std::endl;
-  		std::cout << status.ToString() << "\n";
-  		return ;
-		}	
-        float result_topMD = tfoutputMD[0].flat<float>()(0);
-        float result_qcdMD = tfoutputMD[0].flat<float>()(1);
-
-	itopdiscMD[ntopinit]=result_topMD/(result_topMD+result_qcdMD);
-
-	}
-
-
   }
 
 

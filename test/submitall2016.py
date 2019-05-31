@@ -197,7 +197,7 @@ for iset in tosubmittop:
 	print iset
 	commands.append("echo "+ iset)
 	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstringtop2016.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 
 for iset in tosubmitW:
@@ -205,7 +205,7 @@ for iset in tosubmitW:
 	print iset
 	commands.append("echo "+ iset)
 	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_W2016.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 
 for iset in tosubmitQCD:

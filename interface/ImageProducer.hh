@@ -4,6 +4,49 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 		int fulltopmatch=0;
 		float maxdr=-1;
 		float avedr=-1;
+		/*
+		if(stype=="QCD")
+			{
+		  	for (auto &gp : *genpartsvec)
+				{
+				int gpid = gp.pdgId();	
+
+				TLorentzVector gplv;
+				gplv.SetPtEtaPhiM(gp.pt(),gp.eta(),gp.phi(),gp.mass());
+				if(gplv.DeltaR(curtlv)<0.6)
+					{
+					std::cout<<gplv.Pt()<<" "<<gpid<<" M "<<gp.mother()->pdgId()<<std::endl;
+					if (abs(gpid)<=3)return std::pair<int,float>(1,0.0);
+					if (abs(gpid)==4)return std::pair<int,float>(2,0.0);
+					if (abs(gpid)==5)return std::pair<int,float>(3,0.0);
+					if (abs(gpid)==21)	{
+								std::cout<<"GLU! "<<std::endl;
+								auto gpdau = &gp; 
+								while(fulltopmatch==0)	{
+											if(gpdau->numberOfDaughters()==1) 	{
+															
+																gpdau = dynamic_cast<const reco::GenParticle*>(gpdau->daughter(0));
+																continue;
+																}
+											if(gpdau->numberOfDaughters()>1) 	{
+																std::cout<< gpdau->daughter(0)->pdgId()<<" "<< gpdau->daughter(0)->pdgId()<<std::endl;
+																if(abs( gpdau->daughter(0)->pdgId())==4 or abs( gpdau->daughter(1)->pdgId())==4)return std::pair<int,float>(2,0.0);
+																else if(abs( gpdau->daughter(0)->pdgId())==5 or abs( gpdau->daughter(1)->pdgId())==4)return std::pair<int,float>(3,0.0);
+																else return std::pair<int,float>(4,0.0);
+																}
+								
+								
+											}
+								}
+
+						
+					}
+				}
+			}//stype
+		*/
+
+
+
 		if(stype=="top")
 			{
 
@@ -94,7 +137,12 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 								maxdr=std::max(std::max(gpq1lv.DeltaR(gpq2lv),gpblv.DeltaR(gpq1lv)),gpblv.DeltaR(gpq2lv));
 								avedr=(gpq1lv.DeltaR(gpq2lv)+gpblv.DeltaR(gpq1lv)+gpblv.DeltaR(gpq2lv))/3.0;
 								//std::cout<<curtlv.DeltaR(gpq1lv)<<" "<<curtlv.DeltaR(gpq2lv)<<std::endl;
-								if ((curtlv.DeltaR(gpq1lv)<mergeval) && (curtlv.DeltaR(gpq2lv)<mergeval))fulltopmatch=1;
+								if ((curtlv.DeltaR(gpq1lv)<mergeval) && (curtlv.DeltaR(gpq2lv)<mergeval))
+									{
+									//std::cout<<"2Fs "<<abs(gpw->daughter(0)->pdgId())<<"," <<abs(gpw->daughter(1)->pdgId())<<std::endl;
+									fulltopmatch=1;
+									if(abs(gpw->daughter(0)->pdgId())==4 || abs(gpw->daughter(1)->pdgId())==4)fulltopmatch=3;
+									}
 								else if ((curtlv.DeltaR(gpq1lv)<mergeval) || (curtlv.DeltaR(gpq2lv)<mergeval))fulltopmatch=2;
 								else return std::pair<int,float>(false,avedr);
 								}
@@ -271,7 +319,7 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 						//std::cout<<"curw1 "<<gpw1->pdgId()<<std::endl;
 						
 						if(gpw0->numberOfDaughters()==1) gpw0=gpw0->daughter(0);	
-						else
+						else if (found0==false)
 							{
 							
 							//std::cout<<"twodecw0 "<<gpw0->daughter(0)->pdgId()<<","<<gpw0->daughter(1)->pdgId()<<std::endl;
@@ -281,38 +329,42 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 							else if ((abs(gpw0->daughter(0)->pdgId())<6) && (abs(gpw0->daughter(1)->pdgId())<6)) 
 								{
 								found0=true;
-								TLorentzVector gpq1lv;
-								gpq1lv.SetPtEtaPhiM(gpw0->daughter(0)->pt(),gpw0->daughter(0)->eta(),gpw0->daughter(0)->phi(),gpw0->daughter(0)->mass());
+								TLorentzVector gp0q1lv;
+								gp0q1lv.SetPtEtaPhiM(gpw0->daughter(0)->pt(),gpw0->daughter(0)->eta(),gpw0->daughter(0)->phi(),gpw0->daughter(0)->mass());
 
-								TLorentzVector gpq2lv;
-								gpq2lv.SetPtEtaPhiM(gpw0->daughter(1)->pt(),gpw0->daughter(1)->eta(),gpw0->daughter(1)->phi(),gpw0->daughter(1)->mass());
+								TLorentzVector gp0q2lv;
+								gp0q2lv.SetPtEtaPhiM(gpw0->daughter(1)->pt(),gpw0->daughter(1)->eta(),gpw0->daughter(1)->phi(),gpw0->daughter(1)->mass());
 
+								//std::cout<<"P10 "<<gp0q1lv.Eta()<<std::endl;
+								//std::cout<<"P11 "<<gp0q2lv.Eta()<<std::endl;
 
-								alltlvs.push_back(gpq1lv);
-								alltlvs.push_back(gpq2lv);
+								alltlvs.push_back(gp0q1lv);
+								alltlvs.push_back(gp0q2lv);
 								}
 							else return std::pair<int,float>(false,avedr);
 							
 							}
 													
 						if(gpw1->numberOfDaughters()==1) gpw1=gpw1->daughter(0);	
-						else
+						else if (found1==false)
 							{
+							
 							//std::cout<<"twodecw1 "<<gpw1->daughter(0)->pdgId()<<","<<gpw1->daughter(1)->pdgId()<<std::endl;
 							if((abs(gpw1->daughter(0)->pdgId())==24)) gpw1=gpw1->daughter(0);	
 							else if((abs(gpw1->daughter(1)->pdgId())==24)) gpw1=gpw1->daughter(1);
 							else if ((abs(gpw1->daughter(0)->pdgId())<6) && (abs(gpw1->daughter(1)->pdgId())<6)) 
 								{
 								found1=true;
-								TLorentzVector gpq1lv;
-								gpq1lv.SetPtEtaPhiM(gpw1->daughter(0)->pt(),gpw1->daughter(0)->eta(),gpw1->daughter(0)->phi(),gpw1->daughter(0)->mass());
+								TLorentzVector gp1q1lv;
+								gp1q1lv.SetPtEtaPhiM(gpw1->daughter(0)->pt(),gpw1->daughter(0)->eta(),gpw1->daughter(0)->phi(),gpw1->daughter(0)->mass());
 
-								TLorentzVector gpq2lv;
-								gpq2lv.SetPtEtaPhiM(gpw1->daughter(1)->pt(),gpw1->daughter(1)->eta(),gpw1->daughter(1)->phi(),gpw1->daughter(1)->mass());
+								TLorentzVector gp1q2lv;
+								gp1q2lv.SetPtEtaPhiM(gpw1->daughter(1)->pt(),gpw1->daughter(1)->eta(),gpw1->daughter(1)->phi(),gpw1->daughter(1)->mass());
+								//std::cout<<"P00 "<<gp1q1lv.Eta()<<std::endl;
+								//std::cout<<"P01 "<<gp1q2lv.Eta()<<std::endl;
 
-
-								alltlvs.push_back(gpq1lv);
-								alltlvs.push_back(gpq2lv);
+								alltlvs.push_back(gp1q1lv);
+								alltlvs.push_back(gp1q2lv);
 								
 								}
 							else return std::pair<int,float>(false,avedr);
@@ -327,10 +379,11 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 							for (auto jj : alltlvs) 
 								{
 								maxdrfromlv=std::max(maxdrfromlv,float(curtlv.DeltaR(jj)));
+								//std::cout<<float(curtlv.DeltaR(jj))<<std::endl;
 								if(curtlv.DeltaR(jj)>mergeval)	nabove+=1;						
 								for (auto ii : alltlvs) 
 									{
-									//std::cout<<ii.DeltaR(jj)<<std::endl;
+									
 									maxdr=std::max(maxdr,float(ii.DeltaR(jj)));	
 									if (ii!=jj)
 										{
@@ -344,6 +397,7 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 							//std::cout<<maxdr<<std::endl;
 							avedr = sumdr/numsum;
 							if(maxdrfromlv>0.0)	{
+										//std::cout<<"mergeval "<<mergeval<<" "<<nabove<<","<<maxdrfromlv<<"eta "<<curtlv.Eta()<<std::endl;
 										if(nabove==1)fulltopmatch=2;
 										else if(maxdrfromlv<mergeval)fulltopmatch=1;
 										else return std::pair<int,float>(false,avedr);
@@ -564,7 +618,11 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 								gpq2lv.SetPtEtaPhiM(gp.daughter(1)->pt(),gp.daughter(1)->eta(),gp.daughter(1)->phi(),gp.daughter(1)->mass());
 
 								//std::cout<<curtlv.DeltaR(gpq1lv)<<" "<<curtlv.DeltaR(gpq2lv)<<std::endl;
-								if ((curtlv.DeltaR(gpq1lv)<mergeval) && (curtlv.DeltaR(gpq2lv)<mergeval))fulltopmatch=1;	
+								if ((curtlv.DeltaR(gpq1lv)<mergeval) && (curtlv.DeltaR(gpq2lv)<mergeval))
+									{
+									fulltopmatch=1;	
+									if ((abs(gp.daughter(0)->pdgId())==4) || (abs(gp.daughter(1)->pdgId())==4))fulltopmatch=2	;
+									}
 								}
 							
 							}

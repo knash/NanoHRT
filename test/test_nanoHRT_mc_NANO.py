@@ -45,13 +45,13 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(30)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToTT_M-3000_W-30_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/D6D620EF-73BE-E611-8BFB-B499BAA67780.root'),
-    fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/110000/9484AC5F-5EB7-E611-9410-00266CF94D50.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToTT_M-3000_W-30_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/D6D620EF-73BE-E611-8BFB-B499BAA67780.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/110000/9484AC5F-5EB7-E611-9410-00266CF94D50.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R300_WW_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190123_161539/0000/B2G-RunIIFall17DRPremix-00528_583.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R200_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190120_224229/0000/B2G-RunIIFall17DRPremix-00528_10.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/WkkToWRadionToWWW_M3000-R0-5-TuneCUEP8M1_13TeV-madgraph/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/110000/D2A5E61D-06CF-E811-9145-842B2B6F550A.root'),
