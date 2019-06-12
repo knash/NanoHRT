@@ -57,6 +57,8 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     edm::FileInPath pb_pathMD_;
     std::string extex_;
     std::string stype_;
+    bool isHotVR_;
+    double drfac_;
     std::ofstream textout;
     std::atomic<unsigned int> streamnum_;
     //uint* streamnum_;
@@ -74,13 +76,15 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 , sdmcoll_(iConfig.getParameter<std::string>("sdmcoll"))
 , extex_(iConfig.getParameter<std::string>("extex"))
 , stype_(iConfig.getParameter<std::string>("stype"))
+, isHotVR_(iConfig.getParameter<bool>("isHotVR"))
+, drfac_(iConfig.getParameter<double>("drfac"))
 {
   produces<pat::JetCollection>();
   gplab = consumes<std::vector<reco::GenParticle>>(edm::InputTag("prunedGenParticles"));
   tensorflow::SessionOptions sessionOptions;
   tfsession_ = tensorflow::createSession(cache->graphDef,sessionOptions);
   tfsessionMD_ = tensorflow::createSession(cache->graphDefMD,sessionOptions);
-  isHotVR=false;
+  isHotVR=isHotVR_;
 
 
 
@@ -158,16 +162,16 @@ void ImageProducer::globalEndJob(const ImageTFCache* cache)
 void ImageProducer::beginStream(edm::StreamID ID)
 	{
 	streamnum_=ID.value();
-	if(extex_=="HotVR")
+	if(isHotVR)
 		{
 		nsubs=4;
-	  	textout.open("debugoutHotVR"+std::to_string(streamnum_)+".dat");
-		isHotVR=true;
+		extex_="HotVR"+extex_;
+	  	textout.open("debugout"+extex_+"_"+std::to_string(streamnum_)+".dat");
 		}
 	else
 		{
 		nsubs=2;
-	  	textout.open("debugoutAK8"+std::to_string(streamnum_)+".dat");
+	  	textout.open("debugoutAK8"+extex_+"_"+std::to_string(streamnum_)+".dat");
 		}
 	}
 
@@ -220,7 +224,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				matched.first+=3;
 
 				}
-	else 			{
+	else if (!isHotVR)	{
 				//std::cout<<"partonFlavour "<<AK8pfjet.partonFlavour()<<std::endl;
 				if(abs(AK8pfjet.partonFlavour())<4  && abs(AK8pfjet.partonFlavour())>0)matched.first=0;
 				else if(abs(AK8pfjet.partonFlavour())==4)matched.first=1;
@@ -261,19 +265,23 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	        const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>(AK8pfjet.daughter(idau) );
 	  	if (lPack != nullptr)
 			{
+			float dphi = reco::deltaPhi(lPack->phi(),curtlv.Phi());
+
         		TLorentzVector pfclv;
-			pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),lPack->phi(),lPack->mass());
+			pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),curtlv.Phi()+dphi,lPack->mass());
 			if ((pfclv.Pt()<=1.0) and (lPack->charge()!=0)) continue;
 			double funcval =(6.62733e-02) + (2.63732e+02)*(1.0/curtlv.Perp());
-			double drcorval = 0.6/(funcval);
+			double drcorval = drfac_*0.6/(funcval);
 
 			int pfcflav = std::abs(lPack->pdgId());
 
 			double neweta = pfclv.Eta()+(pfclv.Eta()-curtlv.Eta())*(drcorval-1.0);
-			double newphi = pfclv.Phi()+(pfclv.Phi()-curtlv.Phi())*(drcorval-1.0);
+			double newphi = pfclv.Phi()+(dphi)*(drcorval-1.0);
+
 
 			double newdetafj = (pfclv.Eta()-curtlv.Eta())*drcorval;
-			double newdphifj = (pfclv.Phi()-curtlv.Phi())*drcorval;
+			double newdphifj = (dphi)*drcorval;
+
 
 			if(std::sqrt(newdphifj*newdphifj+newdetafj*newdetafj)>1.6) continue;
 
@@ -363,9 +371,9 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	//std::cout<<matched.first<<std::endl;
         sjlist.push_back(matched.first);
         sjlist.push_back(gmass/172.0);
-	int extravars = 2;
         sjlist.push_back(AK8pfjet.pt()/2000.0);
         sjlist.push_back(AK8pfjet.eta());
+
 
         int npoints=38;
 	std::vector<int> ietalist = {};
@@ -399,7 +407,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   	uint ncolors=6;
   
-	std::vector<std::vector<std::vector<double>>> grid(37,std::vector<std::vector<double>>(37,std::vector<double>(ncolors,0.0)));
+	std::vector<std::vector<std::vector<double>>> grid(37,std::vector<std::vector<double>>(37,std::vector<double>(ncolors*2-1,0.0)));
 	std::vector<std::pair<std::vector<uint>,std::vector<double>>> indexedimage;
 
 	//normalization and digitization
@@ -413,6 +421,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			if(((j>2) or (j==0))) //1 and 2 are eta,phi
 				{
 				grid[ietalist[i]][iphilist[i]][filldex]+=partlist[j][i]/fullint;
+				if(j>2 and partlist[j][i]/fullint>1e-10)grid[ietalist[i]][iphilist[i]][filldex+5]+=0.1;
 				filldex+=1;
 				}
 			}				
@@ -459,17 +468,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		for(uint i=0;i < indexedimage.size();++i)indexedimage[i].first={indexedimage[i].first[0],npoints-2-indexedimage[i].first[1]};		
 		}
 
-	//convert scalars to tensorflow
-	std::vector<tensorflow::Tensor> tfoutput;
-	std::vector<tensorflow::Tensor> tfoutputMD;
-	tensorflow::Tensor input_b(tensorflow::DT_FLOAT, { 1, int(sjlist.size()-extravars) });
-	float* d = input_b.flat<float>().data();//
-	for(uint i=0;i < sjlist.size();++i,++d)
-		{
-		//if (i<nsubs*6)index = (i%6)*nsubs + i/6;
-		//else index=i;
-		*d = sjlist[i];	
-		}	
 
 	//Debug printing to ascii
 	std::string textevent = "[[";
@@ -493,7 +491,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	textevent+=std::to_string(ttval);
 	textevent+=",1.0";
 	//std::cout<<"Indexing"<<std::endl;
-	for(uint i=0;i < sjlist.size();++i,++d)
+	for(uint i=0;i < sjlist.size();++i)
 		{
 		textevent+=",";
 		//if(i<nsubs*6)index = (i%6)*nsubs + i/6;
