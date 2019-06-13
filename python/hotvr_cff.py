@@ -78,18 +78,6 @@ def setupHOTVR(process, runOnMC=False, path=None, Settype=''):
         drfac=cms.double(1.0)
     )
     
-    process.imageJetsHotVR1 = cms.EDProducer('ImageProducer',
-        src=cms.InputTag("imageJetsHotVR"),
-        sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagHotVRPuppiSubjets'),
-        sdmcoll=cms.string('NONE'),
-        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
-        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
-	stype=cms.string(Settype),
-        extex=cms.string('P8'),
-        isHotVR=cms.bool(True),
-        drfac=cms.double(1.33)
-    )
-    
 
     process.finalHOTVR = cms.EDProducer('HOTVRUpdater',
         src=cms.InputTag("hotvrPuppi"),
@@ -104,7 +92,7 @@ def setupHOTVR(process, runOnMC=False, path=None, Settype=''):
 
 
     process.hotvrTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
-        src=cms.InputTag("imageJetsHotVR1"),
+        src=cms.InputTag("imageJetsHotVR"),
         name=cms.string("HOTVRPuppi"),
         cut=cms.string(""),
         doc=cms.string("HOTVR Puppi jets"),
@@ -139,7 +127,6 @@ def setupHOTVR(process, runOnMC=False, path=None, Settype=''):
         process.hotvrSubJetTable,
 	process.hotvrPuppiUG,
 	process.imageJetsHotVR,
-	process.imageJetsHotVR1,
         #process.finalHOTVR,
         process.hotvrTable,
 

@@ -46,7 +46,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(200)
+    input = cms.untracked.int32(1000)
 )
 
 # Input source
@@ -55,11 +55,14 @@ process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R300_WW_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190123_161539/0000/B2G-RunIIFall17DRPremix-00528_583.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R200_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190120_224229/0000/B2G-RunIIFall17DRPremix-00528_10.root'),
     #fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_10_2_9/src/PhysicsTools/NanoHRT/test/kkwww4000_06.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/BulkGravToZZToZhadZhad_narrow_M-1200_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/00000/0A3ADA5C-891A-E911-8512-001E67E6F869.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/WkkToWRadionToWWW_M4500-R0-08_TuneCP5_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/30000/EA3AB5C3-FA63-E811-A35D-0025904CBF10.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/BulkGravTohhTohbbhbb_width0p10_M-2400_TuneCP2_13TeV-madgraph_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/260000/6CE7B40C-F857-E911-80B6-0CC47A13CCFC.root'),
     #fileNames = cms.untracked.vstring('file:///afs/cern.ch/user/k/knash/Workspace/NanoHRT/CMSSW_10_2_9/src/PhysicsTools/NanoHRT/test/Failfile.root'),
-    fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M1000_W100_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/AE3459E4-B525-E911-817F-0CC47AACFCDE.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M1000_W100_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/AE3459E4-B525-E911-817F-0CC47AACFCDE.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/F450DBD1-7841-E811-BB7A-B499BAA67BB8.root'),
     secondaryFileNames = cms.untracked.vstring(),
-    #firstEvent = cms.untracked.uint32(820)
+    firstEvent = cms.untracked.uint32(18264)
 
 )
 

@@ -7,9 +7,12 @@ from Configuration.Eras.Modifier_run2_miniAOD_80XLegacy_cff import run2_miniAOD_
 
 def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
     # recluster Puppi jets, add N-Subjettiness and ECF
+    from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll as pfDeepBoostedJetTagsAll
+
     bTagDiscriminators = [
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',
         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
     ]
     subjetBTagDiscriminators = [
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',
@@ -61,29 +64,16 @@ def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
         src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughters'),
         sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughtersSoftDropPacked'),
         sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
-        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_06042019.pb'),
-        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_06042019.pb'),
+        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
+        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
 	stype=cms.string(Settype),
         extex=cms.string(exst),
         isHotVR=cms.bool(False),
         drfac=cms.double(1.0),
-    )
-    
-    process.imageJetsAK8Puppi1 = cms.EDProducer('ImageProducer',
-        src=cms.InputTag('imageJetsAK8Puppi'),
-        sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughtersSoftDropPacked'),
-        sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
-        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
-        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
-	stype=cms.string(Settype),
-        extex=cms.string(exst+'P8'),
-        isHotVR=cms.bool(False),
-        drfac=cms.double(1.33),
-    )
-    
+    )                           
 
     # src
-    srcJets = cms.InputTag('imageJetsAK8Puppi1')
+    srcJets = cms.InputTag('imageJetsAK8Puppi')
 
     # jetID
     process.looseJetIdCustomAK8 = cms.EDProducer("PatJetIDValueMapProducer",
@@ -191,7 +181,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
     process.customizedAK8Task = cms.Task(
         #process.boostedEventShapeJetsAK8Puppi,
         process.imageJetsAK8Puppi,
-        process.imageJetsAK8Puppi1,
+        #process.imageJetsAK8Puppi1,
         process.tightJetIdCustomAK8,
         process.tightJetIdLepVetoCustomAK8,
         process.customAK8WithUserData,

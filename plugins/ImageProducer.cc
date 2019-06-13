@@ -220,6 +220,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				matched = signalmatch(curtlv, genpartsvec,stype_,mergeval);			
 				DRaves[ntopinit]=matched.second;
 				ttval=0;
+
 				if (not matched.first) continue;
 				matched.first+=3;
 
@@ -324,7 +325,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			sjvec.push_back(subjet);
 			sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
 			//std::cout<<sublv.DeltaR(curtlv)<<std::endl;
-			if (sublv.DeltaR(curtlv)>mergeval || sjlist.size()>=(nsubs*6)) continue;
+			if (sublv.DeltaR(curtlv)>mergeval || sjlist.size()>=(nsubs*7)) continue;
 			if(sjlist.size()==0)gjet=sublv;
 			else gjet+=sublv;
 			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
@@ -333,6 +334,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
 			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
 			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepCSVJetTags:probb") + subjet.bDiscriminator("pfDeepCSVJetTags:probbb"));
 			
 		}
 	if(isHotVR)	
@@ -359,7 +361,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	uint sjlsize=sjlist.size();
 	//std::cout<<"bef"<<std::endl;
 	//for(auto sjsj : sjlist)std::cout<<sjsj<<std::endl;
-	for(uint isj=0;isj<(nsubs*6-sjlsize);isj++) sjlist.push_back(0.);
+	for(uint isj=0;isj<(nsubs*7-sjlsize);isj++) sjlist.push_back(0.);
 	//std::cout<<"aft"<<std::endl;
 	//for(auto sjsj : sjlist)std::cout<<sjsj<<std::endl;
 	if(isHotVR)	
@@ -368,6 +370,8 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		sjlist.push_back(mmin);
 		sjlist.push_back(fpt);
 		}
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
 	//std::cout<<matched.first<<std::endl;
         sjlist.push_back(matched.first);
         sjlist.push_back(gmass/172.0);

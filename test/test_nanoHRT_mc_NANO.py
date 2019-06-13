@@ -55,8 +55,8 @@ process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R300_WW_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190123_161539/0000/B2G-RunIIFall17DRPremix-00528_583.root'),
     #fileNames = cms.untracked.vstring('/store/user/knash/WkkToRWToTri_Wkk3000R200_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/MINIAODSIM/190120_224229/0000/B2G-RunIIFall17DRPremix-00528_10.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/WkkToWRadionToWWW_M3000-R0-5-TuneCUEP8M1_13TeV-madgraph/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/110000/D2A5E61D-06CF-E811-9145-842B2B6F550A.root'),
-    #fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_9_4_12/src/PhysicsTools/NanoHRT/test/kkwww5000_06.root'),
-    fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToTT_M-3000_W-30_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/D6D620EF-73BE-E611-8BFB-B499BAA67780.root'),
+    fileNames = cms.untracked.vstring('file:///afs/cern.ch/work/k/knash/NanoHRT/CMSSW_9_4_12/src/PhysicsTools/NanoHRT/test/kkwww5000_06.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToTT_M-3000_W-30_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/D6D620EF-73BE-E611-8BFB-B499BAA67780.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/ZprimeToWW_width0p2_M-800_TuneCUETP8M1_13TeV-madgraph-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/A61820B9-66BE-E611-A5A4-0CC47A4D7632.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/60000/FEBFEC07-54B6-E611-BF15-001E677928A4.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/110000/A2C23801-9DAE-E611-8369-008CFA0A58B0.root'),
@@ -75,6 +75,10 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
+outputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
+outputCommandsHRT.append("drop *")
+outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
 
 process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -85,7 +89,7 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
     ),
     SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('f1')),
     fileName = cms.untracked.string('file:nano_mc.root'),
-    outputCommands = process.NANOAODSIMEventContent.outputCommands
+    outputCommands = outputCommandsHRT
 )
 
 # Additional output definition
