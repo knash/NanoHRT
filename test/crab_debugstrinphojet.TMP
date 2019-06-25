@@ -28,7 +28,7 @@ config.JobType.outputFiles = outf
 config.JobType.maxMemoryMB = 5000
 
 config.Data.inputDataset = "/"+curset
-config.Data.inputDBS = 'global'
+config.Data.inputDBS = 'phys03'
 config.Data.splitting = 'EventAwareLumiBased'
 config.Data.unitsPerJob = 20000
 config.Data.outLFNDirBase = '/store/user/knash/EOS'

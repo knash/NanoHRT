@@ -13,6 +13,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None, Settype=''):
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',
         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
         'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
     ]
     subjetBTagDiscriminators = [
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',

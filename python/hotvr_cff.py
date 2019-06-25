@@ -38,7 +38,7 @@ def setupHOTVR(process, runOnMC=False, path=None, Settype=''):
 
  
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags']
+    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags','pfDeepCSVJetTags:probb','pfDeepCSVJetTags:probbb']
     updateJetCollection(
      process,
      labelName = 'UpdatebtagHotVRPuppiSubjets',
@@ -101,6 +101,8 @@ def setupHOTVR(process, runOnMC=False, path=None, Settype=''):
         variables=cms.PSet(P4Vars,
             itop=Var("userFloat('ImageHotVR:top')", float, doc="Image tagger score top", precision=-1),
             iMDtop=Var("userFloat('ImageMDHotVR:top')", float, doc="Image tagger score top", precision=-1),
+            itopmass=Var("userFloat('ImageHotVR:mass')", float, doc="Image tagger mass", precision=-1),
+            itopDRave=Var("userFloat('ImageHotVR:DRave')", float, doc="DRAve", precision=-1),
         )
     )
     process.hotvrTable.variables.pt.precision = 10

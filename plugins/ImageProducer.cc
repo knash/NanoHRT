@@ -195,6 +195,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<float> itopdisc = {};
   std::vector<float> itopdiscMD = {};
   std::vector<float> DRaves = {};
+  std::vector<float> gmasses = {};
   int ntopinit = -1;
 
 
@@ -205,6 +206,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   	itopdisc.push_back(-10.0);
   	itopdiscMD.push_back(-10.0);
 	DRaves.push_back(-10.0);
+  	gmasses.push_back(-10.0);
 
         TLorentzVector curtlv;
 	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
@@ -319,6 +321,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	TLorentzVector gjet;
         std::vector<pat::Jet> sjvec;
+        std::vector<pat::Jet> sjvecmatch;
 	//auto sjhv =  AK8pfjet.subjets();
   	for (const auto &subjet : *subjets)
 		{
@@ -326,6 +329,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
 			//std::cout<<sublv.DeltaR(curtlv)<<std::endl;
 			if (sublv.DeltaR(curtlv)>mergeval || sjlist.size()>=(nsubs*7)) continue;
+			sjvecmatch.push_back(subjet);
 			if(sjlist.size()==0)gjet=sublv;
 			else gjet+=sublv;
 			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
@@ -339,15 +343,15 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 	if(isHotVR)	
 		{
-		nsjh = sjvec.size();
+		nsjh = sjvecmatch.size();
 		mmin = 0.;
 		fpt = 0.;
 		if (nsjh >= 3)	{
-			  	fpt = sjvec[0].pt() / AK8pfjet.pt();
+			  	fpt = sjvecmatch[0].pt() / AK8pfjet.pt();
 			      	mmin = std::min({
-				(sjvec[0].p4()+sjvec[1].p4()).mass(),
-				(sjvec[0].p4()+sjvec[2].p4()).mass(),
-				(sjvec[1].p4()+sjvec[2].p4()).mass(),
+				(sjvecmatch[0].p4()+sjvecmatch[1].p4()).mass(),
+				(sjvecmatch[0].p4()+sjvecmatch[2].p4()).mass(),
+				(sjvecmatch[1].p4()+sjvecmatch[2].p4()).mass(),
 			      	});
 		    		} 
 
@@ -372,9 +376,11 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleCvLJetTags:probHcc"));
 	//std::cout<<matched.first<<std::endl;
         sjlist.push_back(matched.first);
         sjlist.push_back(gmass/172.0);
+	gmasses[ntopinit]=gmass;
         sjlist.push_back(AK8pfjet.pt()/2000.0);
         sjlist.push_back(AK8pfjet.eta());
 
@@ -518,6 +524,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     newJet.addUserFloat("Image"+extex_+":top", itopdisc[jindex]);
     newJet.addUserFloat("ImageMD"+extex_+":top", itopdiscMD[jindex]);
     newJet.addUserFloat("Image"+extex_+":DRave",DRaves[jindex]);
+    newJet.addUserFloat("Image"+extex_+":mass", gmasses[jindex]);
     outputs->push_back(newJet);
     jindex+=1;
   }
