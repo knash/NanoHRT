@@ -23,7 +23,7 @@ config.section_('Data')
 config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 60000
+config.Data.unitsPerJob = 40000
 config.Data.outLFNDirBase = '/store/user/knash'
 config.Data.publication = False
 config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver
