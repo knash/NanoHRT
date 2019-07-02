@@ -313,76 +313,7 @@ double ImageProducer::principal_axis(const std::vector<std::vector<float>> & par
 
 void ImageProducer::globalEndJob(const ImageTFCache* cache)
 {
-
-
-  if (cache->graphDef != nullptr) {
-    delete cache->graphDef;
-  }
-  if (cache->graphDefMD != nullptr) {
-    delete cache->graphDefMD;
-  }
-  //if (cache->graphDefPho != nullptr) {
-  //  delete cache->graphDefPho;
-  //}
-  if (cache->graphDefPhoMD != nullptr) {
-    delete cache->graphDefPhoMD;
-  }
-  if (cache->graphDefW != nullptr) {
-    delete cache->graphDefW;
-  }
-  if (cache->graphDefWMD != nullptr) {
-    delete cache->graphDefWMD;
-  }
-  if (cache->graphDefHMD != nullptr) {
-    delete cache->graphDefHMD;
-  }
-  if (cache->graphDefHflessMD != nullptr) {
-    delete cache->graphDefHflessMD;
-  }
-  //if (cache->graphDefHfonlyMD != nullptr) {
-  //  delete cache->graphDef;
-  //}
-  if (cache->graphDefZMD != nullptr) {
-    delete cache->graphDef;
-  }
-  if (cache->graphDefZflessMD != nullptr) {
-    delete cache->graphDefZflessMD;
-  }
-  //if (cache->graphDefZfonlyMD != nullptr) {
-  //  delete cache->graphDefZfonlyMD;
-  //}
-  if (cache->graphDefWWMD != nullptr) {
-    delete cache->graphDefWWMD;
-  }
-  if (cache->graphDefWWlepMD != nullptr) {
-    delete cache->graphDefWWlepMD;
-  }
-  if (cache->graphDefHWWMD != nullptr) {
-    delete cache->graphDefHWWMD;
-  }
-  if (cache->graphDefHWWlepMD != nullptr) {
-    delete cache->graphDefHWWlepMD;
-  }
-  //if (cache->graphDefHOT != nullptr) {
-  //  delete cache->graphDefHOT;
-  //}
-  if (cache->graphDefMDHOT != nullptr) {
-    delete cache->graphDefMDHOT;
-  }
-  if (cache->graphDefWWMDHOT != nullptr) {
-    delete cache->graphDefWWMDHOT;
-  }
-  if (cache->graphDefWWlepMDHOT != nullptr) {
-    delete cache->graphDefWWlepMDHOT;
-  }
-  if (cache->graphDefHWWMDHOT != nullptr) {
-    delete cache->graphDefHWWMDHOT;
-  }
-  if (cache->graphDefHWWlepMDHOT != nullptr) {
-    delete cache->graphDefHWWlepMDHOT;
-  }
-
-
+  delete cache;  
 }
 
 void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)

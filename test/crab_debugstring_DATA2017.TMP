@@ -25,7 +25,7 @@ config.section_('Data')
 config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
-config.Data.unitsPerJob =40
+config.Data.unitsPerJob = 100
 config.Data.outLFNDirBase = '/store/user/knash'
 config.Data.publication = False
 config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver+substr1

@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(40)
+    input = cms.untracked.int32(200)
 )
 
 # Input source
@@ -63,8 +63,8 @@ process.configurationMetadata = cms.untracked.PSet(
 
 outputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
 #outputCommandsHRT.append("drop *")
-outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
 #outputCommandsHRT.append("keep nanoaodFlatTable_genParticleTable_*_*")
 #outputCommandsHRT.append("keep nanoaodFlatTable_genWeightsTable_*_*")
 #outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
@@ -115,7 +115,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '102X_mc2017_realistic_v6', '')
 # Schedule definition
 #process.schedule = cms.Schedule(process.filt_step,process.nanoAOD_step,process.p,process.endjob_step,process.NANOAODSIMoutput_step)
 process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
-			srcAK4 = cms.InputTag("slimmedJetsPuppi"))
+			srcAK4 = cms.InputTag("slimmedJets"))
 process.filt_step = cms.Path(process.NanoAOD_Filter)
 process.nanoAOD_step = cms.Path(process.NanoAOD_Filter*process.nanoSequenceMC)
 process.endjob_step = cms.EndPath(process.endOfProcess)

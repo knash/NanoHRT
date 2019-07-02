@@ -9,16 +9,9 @@ import math
 import sys
 
 
-tosubmit = [
-"BstarToTW_private_M-1200_LH_TuneCP5_13TeV-madgraph-pythia8/knash-MINIAODSIM-57e6cb033643cfa6c372ff41c8f6b812/USER",
-"BstarToTW_private_M-2000_LH_TuneCP5_13TeV-madgraph-pythia8/knash-MINIAODSIM-57e6cb033643cfa6c372ff41c8f6b812/USER",
-"BstarToTW_private_M-2800_LH_TuneCP5_13TeV-madgraph-pythia8/knash-MINIAODSIM-57e6cb033643cfa6c372ff41c8f6b812/USER",
+tosubmitSIG = [
 "WkkToRWToTri_Wkk3000R100_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/knash-MINIAODSIM-57e6cb033643cfa6c372ff41c8f6b812/USER",
 "WkkToRWToTri_Wkk3000R200_ZA_private_TuneCP5_13TeV-madgraph-pythia8_v2/knash-MINIAODSIM-57e6cb033643cfa6c372ff41c8f6b812/USER",
-]
-
-
-tosubmitWW = [
 "WpToTpB_Wp4000Nar_Tp3300Nar_Zt_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
 "WpToTpB_Wp4000Nar_Tp3000Nar_Zt_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
 "WpToTpB_Wp4000Nar_Tp3000Nar_Ht_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
@@ -41,7 +34,6 @@ tosubmitWW = [
 "WkkToWRadionToWWW_M4500-R0-06_TuneCP5_13TeV-madgraph/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM",
 "WkkToWRadionToWWW_M5000-R0-06_TuneCP5_13TeV-madgraph/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM"
 ]
-
 
 
 tosubmitQCD = [
@@ -73,20 +65,12 @@ tosubmitDATA = [
 commands = []
 
 
-for iset in tosubmit:
+for iset in tosubmitSIG:
 	iset = iset.replace("/","\/")
 	print iset
 	commands.append("echo "+ iset)
 	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
 	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_SIG2017.TMP > "+tempname)
-	commands.append("crab submit "+tempname)
-
-for iset in tosubmitWW:
-	iset = iset.replace("/","\/")
-	print iset
-	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_WW2017.TMP > "+tempname)
 	commands.append("crab submit "+tempname)
 
 

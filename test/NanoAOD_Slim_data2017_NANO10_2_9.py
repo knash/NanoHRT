@@ -21,7 +21,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(200)
 )
 
 # Input source
@@ -46,23 +46,20 @@ process.configurationMetadata = cms.untracked.PSet(
 
 # Path and EndPath definitions
 process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
-			srcAK4 = cms.InputTag("slimmedJetsPuppi"),
-			srcAK8 = cms.InputTag("slimmedJetsAK8"),
-			srcmu = cms.InputTag("slimmedMuons"),
-			srcele = cms.InputTag("slimmedElectrons"))
+			srcAK4 = cms.InputTag("slimmedJets"))
 
 process.filt_step = cms.Path(process.NanoAOD_Filter)
 
 
 outputCommandsHRT = process.NANOAODEventContent.outputCommands
-outputCommandsHRT.append("drop *")
-outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
-outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
+#outputCommandsHRT.append("drop *")
+#outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
+#outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
 
 # Output definition
 
@@ -85,7 +82,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v8', '')
 
 # Path and EndPath definitions
-process.nanoAOD_step = cms.Path(process.nanoSequence)
+process.nanoAOD_step = cms.Path(process.NanoAOD_Filter*process.nanoSequence)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.NANOAODoutput_step = cms.EndPath(process.NANOAODoutput)
 
@@ -117,7 +114,7 @@ process =  nanoHRT_customizeData(process)
 process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) )
 
 #Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(1)
+process.options.numberOfThreads=cms.untracked.uint32(4)
 process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # Add early deletion of temporary data products to reduce peak memory need
