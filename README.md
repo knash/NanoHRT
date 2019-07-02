@@ -3,8 +3,8 @@
 ### Set up CMSSW
 
 ```bash
-cmsrel CMSSW_10_2_9
-cd CMSSW_10_2_9/src
+cmsrel CMSSW_10_2_15
+cd CMSSW_10_2_15/src
 cmsenv
 ```
 
