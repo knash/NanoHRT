@@ -19,6 +19,7 @@ cmsenv
 
 ```bash
 git clone https://github.com/knash/NanoHRT.git PhysicsTools/NanoHRT
+cd PhysicsTools/NanoHRT
 git fetch 
 git checkout origin/ForTraining --track
 ```
