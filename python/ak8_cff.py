@@ -10,6 +10,8 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     bTagDiscriminators = [
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',
         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
     ]
     subjetBTagDiscriminators = [
         'pfCombinedInclusiveSecondaryVertexV2BJetTags',
@@ -35,46 +37,61 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     # DeepAK8
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
     from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsProbs
-    updateJetCollection(
-        process,
-        jetSource=cms.InputTag('packedPatJetsAK8PFPuppiSoftDrop'),
-        rParam=0.8,
-        jetCorrections=('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
-        btagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
-        postfix='AK8WithPuppiDaughters',
-    )
+
+
+
+
+
+    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags']
 
 
 
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
-    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags']
-    updateJetCollection(
-     process,
-     labelName = 'UpdatebtagAK8PFPuppiSoftDropSubjets',
-     jetSource = cms.InputTag('selectedPatJetsAK8PFPuppiSoftDropSubjets'),
-     jetCorrections = ('AK4PFchs', cms.vstring([]), 'None'),
-     pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
-     svSource = cms.InputTag('slimmedSecondaryVertices'),
-     muSource = cms.InputTag('slimmedMuons'),
-     elSource = cms.InputTag('slimmedElectrons'),
-     btagDiscriminators = Bdiscs
-     )
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
+		updateCollection='packedPatJetsAK8PFPuppiSoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
+		updateCollectionSubjets='selectedPatJetsAK8PFPuppiSoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
+		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix='AK8WithPuppiDaughters')
+
+    # BEST
+    process.boostedEventShapeJetsAK8Puppi = cms.EDProducer('BESTProducer',
+        src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughters'),
+        config_path=cms.FileInPath('PhysicsTools/NanoHRT/data/BEST/config.txt'),
+        dnn_path=cms.FileInPath('PhysicsTools/NanoHRT/data/BEST/BEST_6bin_CHS.json'),
+    )
+
 
 
     process.imageJetsAK8Puppi = cms.EDProducer('ImageProducer',
-        src=cms.InputTag('selectedUpdatedPatJetsAK8WithPuppiDaughters'),
-        sj=cms.InputTag('selectedUpdatedPatJetsUpdatebtagAK8PFPuppiSoftDropSubjets'),
+        src=cms.InputTag('boostedEventShapeJetsAK8Puppi'),
+        sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughtersSoftDropPacked'),
         sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
-        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_01232018.pb'),
-        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_MD_01232018.pb'),
-        pb_pathPho=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_Pho_01232018.pb'),
-        pb_pathPhoMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_PhoMD_03092018.pb'),
-        pb_pathWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_WWMD_03092018.pb'),
-        pb_pathW=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_Wtag_03152019.pb'),
-        pb_pathWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/NNtraining_preliminary_WtagMD_03152019.pb'),
-        extex=cms.string('')
-    )
+        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MC_output.pb'),
+        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MD_output.pb'),
+        pb_pathPhoflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/pho_MD_flavorless_output.pb'),
+        pb_pathPhoMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/pho_nolep_MD_doubleB_output.pb'),
+        pb_pathW=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/w_MC_output.pb'),
+        pb_pathWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/w_MD_output.pb'),
+        pb_pathH=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_nolep_MC_doubleB_output.pb'),
+        pb_pathHMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_nolep_MD_doubleB_output.pb'),
+        pb_pathHflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_MD_flavorless_output.pb'),
+        pb_pathZ=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_nolep_MC_doubleB_output.pb'),
+        pb_pathZflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_MD_flavorless_output.pb'),
+        pb_pathZMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_nolep_MD_doubleB_output.pb'),
+        pb_pathWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/ww_MD_output.pb'),
+        pb_pathWWlepMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/wwlep_MD_output.pb'),
+        pb_pathHWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_output.pb'),
+        pb_pathHWWlepMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hwwlep_MD_output.pb'),
+        pb_pathMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MD_HOT_output.pb'),
+        pb_pathWWlepMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/wwlep_MD_HOT_output.pb'),
+        pb_pathWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/ww_MD_HOT_output.pb'),
+        pb_pathHWWlepMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hwwlep_MD_HOT_output.pb'),
+        pb_pathHWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_HOT_output.pb'),
+        extex=cms.string(''),
+        isHotVR=cms.bool(False),
+    )                           
 
     # src
     srcJets = cms.InputTag('imageJetsAK8Puppi')
@@ -144,16 +161,31 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
                  doc="index of second subjet"),
             nBHadrons=Var("jetFlavourInfo().getbHadrons().size()", int, doc="number of b-hadrons"),
             nCHadrons=Var("jetFlavourInfo().getcHadrons().size()", int, doc="number of c-hadrons"),
-            itop=Var("userFloat('Image:top')", float, doc="Image tagger score top", precision=-1),
-            iMDtop=Var("userFloat('ImageMD:top')", float, doc="Image tagger score top, mass decorrelated", precision=-1),
-            iPho=Var("userFloat('Image:pho')", float, doc="Image tagger score pho", precision=-1),
-            iMDPho=Var("userFloat('ImageMD:pho')", float, doc="Image tagger score pho, mass decorrelated", precision=-1),
-            iMDWW=Var("userFloat('ImageMD:ww')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
-            iW=Var("userFloat('Image:w')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
-            iMDW=Var("userFloat('ImageMD:w')", float, doc="Image tagger score ww, mass decorrelated", precision=-1),
-
+            bestT=Var("userFloat('BEST:dnn_top')", float, doc="Boosted Event Shape Tagger score Top", precision=-1),
+            bestW=Var("userFloat('BEST:dnn_w')", float, doc="Boosted Event Shape Tagger score W", precision=-1),
+            bestZ=Var("userFloat('BEST:dnn_z')", float, doc="Boosted Event Shape Tagger score Z", precision=-1),
+            bestH=Var("userFloat('BEST:dnn_higgs')", float, doc="Boosted Event Shape Tagger score Higgs", precision=-1),
+            bestQCD=Var("userFloat('BEST:dnn_qcd')", float, doc="Boosted Event Shape Tagger score QCD", precision=-1),
+            bestB=Var("userFloat('BEST:dnn_b')", float, doc="Boosted Event Shape Tagger score B", precision=-1),
+            itop=Var("userFloat('Image:top')", float, doc="Image top tagger score", precision=-1),
+            iMDtop=Var("userFloat('ImageMD:top')", float, doc="Image MD top tagger score", precision=-1),
+            #iPho=Var("userFloat('Image:pho')", float, doc="Image photonjet tagger score", precision=-1),
+            iMDPho=Var("userFloat('ImageMD:pho')", float, doc="Image MD photonjet tagger score", precision=-1),
+            iW=Var("userFloat('Image:w')", float, doc="Image w tagger score", precision=-1),
+            iMDW=Var("userFloat('ImageMD:w')", float, doc="Image MD w tagger score", precision=-1),
+            iMDH=Var("userFloat('ImageMD:h')", float, doc="Image MD h tagger score", precision=-1),
+            iMDHfless=Var("userFloat('ImageMD:hfless')", float, doc="Image MD h tagger score (without b tagging)", precision=-1),
+            #iMDHfonly=Var("userFloat('ImageMD:hfonly')", float, doc="Image MD h tagger score (only b tagging)", precision=-1),
+            iMDZ=Var("userFloat('ImageMD:z')", float, doc="Image MD z tagger score", precision=-1),
+            iMDZfless=Var("userFloat('ImageMD:zfless')", float, doc="Image MD z tagger score (without b tagging)", precision=-1),
+            #iMDZfonly=Var("userFloat('ImageMD:zfonly')", float, doc="Image MD z tagger score (only b tagging)", precision=-1),
+            iMDWW=Var("userFloat('ImageMD:ww')", float, doc="Image MD ww->qqqq tagger score", precision=-1),
+            iMDWWlep=Var("userFloat('ImageMD:wwlep')", float, doc="Image MD ww->lnuqq tagger score", precision=-1),
+            iMDHWW=Var("userFloat('ImageMD:hww')", float, doc="Image MD h->ww->qqqq tagger score", precision=-1),
+            iMDHWWlep=Var("userFloat('ImageMD:hwwlep')", float, doc="Image MD h->ww->lnuqq tagger score", precision=-1),
         )
     )
+
     run2_miniAOD_80XLegacy.toModify(process.customAK8Table.variables, jetId=Var("userInt('tightId')*2+userInt('looseId')", int, doc="Jet ID flags bit1 is loose, bit2 is tight"))
     process.customAK8Table.variables.pt.precision = 10
 
@@ -186,6 +218,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     process.customAK8SubJetTable.variables.pt.precision = 10
 
     process.customizedAK8Task = cms.Task(
+    	process.boostedEventShapeJetsAK8Puppi,
         process.imageJetsAK8Puppi,
         process.tightJetIdCustomAK8,
         process.tightJetIdLepVetoCustomAK8,
