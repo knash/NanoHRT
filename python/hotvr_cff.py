@@ -117,12 +117,12 @@ def setupHOTVR(process, runOnMC=False, path=None):
         singleton=cms.bool(False),  # the number of entries is variable
         extension=cms.bool(False),  # this is the main table for the jets
         variables=cms.PSet(P4Vars,
-            iMDtop=Var("userFloat('ImageMDHotVR:top')", float, doc="Image MD top tagger score", precision=-1),
-            iMDWW=Var("userFloat('ImageMDHotVR:ww')", float, doc="Image MD WW tagger score", precision=-1),
-            iMDWWlep=Var("userFloat('ImageMDHotVR:wwlep')", float, doc="Image MD WWlep tagger score", precision=-1),
-            iMDHWW=Var("userFloat('ImageMDHotVR:hww')", float, doc="Image MD HWW tagger score", precision=-1),
-            iMDHWWlep=Var("userFloat('ImageMDHotVR:hwwlep')", float, doc="Image MD HWWlep tagger score", precision=-1),
-            itopmass=Var("userFloat('ImageHotVR:mass')", float, doc="Image tagger mass", precision=-1),
+            iMDtop=Var("userFloat('ImageMDHotVR:top')", float, doc="HotVR Image MD top tagger score", precision=-1),
+            iMDWW=Var("userFloat('ImageMDHotVR:ww')", float, doc="HotVR Image MD ww->qqqq tagger score", precision=-1),
+            iMDWWlep=Var("userFloat('ImageMDHotVR:wwlep')", float, doc="HotVR Image MD ww->lnuqq tagger score", precision=-1),
+            iMDHWW=Var("userFloat('ImageMDHotVR:hww')", float, doc="HotVR Image MD h->ww->qqqq tagger score", precision=-1),
+            iMDHWWlep=Var("userFloat('ImageMDHotVR:hwwlep')", float, doc="HotVR Image MD h->ww->lnuqq tagger score", precision=-1),
+            itopmass=Var("userFloat('ImageHotVR:mass')", float, doc="HotVR Image tagger groomed mass", precision=-1),
         )
     )
 

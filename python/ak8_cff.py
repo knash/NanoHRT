@@ -183,6 +183,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
             iMDWWlep=Var("userFloat('ImageMD:wwlep')", float, doc="Image MD ww->lnuqq tagger score", precision=-1),
             iMDHWW=Var("userFloat('ImageMD:hww')", float, doc="Image MD h->ww->qqqq tagger score", precision=-1),
             iMDHWWlep=Var("userFloat('ImageMD:hwwlep')", float, doc="Image MD h->ww->lnuqq tagger score", precision=-1),
+            itopmass=Var("userFloat('Image:mass')", float, doc="Image tagger groomed mass", precision=-1),
         )
     )
 
