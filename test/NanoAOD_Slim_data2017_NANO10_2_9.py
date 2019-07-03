@@ -2,12 +2,10 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: test_nanoHRT_data -n 1000 --data --eventcontent NANOAOD --datatier NANOAOD --conditions 102X_dataRun2_v8 --step NANO --nThreads 4 --era Run2_2017,run2_nanoAOD_94XMiniAODv2 --customise PhysicsTools/NanoHRT/nanoHRT_cff.nanoHRT_customizeData_METMuEGClean --filein /store/data/Run2016G/JetHT/MINIAOD/03Feb2017-v1/100000/006E7AF2-AEEC-E611-A88D-7845C4FC3B00.root --fileout file:nano_data.root --customise_commands process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True ) ) --no_exec
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
-
-process = cms.Process('NANO',eras.Run2_2017,eras.run2_nanoAOD_94XMiniAODv2)
+process = cms.Process('NANOHRT',eras.Run2_2017,eras.run2_nanoAOD_94XMiniAODv2)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -21,7 +19,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(200)
+    input = cms.untracked.int32(500)
 )
 
 # Input source
@@ -45,10 +43,6 @@ process.configurationMetadata = cms.untracked.PSet(
 
 
 # Path and EndPath definitions
-process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
-			srcAK4 = cms.InputTag("slimmedJets"))
-
-process.filt_step = cms.Path(process.NanoAOD_Filter)
 
 
 outputCommandsHRT = process.NANOAODEventContent.outputCommands
@@ -70,7 +64,7 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAOD'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:nano_data.root'),
+    fileName = cms.untracked.string('file:NanoAODv5skim.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('filt_step')),
     outputCommands = outputCommandsHRT
 )
@@ -79,9 +73,12 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v8', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v11', '')
 
 # Path and EndPath definitions
+process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
+			srcAK4 = cms.InputTag("slimmedJets"))
+process.filt_step = cms.Path(process.NanoAOD_Filter)
 process.nanoAOD_step = cms.Path(process.NanoAOD_Filter*process.nanoSequence)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.NANOAODoutput_step = cms.EndPath(process.NANOAODoutput)

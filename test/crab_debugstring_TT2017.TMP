@@ -1,12 +1,16 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
-
 curset = "RSET" 
+outloc = "LOC" 
+version = "VER" 
 substr = curset.split('/')[0]
+substr1 = curset.split('/')[1]
+substr+=substr1
 print curset
 print substr
-ver ='_v7'
+ver ='_v'+version
+
 config.section_('General')
 config.General.requestName = substr+'NanoSlimNtuples'+ver
 config.General.workArea = 'crab_projects'
@@ -24,10 +28,10 @@ config.Data.inputDataset = "/"+curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
 config.Data.unitsPerJob = 100000
-config.Data.outLFNDirBase = '/store/user/knash'
-config.Data.publication = False
-config.Data.outputDatasetTag = 'NanoSlimNtuples'+ver
+config.Data.outLFNDirBase = outloc
+config.Data.publication = True
+config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
 config.Data.ignoreLocality=True
 config.section_('Site')
-config.Site.storageSite = 'T2_CH_CERN'
+config.Site.storageSite = store
 config.Site.whitelist = ["T2_US*"]

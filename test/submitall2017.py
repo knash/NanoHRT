@@ -1,13 +1,55 @@
-import re
-import os
-import subprocess
+import copy, os, sys, time, logging, re, subprocess, glob, math
 from os import listdir
 from os.path import isfile, join
-import glob
-import copy
-import math
-import sys
 
+from optparse import OptionParser
+parser = OptionParser()
+
+parser.add_option('-s', '--set', metavar='F', type='string', action='store',
+                  default	=	'NONE',
+                  dest		=	'set',
+                  help		=	'csv set list')
+parser.add_option('-l', '--location', metavar='F', type='string', action='store',
+                  default	=	'NONE',
+                  dest		=	'location',
+                  help		=	'output eos folder')
+parser.add_option('-d', '--site', metavar='F', type='string', action='store',
+                  default	=	'NONE',
+                  dest		=	'site',
+                  help		=	'site (ie T2_CH_CERN etc)')
+parser.add_option('-v', '--version', metavar='F', type='string', action='store',
+                  default	=	'NONE',
+                  dest		=	'version',
+                  help		=	'ntuple version')
+parser.add_option('--submit', metavar='F', action='store_true',
+                  default=False,
+                  dest='submit',
+                  help='submit to crab')
+
+(options, args) = parser.parse_args()
+
+print('Options summary')
+print('==================')
+for opt,value in options.__dict__.items():
+    print(str(opt) +': '+ str(value))
+print('==================')
+sets = (options.set).split(",")
+if options.location=="NONE":
+	logging.error("Please enter a valid location")
+	sys.exit()
+if options.version=="NONE":
+	logging.error("Please enter a valid version")
+	sys.exit()
+if options.set=="NONE":
+	logging.error("Please enter a valid set list")
+	sys.exit()
+if options.site=="NONE":
+	logging.error("Please enter a valid site")
+	sys.exit()
+
+LOC = (options.location).replace("/","\/")
+VER = (options.version).replace("/","\/")
+STO = (options.site).replace("/","\/")
 
 tosubmitSIG = [
 "WpToTpB_Wp4000Nar_Tp3300Nar_Zt_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM",
@@ -62,43 +104,57 @@ tosubmitDATA = [
 
 commands = []
 
+if "sig" in sets:
+	for RSET in tosubmitSIG:
+		RSET = RSET.replace("/","\/")
+		commands.append("echo "+ RSET)
+		tempname = "crab3_TEMP"+RSET.split("/")[0]+RSET.split("/")[1]+"_v"+VER+".py"
+		commands.append("sed 's/RSET/"+RSET+"/g' crab_debugstring_SIG2017.TMP > "+tempname)
+		commands.append("sed -i 's/LOC/"+LOC+"/g' "+tempname)
+		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
+		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
+		if options.submit:
+			commands.append("crab submit "+tempname)
 
-for iset in tosubmitSIG:
-	iset = iset.replace("/","\/")
-	print iset
-	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_SIG2017.TMP > "+tempname)
-	#commands.append("crab submit "+tempname)
+if "qcd" in sets:
+	for RSET in tosubmitQCD:
+		RSET = RSET.replace("/","\/")
+		commands.append("echo "+ RSET)
+		tempname = "crab3_TEMP"+RSET.split("/")[0]+RSET.split("/")[1]+"_v"+VER+".py"
+		commands.append("sed 's/RSET/"+RSET+"/g' crab_debugstring_QCD2017.TMP > "+tempname)
+		commands.append("sed -i 's/LOC/"+LOC+"/g' "+tempname)
+		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
+		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
+		if options.submit:
+			commands.append("crab submit "+tempname)
+
+if "ttbar" in sets:
+	for RSET in tosubmitTT:
+		RSET = RSET.replace("/","\/")
+		commands.append("echo "+ RSET)
+		tempname = "crab3_TEMP"+RSET.split("/")[0]+RSET.split("/")[1]+"_v"+VER+".py"
+		commands.append("sed 's/RSET/"+RSET+"/g' crab_debugstring_TT2017.TMP > "+tempname)
+		commands.append("sed -i 's/LOC/"+LOC+"/g' "+tempname)
+		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
+		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
+		if options.submit:
+			commands.append("crab submit "+tempname)
 
 
-for iset in tosubmitQCD:
-	iset = iset.replace("/","\/")
-	print iset
-	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_QCD2017.TMP > "+tempname)
-        #commands.append("crab submit "+tempname)
+if "data" in sets:
+	for RSET in tosubmitDATA:
+		RSET = RSET.replace("/","\/")
+		commands.append("echo "+ RSET)
+		tempname = "crab3_TEMP"+RSET.split("/")[0]+RSET.split("/")[1]+"_v"+VER+".py"
+		commands.append("sed 's/RSET/"+RSET+"/g' crab_debugstring_DATA2017.TMP > "+tempname)
+		commands.append("sed -i 's/LOC/"+LOC+"/g' "+tempname)
+		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
+		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
+		if options.submit:
+			commands.append("crab submit "+tempname)
 
-
-for iset in tosubmitTT:
-	iset = iset.replace("/","\/")
-	print iset
-	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_TT2017.TMP > "+tempname)
-        #commands.append("crab submit "+tempname)
-
-
-
-for iset in tosubmitDATA:
-	iset = iset.replace("/","\/")
-	print iset
-	commands.append("echo "+ iset)
-	tempname = "crab3_TEMP"+iset.split("/")[0]+iset.split("/")[1]+".py"
-	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_DATA2017.TMP > "+tempname)
-        #commands.append("crab submit "+tempname)
-
+commands.append("rm tempcrabfiles/*")
+commands.append("mv crab3_TEMP*.py tempcrabfiles/")
 
 for s in commands :
     print 'executing ' + s

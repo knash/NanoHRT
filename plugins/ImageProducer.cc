@@ -276,7 +276,7 @@ double ImageProducer::runtflow(tensorflow::Session* tfsession_,tensorflow::Tenso
 		{
 		if (tfoutput[0].flat<float>()(i)==1.0)
 			{
-			std::cout << "ERR index:" << i<<std::endl;
+			//std::cout << "ERR index:" << i<<std::endl;
 			return 0.0;
 			}
 		//std::cout<<i<<": "<<tfoutput[0].flat<float>()(i)<<std::endl;
