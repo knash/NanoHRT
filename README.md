@@ -27,6 +27,9 @@ scram b -j 12
 
 ```bash
 cd test/
+```
+then
+```bash
 cmsRun NanoAOD_Slim_data2017_NANO10_2_9.py
 ```
 or 
