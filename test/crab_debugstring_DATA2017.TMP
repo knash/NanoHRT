@@ -8,7 +8,7 @@ store = "STO"
 
 substr = curset.split('/')[0]
 substr1 = curset.split('/')[1]
-substr+=substr1
+
 print curset
 print substr
 ver ='_v'+version
