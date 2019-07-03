@@ -4,6 +4,8 @@ config = config()
 curset = "RSET" 
 outloc = "LOC" 
 version = "VER" 
+store = "STO" 
+
 substr = curset.split('/')[0]
 substr1 = curset.split('/')[1]
 substr+=substr1
