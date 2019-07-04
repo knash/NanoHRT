@@ -63,7 +63,7 @@ for year in years:
 	for cset in sets: 
 		idstr=year+"_"+cset
 		tosubmit[idstr]=[]
-		f = open("sets_"+idstr+".txt", "r")
+		f = open("txtfiles/sets_"+idstr+".txt", "r")
 		for x in f:
 		 	tosubmit[idstr].append(x)
 commands = []
@@ -72,7 +72,7 @@ for idstr in tosubmit:
 		RSET = RSET.replace("/","\/").replace("\n","")
 		commands.append("echo "+ RSET)
 		tempname = "crab3_TEMP"+RSET.split("\/")[1]+RSET.split("\/")[2]+"_v"+VER+".py"
-		commands.append("sed 's/RSET/"+RSET+"/g' crab_"+idstr+".TMP > "+tempname)
+		commands.append("sed 's/RSET/"+RSET+"/g' tmpfiles/crab_"+idstr+".TMP > "+tempname)
 		commands.append("sed -i 's/LOC/"+LOC+"/g' "+tempname)
 		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
 		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
