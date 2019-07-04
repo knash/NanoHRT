@@ -20,7 +20,7 @@ config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_Slim_mc2016_NANO10_2_9.py'
+config.JobType.psetName = 'NanoAOD_Slim_mc2016_NANO10_2_15.py'
 config.JobType.numCores = 4
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 5000
