@@ -1,0 +1,39 @@
+from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+config = config()
+
+curset = "RSET" 
+outloc = "LOC" 
+version = "VER" 
+store = "STO" 
+
+substr = curset.split('/')[0]
+substr1 = curset.split('/')[1]
+
+print curset
+print substr
+ver ='_v'+version
+
+config.section_('General')
+config.General.requestName = substr+'take1NanoSlimNtuples'+ver
+config.General.workArea = 'crab_projects'
+config.General.transferLogs = False
+config.General.transferOutputs = True
+config.section_('JobType')
+config.JobType.pluginName = 'Analysis'
+config.JobType.psetName = 'NanoAOD_Slim_mc2017_NANO10_2_9.py'
+config.JobType.numCores = 4
+config.JobType.sendExternalFolder = True
+config.JobType.maxMemoryMB = 5000
+config.JobType.allowUndistributedCMSSW = True
+config.section_('Data')
+config.Data.inputDataset = curset
+config.Data.inputDBS = 'global'
+config.Data.splitting = 'EventAwareLumiBased'
+config.Data.unitsPerJob = 60000
+config.Data.outLFNDirBase = outloc
+config.Data.publication = True
+config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
+config.Data.ignoreLocality=True
+config.section_('Site')
+config.Site.storageSite = store
+config.Site.whitelist = ["T2_US*"] 

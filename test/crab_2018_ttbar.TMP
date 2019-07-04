@@ -20,16 +20,16 @@ config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_Slim_mc2017_NANO10_2_9.py'
+config.JobType.psetName = 'NanoAOD_Slim_mc2018_NANO10_2_9.py'
 config.JobType.numCores = 4
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 5000
 config.JobType.allowUndistributedCMSSW = True
 config.section_('Data')
-config.Data.inputDataset = "/"+curset
+config.Data.inputDataset = curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 10000
+config.Data.unitsPerJob = 100000
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
 config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
