@@ -1,7 +1,7 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
-curset = "/JetHT/Run2017B-31Mar2018-v1/MINIAOD" 
+curset = "/JetHT/Run2016B-17Jul2018_ver2-v2/MINIAOD" 
 outloc = "/store/user/knash" 
 version = "8" 
 store = "T2_CH_CERN" 
@@ -19,7 +19,7 @@ config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_Slim_data2017_NANO10_2_15.py'
+config.JobType.psetName = 'NanoAOD_Slim_data2016_NANO10_2_15.py'
 config.JobType.numCores = 4
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 5000
@@ -31,8 +31,8 @@ config.Data.splitting = 'LumiBased'
 config.Data.unitsPerJob = 70
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
-config.Data.outputDatasetTag = substr1+'_NanoSlimNtuples'+ver
-config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt'
+config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
+config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = store

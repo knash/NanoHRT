@@ -1,7 +1,7 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
-curset = "/JetHT/Run2017B-31Mar2018-v1/MINIAOD" 
+curset = "/JetHT/Run2017F-31Mar2018-v1/MINIAOD" 
 outloc = "/store/user/knash" 
 version = "8" 
 store = "T2_CH_CERN" 
