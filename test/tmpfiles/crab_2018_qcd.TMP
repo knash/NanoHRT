@@ -6,11 +6,10 @@ outloc = "LOC"
 version = "VER" 
 store = "STO" 
 
-substr = curset.split('/')[0]
-substr1 = curset.split('/')[1]
+substr = curset.split('/')[1]
+substr1 = curset.split('/')[2]
+print substr,substr1
 
-print curset
-print substr
 ver ='_v'+version
 
 config.section_('General')
