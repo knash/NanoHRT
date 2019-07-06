@@ -79,7 +79,7 @@ for idstr in tosubmit:
 		if options.submit:
 			commands.append("crab submit "+tempname)
 
-commands.append("rm tempcrabfiles/*")
+commands.append("rm tempcrabfiles/crab3_TEMP*.py")
 commands.append("mv crab3_TEMP*.py tempcrabfiles/")
 
 for s in commands :
