@@ -31,7 +31,7 @@ git checkout Forskimming
 ### Compile
 
 ```bash
-cd ..
+cd ../../
 scram b -j 12
 ```
 
