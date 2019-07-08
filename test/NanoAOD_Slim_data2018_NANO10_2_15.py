@@ -21,7 +21,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(30)
+    input = cms.untracked.int32(300)
 )
 
 # Input source
@@ -44,24 +44,21 @@ process.configurationMetadata = cms.untracked.PSet(
 
 
 # Path and EndPath definitions
-process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
-			srcAK4 = cms.InputTag("slimmedJetsPuppi"),
-			srcAK8 = cms.InputTag("slimmedJetsAK8"),
-			srcmu = cms.InputTag("slimmedMuons"),
-			srcele = cms.InputTag("slimmedElectrons"))
+outputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
+#outputCommandsHRT.append("drop *")
+#outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_genParticleTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_genWeightsTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_muonTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_electronTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
+#outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
 
-process.filt_step = cms.Path(process.NanoAOD_Filter)
-
-
-outputCommandsHRT = process.NANOAODEventContent.outputCommands
-outputCommandsHRT.append("drop *")
-outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
-outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
 
 
 # Output definition
@@ -73,7 +70,7 @@ process.NANOAODoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAOD'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:NanoAODskim.root'),
+    fileName = cms.untracked.string('file:NanoAODv5skim.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('filt_step')),
     outputCommands = outputCommandsHRT
 )
@@ -86,7 +83,10 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v11', '')
 
 
 # Path and EndPath definitions
-process.nanoAOD_step = cms.Path(process.nanoSequence)
+process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
+			srcAK4 = cms.InputTag("slimmedJets"))
+process.filt_step = cms.Path(process.NanoAOD_Filter)
+process.nanoAOD_step = cms.Path(process.NanoAOD_Filter*process.nanoSequence)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.NANOAODoutput_step = cms.EndPath(process.NANOAODoutput)
 

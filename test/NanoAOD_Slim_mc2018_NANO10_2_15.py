@@ -45,27 +45,21 @@ process.configurationMetadata = cms.untracked.PSet(
 
 
 # Path and EndPath definitions
-process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
-			srcAK4 = cms.InputTag("slimmedJetsPuppi"),
-			srcAK8 = cms.InputTag("slimmedJetsAK8"),
-			srcmu = cms.InputTag("slimmedMuons"),
-			srcele = cms.InputTag("slimmedElectrons"))
-
-process.filt_step = cms.Path(process.NanoAOD_Filter)
-
-
-
 outputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
-outputCommandsHRT.append("drop *")
-outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_genParticleTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_genWeightsTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
-outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
-outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
+#outputCommandsHRT.append("drop *")
+#outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_genParticleTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_genWeightsTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_puTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_photonTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_muonTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_electronTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_vertexTable_pv_*")
+#outputCommandsHRT.append("keep edmTriggerResults_*_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_btagWeightTable_*_*")
+#outputCommandsHRT.append("keep nanoaodFlatTable_jetTable_*_*")
+
 
 
 
@@ -79,7 +73,7 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
         dataTier = cms.untracked.string('NANOAODSIM'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:NanoAODskim.root'),
+    fileName = cms.untracked.string('file:NanoAODSIMv5skim.root'),
     SelectEvents = cms.untracked.PSet(SelectEvents =  cms.vstring('filt_step')),
     outputCommands = outputCommandsHRT
 )
@@ -91,7 +85,10 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v19', '')
 
 # Path and EndPath definitions
-process.nanoAOD_step = cms.Path(process.nanoSequenceMC)
+process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
+			srcAK4 = cms.InputTag("slimmedJets"))
+process.filt_step = cms.Path(process.NanoAOD_Filter)
+process.nanoAOD_step = cms.Path(process.NanoAOD_Filter*process.nanoSequenceMC)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.NANOAODSIMoutput_step = cms.EndPath(process.NANOAODSIMoutput)
 
@@ -101,7 +98,7 @@ from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
 #Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(2)
+process.options.numberOfThreads=cms.untracked.uint32(4)
 process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.

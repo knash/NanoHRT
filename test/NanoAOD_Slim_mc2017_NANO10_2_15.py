@@ -91,9 +91,6 @@ process.NANOAODSIMoutput = cms.OutputModule("NanoAODOutputModule",
 )
 
 
-
-
-
 # Additional output definition
 
 # Other statements
@@ -102,16 +99,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '102X_mc2017_realistic_v7', '')
 
 # Path and EndPath definitions
 
-
-
-
-#process.dump=cms.EDAnalyzer('EventContentAnalyzer')
-#process.p = cms.Path( process.dump)
-#process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
- #                                           jobReportOutputOnly = cms.untracked.bool(False)
-#)
-# Schedule definition
-#process.schedule = cms.Schedule(process.filt_step,process.nanoAOD_step,process.p,process.endjob_step,process.NANOAODSIMoutput_step)
 process.NanoAOD_Filter = cms.EDFilter('NanoAOD_Filter',
 			srcAK4 = cms.InputTag("slimmedJets"))
 process.filt_step = cms.Path(process.NanoAOD_Filter)

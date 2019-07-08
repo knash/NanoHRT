@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 from  PhysicsTools.NanoAOD.common_cff import *
 from Configuration.Eras.Modifier_run2_miniAOD_80XLegacy_cff import run2_miniAOD_80XLegacy
+from Configuration.Eras.Modifier_run2_nanoAOD_94X2016_cff import run2_nanoAOD_94X2016
+from Configuration.Eras.Modifier_run2_nanoAOD_102Xv1_cff import run2_nanoAOD_102Xv1 
+
 
 # ---------------------------------------------------------
 
@@ -107,7 +110,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
 
     process.tightJetIdCustomAK8 = cms.EDProducer("PatJetIDValueMapProducer",
               filterParams=cms.PSet(
-                version=cms.string('WINTER17'),
+                version=cms.string('WINTER17PUPPI'),
                 quality = cms.string('TIGHT'),
               ),
               src=srcJets
@@ -116,11 +119,17 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
 
     process.tightJetIdLepVetoCustomAK8 = cms.EDProducer("PatJetIDValueMapProducer",
               filterParams=cms.PSet(
-                version = cms.string('WINTER17'),
+                version = cms.string('WINTER17PUPPI'),
                 quality = cms.string('TIGHTLEPVETO'),
               ),
               src=srcJets
     )
+
+    for modifier in run2_miniAOD_80XLegacy, run2_nanoAOD_94X2016:
+    	modifier.toModify( process.tightJetIdCustomAK8.filterParams, version = "WINTER16" )
+    	modifier.toModify( process.tightJetIdLepVetoCustomAK8.filterParams, version = "WINTER16" )
+    run2_nanoAOD_102Xv1.toModify( process.tightJetIdCustomAK8.filterParams, version = "SUMMER18PUPPI" )
+    run2_nanoAOD_102Xv1.toModify( process.tightJetIdLepVetoCustomAK8.filterParams, version = "SUMMER18PUPPI" )
 
     process.customAK8WithUserData = cms.EDProducer("PATJetUserDataEmbedder",
         src=srcJets,

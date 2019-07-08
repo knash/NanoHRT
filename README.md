@@ -8,8 +8,19 @@ cd CMSSW_10_2_15/src
 cmsenv
 ```
 
-### Get customized NanoAOD producers for HeavyResTagging
+### Customize Standard NanoAOD workflow
+Here, in theory we should grab the latest/greatest outside of NanoAOD releases.
+For now, 2018 JetID PR is still in progres -- merge with current version so maybe we dont have to reprocess.
+```bash
+git-cms-addpkg PhysicsTools/NanoAOD
+git-cms-addpkg PhysicsTools/SelectorUtils
+git remote add tmp https://github.com/knash/cmssw.git
+git fetch tmp
+git checkout tmp/JetID2018_backport_102X
 
+```
+### Get customized NanoAOD producers for HeavyResTagging
+This gives us prototype (or otherwise awaiting PR) taggers
 ```bash
 git clone https://github.com/knash/NanoHRT.git PhysicsTools/NanoHRT
 cd PhysicsTools/NanoHRT
@@ -20,13 +31,14 @@ git checkout Forskimming
 ### Compile
 
 ```bash
+cd ..
 scram b -j 12
 ```
 
 ### Test
 
 ```bash
-cd test/
+cd PhysicsTools/NanoHRT/test/
 ```
 then
 ```bash
