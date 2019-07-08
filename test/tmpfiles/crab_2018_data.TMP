@@ -28,7 +28,7 @@ config.section_('Data')
 config.Data.inputDataset = curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
-config.Data.unitsPerJob = 70
+config.Data.unitsPerJob = 50
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
 config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
