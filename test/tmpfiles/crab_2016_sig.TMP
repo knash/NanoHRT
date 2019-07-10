@@ -31,7 +31,7 @@ config.Data.splitting = 'EventAwareLumiBased'
 config.Data.unitsPerJob = 10000
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
-config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
+config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples2016mc'+ver
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = store
