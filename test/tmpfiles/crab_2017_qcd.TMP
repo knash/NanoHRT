@@ -5,6 +5,8 @@ curset = "RSET"
 outloc = "LOC" 
 version = "VER" 
 store = "STO" 
+runloc = RLO
+fnalonly = FNA
 
 substr = curset.split('/')[1]
 substr1 = curset.split('/')[2]
@@ -32,8 +34,15 @@ config.Data.unitsPerJob = 30000
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
 config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples2017mc'+ver
-config.Data.ignoreLocality=True
-config.section_('Site')
-config.Site.storageSite = store
-config.Site.whitelist = ["T2_US*","T3_US_FNALLPC"] 
-config.Site.ignoreGlobalBlacklist = True
+if runloc:
+	config.section_('Site')
+	config.Site.storageSite = store
+else:
+	config.Data.ignoreLocality=True
+	config.section_('Site')
+	config.Site.storageSite = store
+	if fnalonly:
+		config.Site.whitelist = ["T3_US_FNALLPC"] 
+	else:
+		config.Site.whitelist = ["T2_US*","T3_US_FNALLPC"] 
+	config.Site.ignoreGlobalBlacklist = True

@@ -29,6 +29,14 @@ parser.add_option('--submit', metavar='F', action='store_true',
                   default=False,
                   dest='submit',
                   help='submit to crab')
+parser.add_option('--runloc', metavar='F', action='store_true',
+                  default=False,
+                  dest='runloc',
+                  help='runloc')
+parser.add_option('--fnalonly', metavar='F', action='store_true',
+                  default=False,
+                  dest='fnalonly',
+                  help='fnalonly')
 
 (options, args) = parser.parse_args()
 
@@ -57,7 +65,12 @@ if options.year=="NONE":
 LOC = (options.location).replace("/","\/")
 VER = (options.version).replace("/","\/")
 STO = (options.site).replace("/","\/")
-
+RLO = "False"
+FNA = "False"
+if options.runloc:
+	RLO = "True"
+if options.fnalonly:
+	FNA = "True"
 tosubmit = {}
 for year in years:
 	for cset in sets: 
@@ -76,6 +89,8 @@ for idstr in tosubmit:
 		commands.append("sed -i 's/LOC/"+LOC+"/g' "+tempname)
 		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
 		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
+		commands.append("sed -i 's/RLO/"+RLO+"/g' "+tempname)
+		commands.append("sed -i 's/FNA/"+FNA+"/g' "+tempname)
 		if options.submit:
 			commands.append("crab submit "+tempname)
 
