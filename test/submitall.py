@@ -66,7 +66,7 @@ LOC = (options.location).replace("/","\/")
 VER = (options.version).replace("/","\/")
 STO = (options.site).replace("/","\/")
 RLO = "False"
-FNA = "False"
+OFNA = "False"
 if options.runloc:
 	RLO = "True"
 if options.fnalonly:
@@ -90,7 +90,7 @@ for idstr in tosubmit:
 		commands.append("sed -i 's/VER/"+VER+"/g' "+tempname)
 		commands.append("sed -i 's/STO/"+STO+"/g' "+tempname)
 		commands.append("sed -i 's/RLO/"+RLO+"/g' "+tempname)
-		commands.append("sed -i 's/FNA/"+FNA+"/g' "+tempname)
+		commands.append("sed -i 's/OFNA/"+OFNA+"/g' "+tempname)
 		if options.submit:
 			commands.append("crab submit "+tempname)
 

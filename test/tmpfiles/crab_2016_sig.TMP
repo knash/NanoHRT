@@ -6,7 +6,7 @@ outloc = "LOC"
 version = "VER" 
 store = "STO" 
 runloc = RLO
-fnalonly = FNA
+fnalonly = OFNA
 
 substr = curset.split('/')[1]
 substr1 = curset.split('/')[2]
