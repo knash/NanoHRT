@@ -36,4 +36,5 @@ config.Data.lumiMask = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = store
-config.Site.whitelist = ["T2_US*"] 
+config.Site.whitelist = ["T2_US*","T3_US_FNALLPC"] 
+config.Site.ignoreGlobalBlacklist = True
