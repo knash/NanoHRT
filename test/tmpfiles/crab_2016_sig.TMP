@@ -13,7 +13,7 @@ print substr,substr1
 ver ='_v'+version
 
 config.section_('General')
-config.General.requestName = substr+'NanoSlimNtuples'+ver
+config.General.requestName = substr+'NanoSlimNtuples2016mc'+ver
 config.General.workArea = 'crab_projects'
 config.General.transferLogs = False
 config.General.transferOutputs = True

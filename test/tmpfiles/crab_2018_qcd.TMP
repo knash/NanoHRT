@@ -13,7 +13,7 @@ print substr,substr1
 ver ='_v'+version
 
 config.section_('General')
-config.General.requestName = substr+'NanoSlimNtuples'+ver
+config.General.requestName = substr+'NanoSlimNtuples2018mc'+ver
 config.General.workArea = 'crab_projects'
 config.General.transferLogs = False
 config.General.transferOutputs = True
@@ -32,7 +32,6 @@ config.Data.unitsPerJob = 30000
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
 config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples'+ver
-config.Data.ignoreLocality=True
 config.Data.ignoreLocality=True
 config.section_('Site')
 config.Site.storageSite = store
