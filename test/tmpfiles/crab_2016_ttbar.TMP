@@ -30,7 +30,7 @@ config.section_('Data')
 config.Data.inputDataset = curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 100000
+config.Data.unitsPerJob = 300000
 config.Data.outLFNDirBase = outloc
 config.Data.publication = True
 config.Data.outputDatasetTag =substr1+'_NanoSlimNtuples2016mc'+ver
