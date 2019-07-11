@@ -45,6 +45,6 @@ else:
 	if fnalonly:
 		config.Site.whitelist = ["T3_US_FNALLPC"] 
 	else:
-		config.Site.whitelist = ["T2_US*","T3_US_FNALLPC"] 
+		config.Site.whitelist = ["T2_US*","T3_US_FNALLPC","T1_US*"] 
 	config.Site.ignoreGlobalBlacklist = True
 
