@@ -357,6 +357,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   if(isHotVR) nsubs=4;
   else nsubs=2;
   int ntopinit = -1;
+  std::cout<<"running "<<extex_<<std::endl;
   for (const auto &AK8pfjet : *jets)
 	{
 	ntopinit+=1;
@@ -414,7 +415,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         double phic=0;
 
 	int idaufill = 0;
-
+  	std::cout<<"ndau "<<ndau<<std::endl;
 	for(int idau=0;idau<ndau;idau++)
 		{
 	        const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>(AK8pfjet.daughter(idau) );
@@ -476,8 +477,11 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		sjvecmatch.push_back(subjet);
 		if(sjlist.size()==0)gjet=sublv;
 		else gjet+=sublv;
+
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
+		//std::cout<<"SJB "<<subjet.bDiscriminator("pfDeepFlavourJetTags:probb")<<std::endl;
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb"));
+		//std::cout<<"SJBB "<<subjet.bDiscriminator("pfDeepFlavourJetTags:probbb")<<std::endl;
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probuds"));
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
 		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
@@ -509,7 +513,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	uint DBindex=sjlist.size();
 
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
-
+	std::cout<<"gmass "<<gmass<<std::endl;
         sjlist.push_back(gmass/172.0);
         sjlist.push_back(AK8pfjet.pt()/2000.0);
 	gmasses[ntopinit]=gmass;

@@ -2,6 +2,7 @@
 <use name="FWCore/MessageLogger"/>
 <library file="*.cc" name="PhysicsToolsNanoHRTPlugins">
   <use name="DataFormats/PatCandidates"/>
+  <use name="DataFormats/FWLite"/>
   <use name="RecoJets/JetAlgorithms"/>
   <use  name="RecoJets/JetProducers" />
   <use name="PhysicsTools/NanoHRT"/>

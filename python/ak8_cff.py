@@ -1,3 +1,4 @@
+
 import FWCore.ParameterSet.Config as cms
 from  PhysicsTools.NanoAOD.common_cff import *
 from Configuration.Eras.Modifier_run2_miniAOD_80XLegacy_cff import run2_miniAOD_80XLegacy
@@ -273,3 +274,193 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         process.schedule.associate(process.customizedAK8Task)
     else:
         getattr(process, path).associate(process.customizedAK8Task)
+
+def setupCustomizedWWAK8(process, runOnMC=False, path=None, pfc='std'):
+
+    # recluster Puppi jets, add N-Subjettiness and ECF
+    bTagDiscriminators = [
+        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+        'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+    ]
+    subjetBTagDiscriminators = [
+        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+        'pfDeepCSVJetTags:probb',
+        'pfDeepCSVJetTags:probbb',
+    ]
+    JETCorrLevels = ['L2Relative', 'L3Absolute', 'L2L3Residual']
+    print "Running pfc collection",pfc
+    pfix=pfc
+    from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
+    jetToolbox(process, 'ak8', 'dummySeq', 'out', associateTask=False,
+		       PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+		       Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+		       postFix=pfix,miniAOD=True, runOnMC=runOnMC,
+		       addNsub=True, maxTau=4, addEnergyCorrFunc=True,
+		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
+		       addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
+		       bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators,
+	               newPFCollection=True, nameNewPFCollection=pfc)
+    if runOnMC:
+        process.ak8GenJetsNoNu.jetPtMin = 100
+        process.ak8GenJetsNoNuSoftDrop.jetPtMin = 100
+
+    # DeepAK8
+    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+    from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsProbs
+
+
+
+
+
+    Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags']
+
+
+    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
+		updateCollection='packedPatJetsAK8PFPuppi'+pfix+'SoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
+		updateCollectionSubjets='selectedPatJetsAK8PFPuppi'+pfix+'SoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
+		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix=pfix+'AK8WithPuppiDaughters',
+	        newPFCollection=True, nameNewPFCollection=pfc)
+
+
+    process.imageJetsWWAK8Puppi = cms.EDProducer('ImageProducer',
+        src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfix+'AK8WithPuppiDaughters'),
+        sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfix+'AK8WithPuppiDaughtersSoftDropPacked'),
+        sdmcoll=cms.string('ak8PFJetsPuppiWWProducerpuppiSoftDropMass'),
+        pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MC_output.pb'),
+        pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MD_output.pb'),
+        pb_pathPhoflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/pho_MD_flavorless_output.pb'),
+        pb_pathPhoMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/pho_nolep_MD_doubleB_output.pb'),
+        pb_pathW=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/w_MC_output.pb'),
+        pb_pathWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/w_MD_output.pb'),
+        pb_pathH=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_nolep_MC_doubleB_output.pb'),
+        pb_pathHMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_nolep_MD_doubleB_output.pb'),
+        pb_pathHflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_MD_flavorless_output.pb'),
+        pb_pathZ=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_nolep_MC_doubleB_output.pb'),
+        pb_pathZflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_MD_flavorless_output.pb'),
+        pb_pathZMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_nolep_MD_doubleB_output.pb'),
+        pb_pathWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/ww_MD_output.pb'),
+        pb_pathWWlepMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/wwlep_MD_output.pb'),
+        pb_pathHWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_output.pb'),
+        pb_pathHWWlepMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hwwlep_MD_output.pb'),
+        pb_pathMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MD_HOT_output.pb'),
+        pb_pathWWlepMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/wwlep_MD_HOT_output.pb'),
+        pb_pathWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/ww_MD_HOT_output.pb'),
+        pb_pathHWWlepMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hwwlep_MD_HOT_output.pb'),
+        pb_pathHWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_HOT_output.pb'),
+        extex=cms.string('WW'),
+        isHotVR=cms.bool(False),
+    )                           
+
+    # src
+    srcJets = cms.InputTag('imageJetsWWAK8Puppi')
+
+    # jetID
+    process.looseJetIdCustomWWAK8 = cms.EDProducer("PatJetIDValueMapProducer",
+              filterParams=cms.PSet(
+                version = cms.string('WINTER16'),
+                quality = cms.string('LOOSE'),
+              ),
+              src=srcJets
+    )
+
+    process.tightJetIdCustomWWAK8 = cms.EDProducer("PatJetIDValueMapProducer",
+              filterParams=cms.PSet(
+                version=cms.string('WINTER17PUPPI'),
+                quality = cms.string('TIGHT'),
+              ),
+              src=srcJets
+    )
+    run2_miniAOD_80XLegacy.toModify(process.tightJetIdCustomWWAK8.filterParams, version="WINTER16")
+
+    process.tightJetIdLepVetoCustomWWAK8 = cms.EDProducer("PatJetIDValueMapProducer",
+              filterParams=cms.PSet(
+                version = cms.string('WINTER17PUPPI'),
+                quality = cms.string('TIGHTLEPVETO'),
+              ),
+              src=srcJets
+    )
+
+    for modifier in run2_miniAOD_80XLegacy, run2_nanoAOD_94X2016:
+    	modifier.toModify( process.tightJetIdCustomWWAK8.filterParams, version = "WINTER16" )
+    	modifier.toModify( process.tightJetIdLepVetoCustomWWAK8.filterParams, version = "WINTER16" )
+    run2_nanoAOD_102Xv1.toModify( process.tightJetIdCustomWWAK8.filterParams, version = "SUMMER18PUPPI" )
+    run2_nanoAOD_102Xv1.toModify( process.tightJetIdLepVetoCustomWWAK8.filterParams, version = "SUMMER18PUPPI" )
+
+    process.customWWAK8WithUserData = cms.EDProducer("PATJetUserDataEmbedder",
+        src=srcJets,
+        userFloats=cms.PSet(),
+        userInts=cms.PSet(
+           tightId=cms.InputTag("tightJetIdCustomWWAK8"),
+           tightIdLepVeto=cms.InputTag("tightJetIdLepVetoCustomWWAK8"),
+        ),
+    )
+    run2_miniAOD_80XLegacy.toModify(process.customWWAK8WithUserData.userInts,
+        looseId=cms.InputTag("looseJetIdCustomWWAK8"),
+        tightIdLepVeto=None,
+    )
+
+    process.customWWAK8Table = cms.EDProducer("SimpleCandidateFlatTableProducer",
+        src=cms.InputTag("customWWAK8WithUserData"),
+        name=cms.string("CustomWWAK8Puppi"+pfix),
+        cut=cms.string(""),
+        doc=cms.string("customized ak8 puppi jets for HRT"),
+        singleton=cms.bool(False),  # the number of entries is variable
+        extension=cms.bool(False),  # this is the main table for the jets
+        variables=cms.PSet(P4Vars,
+            jetId=Var("userInt('tightId')*2+4*userInt('tightIdLepVeto')", int, doc="Jet ID flags bit1 is loose (always false in 2017 since it does not exist), bit2 is tight, bit3 is tightLepVeto"),
+
+            itop=Var("userFloat('ImageWW:top')", float, doc="Image top tagger score", precision=-1),
+            iMDtop=Var("userFloat('ImageMDWW:top')", float, doc="Image MD top tagger score", precision=-1),
+            #iPho=Var("userFloat('ImageWW:pho')", float, doc="Image photonjet tagger score", precision=-1),
+            iMDPho=Var("userFloat('ImageMDWW:pho')", float, doc="Image MD photonjet tagger score", precision=-1),
+            iW=Var("userFloat('ImageWW:w')", float, doc="Image w tagger score", precision=-1),
+            iMDW=Var("userFloat('ImageMDWW:w')", float, doc="Image MD w tagger score", precision=-1),
+            iMDH=Var("userFloat('ImageMDWW:h')", float, doc="Image MD h tagger score", precision=-1),
+            iMDHfless=Var("userFloat('ImageMDWW:hfless')", float, doc="Image MD h tagger score (without b tagging)", precision=-1),
+            #iMDHfonly=Var("userFloat('ImageMD:hfonly')", float, doc="Image MD h tagger score (only b tagging)", precision=-1),
+            iMDZ=Var("userFloat('ImageMDWW:z')", float, doc="Image MD z tagger score", precision=-1),
+            iMDZfless=Var("userFloat('ImageMDWW:zfless')", float, doc="Image MD z tagger score (without b tagging)", precision=-1),
+            #iMDZfonly=Var("userFloat('ImageMDWW:zfonly')", float, doc="Image MD z tagger score (only b tagging)", precision=-1),
+            iMDWW=Var("userFloat('ImageMDWW:ww')", float, doc="Image MD ww->qqqq tagger score", precision=-1),
+            iMDWWlep=Var("userFloat('ImageMDWW:wwlep')", float, doc="Image MD ww->lnuqq tagger score", precision=-1),
+            iMDHWW=Var("userFloat('ImageMDWW:hww')", float, doc="Image MD h->ww->qqqq tagger score", precision=-1),
+            iMDHWWlep=Var("userFloat('ImageMDWW:hwwlep')", float, doc="Image MD h->ww->lnuqq tagger score", precision=-1),
+            itopmass=Var("userFloat('ImageWW:mass')", float, doc="Image tagger groomed mass", precision=-1),
+        )
+    )
+
+    run2_miniAOD_80XLegacy.toModify(process.customWWAK8Table.variables, jetId=Var("userInt('tightId')*2+userInt('looseId')", int, doc="Jet ID flags bit1 is loose, bit2 is tight"))
+    process.customWWAK8Table.variables.pt.precision = 10
+
+    # add DeepAK8 scores: nominal
+    for prob in _pfDeepBoostedJetTagsProbs:
+        name = prob.split(':')[1].replace('prob', 'nn')
+        setattr(process.customWWAK8Table.variables, name, Var("bDiscriminator('%s')" % prob, float, doc=prob, precision=-1))
+
+    # add DeepAK8 scores: mass decorrelated
+    for prob in _pfMassDecorrelatedDeepBoostedJetTagsProbs:
+        name = prob.split(':')[1].replace('prob', 'nnMD')
+        setattr(process.customWWAK8Table.variables, name, Var("bDiscriminator('%s')" % prob, float, doc=prob, precision=-1))
+
+
+    process.customizedWWAK8Task = cms.Task(
+        process.imageJetsWWAK8Puppi,
+        process.tightJetIdCustomWWAK8,
+        process.tightJetIdLepVetoCustomWWAK8,
+        process.customWWAK8WithUserData,
+        process.customWWAK8Table
+        )
+
+    _customizedWWAK8Task_80X = process.customizedWWAK8Task.copy()
+    _customizedWWAK8Task_80X.replace(process.tightJetIdLepVetoCustomWWAK8, process.looseJetIdCustomWWAK8)
+    run2_miniAOD_80XLegacy.toReplaceWith(process.customizedWWAK8Task, _customizedWWAK8Task_80X)
+
+    if path is None:
+        process.schedule.associate(process.customizedWWAK8Task)
+    else:
+        getattr(process, path).associate(process.customizedWWAK8Task)
