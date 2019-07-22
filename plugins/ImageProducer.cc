@@ -415,7 +415,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         double phic=0;
 
 	int idaufill = 0;
-  	std::cout<<"ndau "<<ndau<<std::endl;
+  	//std::cout<<"ndau "<<ndau<<std::endl;
 	for(int idau=0;idau<ndau;idau++)
 		{
 	        const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>(AK8pfjet.daughter(idau) );
@@ -513,7 +513,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	uint DBindex=sjlist.size();
 
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
-	std::cout<<"gmass "<<gmass<<std::endl;
+	if(extex_=="WB")std::cout<<"WB gmass "<<gmass<<std::endl;
         sjlist.push_back(gmass/172.0);
         sjlist.push_back(AK8pfjet.pt()/2000.0);
 	gmasses[ntopinit]=gmass;

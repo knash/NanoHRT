@@ -275,7 +275,7 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
     else:
         getattr(process, path).associate(process.customizedAK8Task)
 
-def setupCustomizedWWAK8(process, runOnMC=False, path=None, pfc='std'):
+def setupCustomizedWWAK8(process, runOnMC=False, path=None):
 
     # recluster Puppi jets, add N-Subjettiness and ECF
     bTagDiscriminators = [
@@ -290,8 +290,9 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None, pfc='std'):
         'pfDeepCSVJetTags:probbb',
     ]
     JETCorrLevels = ['L2Relative', 'L3Absolute', 'L2L3Residual']
-    print "Running pfc collection",pfc
-    pfix=pfc
+    pfix = "WWProducerpuppi"
+
+    print "Running pfc collection",pfix
     from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
     jetToolbox(process, 'ak8', 'dummySeq', 'out', associateTask=False,
 		       PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
@@ -301,7 +302,7 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None, pfc='std'):
 		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
 		       addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
 		       bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators,
-	               newPFCollection=True, nameNewPFCollection=pfc)
+	               newPFCollection=True, nameNewPFCollection=pfix)
     if runOnMC:
         process.ak8GenJetsNoNu.jetPtMin = 100
         process.ak8GenJetsNoNuSoftDrop.jetPtMin = 100
@@ -324,7 +325,7 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None, pfc='std'):
                 miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
 		updateCollectionSubjets='selectedPatJetsAK8PFPuppi'+pfix+'SoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
 		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix=pfix+'AK8WithPuppiDaughters',
-	        newPFCollection=True, nameNewPFCollection=pfc)
+	        newPFCollection=True, nameNewPFCollection=pfix)
 
 
     process.imageJetsWWAK8Puppi = cms.EDProducer('ImageProducer',
@@ -448,12 +449,88 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None, pfc='std'):
         setattr(process.customWWAK8Table.variables, name, Var("bDiscriminator('%s')" % prob, float, doc=prob, precision=-1))
 
 
+    pfixb = "WBProducerpuppi"
+    print "Running pfc collection",pfixb
+    from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
+    jetToolbox(process, 'ak8', 'dummySeq', 'out', associateTask=False,
+		       PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+		       Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+		       postFix=pfixb,miniAOD=True, runOnMC=runOnMC,
+		       addNsub=True, maxTau=4, addEnergyCorrFunc=True,
+		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
+		       addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
+		       bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators,
+	               newPFCollection=True, nameNewPFCollection=pfixb)
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
+		updateCollection='packedPatJetsAK8PFPuppi'+pfixb+'SoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
+		updateCollectionSubjets='selectedPatJetsAK8PFPuppi'+pfixb+'SoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
+		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix=pfixb+'AK8WithPuppiDaughters',
+	        newPFCollection=True, nameNewPFCollection=pfixb)
+
+
+    process.imageJetsWBAK8Puppi = process.imageJetsWWAK8Puppi.copy()
+    process.imageJetsWBAK8Puppi.src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfixb+'AK8WithPuppiDaughters')
+    process.imageJetsWBAK8Puppi.sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfixb+'AK8WithPuppiDaughtersSoftDropPacked')
+    process.imageJetsWBAK8Puppi.sdmcoll=cms.string('ak8PFJetsPuppiWBProducerpuppiSoftDropMass')
+    process.imageJetsWBAK8Puppi.extex=cms.string('WB')
+    srcJetsB = cms.InputTag('imageJetsWBAK8Puppi')
+    process.tightJetIdCustomWBAK8 = process.tightJetIdCustomWWAK8.copy()
+    process.tightJetIdCustomWBAK8.src=srcJetsB
+    process.tightJetIdLepVetoCustomWBAK8 = process.tightJetIdLepVetoCustomWWAK8.copy()
+    process.tightJetIdLepVetoCustomWBAK8.src=srcJetsB
+    process.customWBAK8WithUserData = cms.EDProducer("PATJetUserDataEmbedder",
+        src=srcJetsB,
+        userFloats=cms.PSet(),
+        userInts=cms.PSet(
+           tightId=cms.InputTag("tightJetIdCustomWBAK8"),
+           tightIdLepVeto=cms.InputTag("tightJetIdLepVetoCustomWBAK8"),
+        ),
+    )
+
+
+    process.customWBAK8Table = cms.EDProducer("SimpleCandidateFlatTableProducer",
+        src=cms.InputTag("customWBAK8WithUserData"),
+        name=cms.string("CustomWBAK8Puppi"+pfixb),
+        cut=cms.string(""),
+        doc=cms.string("customized ak8 puppi jets for HRT"),
+        singleton=cms.bool(False),  # the number of entries is variable
+        extension=cms.bool(False),  # this is the main table for the jets
+        variables=cms.PSet(P4Vars,
+            jetId=Var("userInt('tightId')*2+4*userInt('tightIdLepVeto')", int, doc="Jet ID flags bit1 is loose (always false in 2017 since it does not exist), bit2 is tight, bit3 is tightLepVeto"),
+
+            itop=Var("userFloat('ImageWB:top')", float, doc="Image top tagger score", precision=-1),
+            iMDtop=Var("userFloat('ImageMDWB:top')", float, doc="Image MD top tagger score", precision=-1),
+            #iPho=Var("userFloat('ImageWB:pho')", float, doc="Image photonjet tagger score", precision=-1),
+            iMDPho=Var("userFloat('ImageMDWB:pho')", float, doc="Image MD photonjet tagger score", precision=-1),
+            iW=Var("userFloat('ImageWB:w')", float, doc="Image w tagger score", precision=-1),
+            iMDW=Var("userFloat('ImageMDWB:w')", float, doc="Image MD w tagger score", precision=-1),
+            iMDH=Var("userFloat('ImageMDWB:h')", float, doc="Image MD h tagger score", precision=-1),
+            iMDHfless=Var("userFloat('ImageMDWB:hfless')", float, doc="Image MD h tagger score (without b tagging)", precision=-1),
+            #iMDHfonly=Var("userFloat('ImageMD:hfonly')", float, doc="Image MD h tagger score (only b tagging)", precision=-1),
+            iMDZ=Var("userFloat('ImageMDWB:z')", float, doc="Image MD z tagger score", precision=-1),
+            iMDZfless=Var("userFloat('ImageMDWB:zfless')", float, doc="Image MD z tagger score (without b tagging)", precision=-1),
+            #iMDZfonly=Var("userFloat('ImageMDWB:zfonly')", float, doc="Image MD z tagger score (only b tagging)", precision=-1),
+            iMDWW=Var("userFloat('ImageMDWB:ww')", float, doc="Image MD ww->qqqq tagger score", precision=-1),
+            iMDWWlep=Var("userFloat('ImageMDWB:wwlep')", float, doc="Image MD ww->lnuqq tagger score", precision=-1),
+            iMDHWW=Var("userFloat('ImageMDWB:hww')", float, doc="Image MD h->ww->qqqq tagger score", precision=-1),
+            iMDHWWlep=Var("userFloat('ImageMDWB:hwwlep')", float, doc="Image MD h->ww->lnuqq tagger score", precision=-1),
+            itopmass=Var("userFloat('ImageWB:mass')", float, doc="Image tagger groomed mass", precision=-1),
+        )
+    )
+
     process.customizedWWAK8Task = cms.Task(
         process.imageJetsWWAK8Puppi,
         process.tightJetIdCustomWWAK8,
         process.tightJetIdLepVetoCustomWWAK8,
         process.customWWAK8WithUserData,
-        process.customWWAK8Table
+        process.customWWAK8Table,
+        process.imageJetsWBAK8Puppi,
+        process.tightJetIdCustomWBAK8,
+        process.tightJetIdLepVetoCustomWBAK8,
+        process.customWBAK8WithUserData,
+        process.customWBAK8Table
         )
 
     _customizedWWAK8Task_80X = process.customizedWWAK8Task.copy()
