@@ -54,10 +54,11 @@ if options.mode == "recover":
 
 		with open(curcrab) as fp:
    			for line in fp:
-				line=line.replace(" ","")
+
 				line=line.replace("NanoSlimNtuples","NanoSlimNtuples_recov")
        				lsplit = line.split("=")
 				if len(lsplit)==2:
+					lsplit[0]=lsplit[0].replace(" ","")
 					if lsplit[0]=="config.Data.unitsPerJob":
 						lsplit[1]=str(int(0.5*int(lsplit[1])))+"\n"
 					if lsplit[0]=="config.Data.lumiMask":
