@@ -8,7 +8,7 @@ parser = OptionParser()
 parser.add_option('-m', '--mode', metavar='F', type='string', action='store',
                   default	=	'NONE',
                   dest		=	'mode',
-                  help		=	'mode kll, status, resubmit, recover')
+                  help		=	'mode kll, status, resubmit, recover, lumicalc')
 
 parser.add_option('-s', '--search', metavar='F', type='string', action='store',
                   default	=	'NONE',
@@ -35,11 +35,15 @@ commands = []
 
 folders = glob.glob(options.search)
 for fold in folders:
+	print fold
 	if options.mode in ("status","kill","resubmit"):
 		commands.append("crab "+options.mode+" "+fold)
-	if options.mode == "recover":
+	if options.mode == "recover" or options.mode == "lumicalc":
 		commands.append("crab report "+fold)
-		commands.append("tar xvf "+fold+"/inputs/debugFiles.tgz")
+		if options.mode == "recover":
+			commands.append("tar xvf "+fold+"/inputs/debugFiles.tgz")
+		if options.mode == "lumicalc":
+			commands.append("brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_BRIL.json -i "+fold+"/results/processedLumis.json -u /fb")
 
 for s in commands :
     print 'executing ' + s
