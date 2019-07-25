@@ -123,6 +123,8 @@ process.NanoAODFilterSlep = cms.EDFilter('NanoAODFilterSlep',
 			srcAK8 = cms.InputTag("slimmedJetsAK8"),
 			srcmet = cms.InputTag("slimmedMETs"),
 			srcmu = cms.InputTag("slimmedMuons"))
+
+
 process.NanoAOD_Filter_Slep_post= cms.EDFilter('NanoAOD_Filter_Slep_post',
 			srcAK8 = cms.InputTag("WtagProducerpuppi","wjet"),
 			srcAK4 = cms.InputTag("WtagProducerpuppi","bjet"))

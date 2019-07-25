@@ -4,6 +4,9 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
+#include  "DataFormats/FWLite/interface/ChainEvent.h"
+
+
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
@@ -15,9 +18,11 @@
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
 
 #include "DataFormats/FWLite/interface/Event.h"
+
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "../interface/WtagProducer.hh"
+#include <fstream>
 
 class WtagProducer : public edm::stream::EDProducer<> {
 
@@ -29,6 +34,7 @@ class WtagProducer : public edm::stream::EDProducer<> {
 
 
   private:
+
     void beginStream(edm::StreamID) override {}
     void produce(edm::Event&, const edm::EventSetup&) override;
     void endStream() override {}
@@ -44,7 +50,8 @@ class WtagProducer : public edm::stream::EDProducer<> {
     TFile* inputTFile_;
     TH1F* topmass_;
     TH1F* wwmass_;
-    fwlite::Event* ev_;
+    //fwlite::Event* ev_;
+    std::atomic<fwlite::ChainEvent*> ev_;
     edm::EDGetTokenT<std::vector<reco::GenParticle>> gplab ;
 
 
@@ -78,13 +85,20 @@ src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 
   if(merge_ or mergeb_)
 	{
-	inputTFile_  = new TFile("TEMPMIX.root","read");
+
+	//inputTFile_  = new TFile("TEMPMIX.root","read");
 	auto topf  = new TFile("topmass.root ","read"); 
 	auto wwf  = new TFile("wwmass.root ","read"); 
     	topmass_ = (TH1F*)topf->Get("Masshisttt");
     	wwmass_ = (TH1F*)wwf->Get("Masshisttt");
-	ev_ = new fwlite::Event(inputTFile_);
-	nevmix=ev_->size();
+	//ev_ = new fwlite::Event(inputTFile_);
+	std::vector<std::string> fnames;
+	std::string line;
+	std::ifstream myfile;
+	myfile.open("fnames.txt");
+	while(getline(myfile, line))fnames.push_back(line);
+	ev_ =  new fwlite::ChainEvent(fnames);
+	nevmix=ev_.load()->size();
 	std::cout<<"mixing "<<nevmix<<" events";
 	}
   //windex_ = consumes<edm::View<int>>(edm::InputTag("windex","NanoAODFilterSlep"));
@@ -111,6 +125,7 @@ void WtagProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions
 
 void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+  std::cout<<"1"<<std::endl;
   edm::Handle<edm::View<pat::Jet>>jets;
   edm::Handle<int>windex;
   edm::Handle<int>bindex;
@@ -140,6 +155,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   bool merge=merge_;
   bool mergeb=mergeb_;
+  std::cout<<"2"<<std::endl;
   if(merge or mergeb)
 	{
   	std::cout<<"tnum "<<tnum_<<" pnum "<<pnum_<<std::endl;
@@ -159,37 +175,40 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::cout<<"nak81 "<<jets->size()<<std::endl;
   auto AK8pfjet = jets->at(iwindex);
   std::cout<<"AK8 mass "<<AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")<<std::endl;
-  
-  //std::vector<fwlite::Event>::iterator curev = ev_->toBegin() + evtoload;
+    std::cout<<"3"<<std::endl;
+  //std::vector<fwlite::Event>::iterator curev = ev_.load()->toBegin() + evtoload;
   if(merge or mergeb)
 	{
 	//std::cout<<"Events to mix "<<nevmix<<std::endl;
-	ev_->toBegin();	
+	ev_.load()->toBegin();	
 	for(int temp=0;temp<(evtoload-1);temp++)++(*ev_);
 	edm::Handle<std::vector<pat::Jet>> Wjets;
 	edm::Handle<std::vector<pat::PackedCandidate>> Wjetspfc;
 	float DRmin=0.0;
 	float DRmax=0.0;
+    std::cout<<"4"<<std::endl;
 	if(merge)
 			{
 			//std::cout<<"Load W"<<std::endl;
-	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wjet"), Wjets);
-	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wcands"), Wjetspfc);
+	  		ev_.load()->getByLabel(edm::InputTag("WtagProducerpuppi","wjet"), Wjets);
+	  		ev_.load()->getByLabel(edm::InputTag("WtagProducerpuppi","wcands"), Wjetspfc);
 			DRmin=0.0;
 			DRmax=0.4;
 			}
 	if(mergeb)
 			{
 			//std::cout<<"Load B"<<std::endl;
-	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","bjet"), Wjets);
-	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","bcands"), Wjetspfc);
-			DRmin=0.4;
-			DRmax=0.6;
+	  		ev_.load()->getByLabel(edm::InputTag("WtagProducerpuppi","bjet"), Wjets);
+	  		ev_.load()->getByLabel(edm::InputTag("WtagProducerpuppi","bcands"), Wjetspfc);
+			DRmin=0.5;
+			DRmax=0.8;
 			}
+    std::cout<<"5"<<std::endl;
 	auto Wjetsprod = Wjets.product();
 	auto Wjetspfcprod = Wjetspfc.product();
 	if (Wjetsprod->size()>0)
 		{
+    std::cout<<"6"<<std::endl;
 		float DRt = DRmin + (DRmax-DRmin)*(static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 		float ang = 2*3.1415*(static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 			
@@ -208,7 +227,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if(mergeb)randomass=topmass_->GetRandom();
 		if(merge)randomass=wwmass_->GetRandom();
 		std::cout<<"randomass "<<randomass<<std::endl;
-		fakefac=1.35*172.5*randomass/(AK8pfjet.p4()+wjp4).mass();
+		fakefac=1.0;//1.35*172.5*randomass/(AK8pfjet.p4()+wjp4).mass();
 		for(uint idau=0;idau<Wjetspfcprod->size();idau++)
 			{
 				pat::PackedCandidate lPack = Wjetspfcprod->at(idau);
@@ -240,6 +259,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			  }
 		}
 	else std::cout<<"emptyfileevent!"<<std::endl;
+    std::cout<<"7"<<std::endl;
 	}
 	int ndau = AK8pfjet.numberOfDaughters();
 	//std::cout<<"foundtheW "<<std::endl;

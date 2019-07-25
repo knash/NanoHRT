@@ -1,4 +1,4 @@
-std::mutex write_mutex;
+
 std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::GenParticle>* genpartsvec ,float mergeval)
 		{
 		int fulltopmatch=0;

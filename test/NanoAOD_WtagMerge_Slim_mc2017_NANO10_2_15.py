@@ -36,7 +36,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(200000)
+    input = cms.untracked.int32(30000)
 )
 
 # Input source
@@ -136,7 +136,7 @@ process.NanoAODFilterSlep = cms.EDFilter('NanoAODFilterSlep',
         		merge=cms.bool(True),
 			srcAK4 = cms.InputTag("slimmedJets"),
 			srcAK8 = cms.InputTag("slimmedJetsAK8"),
-			srcmet = cms.InputTag("slimmedMETs"),
+			srcmet = cms.InputTag("slimmedMETs","","PAT"),
 			srcmu = cms.InputTag("slimmedMuons"))
 
 process.NanoAOD_Filter_Slep_post= cms.EDFilter('NanoAOD_Filter_Slep_post',
@@ -165,7 +165,7 @@ process.WBProducerpuppi = cms.EDProducer('WtagProducer',
         		pnum=cms.uint32(options.ijob),
         		tnum=cms.uint32(options.totjobs))
 
-process.w_step = cms.Path(process.NanoAODFilterSlep*process.nanoSequenceMC*process.WWProducerpuppi*process.WBProducerpuppi)
+process.w_step = cms.Path(process.NanoAODFilterSlep*process.WWProducerpuppi*process.WBProducerpuppi)
 process.dump=cms.EDAnalyzer('EventContentAnalyzer')
 process.p = cms.Path( process.dump)
 process.schedule = cms.Schedule(process.filt_step,process.w_step,process.filt_step_full,process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
@@ -173,7 +173,7 @@ from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
 #Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(1)
+process.options.numberOfThreads=cms.untracked.uint32(4)
 process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.
