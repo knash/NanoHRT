@@ -244,7 +244,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	int ndau = AK8pfjet.numberOfDaughters();
         std::vector<pat::PackedCandidate> allpf;
 
-	std::vector<std::vector<float>> partlist = {{},{},{},{},{},{},{},{}};
+	std::vector<std::vector<float>> partlist = {{},{},{},{},{},{},{},{},{},{},{},{}};
 	std::vector<float> sjlist = {};
 	
 	double fullint = 0.0;
@@ -309,6 +309,21 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			else partlist[6].push_back(0.0);
 			if(pfcflav==130)partlist[7].push_back(lPack->pt());
 			else partlist[7].push_back(0.0);
+			if (lPack->hasTrackDetails())
+				{
+				partlist[8].push_back(lPack->dxy());
+				partlist[9].push_back(lPack->dzAssociatedPV());
+				partlist[10].push_back(lPack->dxyError());
+				partlist[11].push_back(lPack->dzError());
+				}
+			else
+
+				{
+				partlist[8].push_back(0.0);
+				partlist[9].push_back(0.0);
+				partlist[10].push_back(0.0);
+				partlist[11].push_back(0.0);
+				}
 			idaufill+=1;
 			}
 		}
@@ -377,6 +392,12 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleCvLJetTags:probHcc"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfDeepDoubleBvLJetTags:probQCD"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfDeepDoubleBvLJetTags:probHbb"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfDeepDoubleCvLJetTags:probQCD"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfDeepDoubleCvLJetTags:probHcc"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfDeepDoubleCvBJetTags:probHbb"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfDeepDoubleCvBJetTags:probHcc"));
 	//std::cout<<matched.first<<std::endl;
         sjlist.push_back(matched.first);
         sjlist.push_back(gmass/172.0);
@@ -417,7 +438,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   	uint ncolors=6;
   
-	std::vector<std::vector<std::vector<double>>> grid(37,std::vector<std::vector<double>>(37,std::vector<double>(ncolors*2-1,0.0)));
+	std::vector<std::vector<std::vector<double>>> grid(37,std::vector<std::vector<double>>(37,std::vector<double>(ncolors*2+4-1,0.0)));
 	std::vector<std::pair<std::vector<uint>,std::vector<double>>> indexedimage;
 
 	//normalization and digitization
@@ -431,7 +452,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			if(((j>2) or (j==0))) //1 and 2 are eta,phi
 				{
 				grid[ietalist[i]][iphilist[i]][filldex]+=partlist[j][i]/fullint;
-				if(j>2 and partlist[j][i]/fullint>1e-10)grid[ietalist[i]][iphilist[i]][filldex+5]+=0.1;
+				if(j>2 and j<8 and partlist[j][i]/fullint>1e-10)grid[ietalist[i]][iphilist[i]][filldex+9]+=0.1;
 				filldex+=1;
 				}
 			}				

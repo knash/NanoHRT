@@ -925,6 +925,7 @@ std::pair<int,float> signalmatch(TLorentzVector curtlv ,const std::vector<reco::
 
 										if((foundhad0 and foundlep1)or(foundhad1 and foundlep0))
 											{
+											//std::cout<< "foundhad0 " <<foundhad0<< " foundlep1 " <<foundlep1 << " foundhad1 " <<foundhad1<< " foundlep0 " <<foundlep0<<std::endl;
 											if(nabove==1)fulltopmatch=5;
 											else if(maxdrfromlv<mergeval)fulltopmatch=6;
 											else return std::pair<int,float>(false,avedr);
