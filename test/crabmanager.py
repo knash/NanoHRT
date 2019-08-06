@@ -15,6 +15,11 @@ parser.add_option('-s', '--search', metavar='F', type='string', action='store',
                   dest		=	'search',
                   help		=	'search string (match crab directory)')
 
+parser.add_option('-o', '--ops', metavar='F', type='string', action='store',
+                  default	=	'',
+                  dest		=	'ops',
+                  help		=	'options')
+
 (options, args) = parser.parse_args()
 
 print('Options summary')
@@ -37,7 +42,7 @@ folders = glob.glob(options.search)
 for fold in folders:
 	print fold
 	if options.mode in ("status","kill","resubmit"):
-		commands.append("crab "+options.mode+" "+fold)
+		commands.append("crab "+options.mode+" "+fold+" "+options.ops)
 	if options.mode == "recover" or options.mode == "lumicalc":
 		commands.append("crab report "+fold)
 		if options.mode == "recover":
