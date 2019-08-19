@@ -10,7 +10,8 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
-#include "TLorentzVector.h"
+#include "Math/LorentzVector.h"
+
 
 #include <iostream>
 #include <fstream>
@@ -61,6 +62,7 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     static std::unique_ptr<ImageTFCache> initializeGlobalCache(const edm::ParameterSet&);
 
   private:
+    typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
     void beginStream(edm::StreamID) override {}
     void produce(edm::Event&, const edm::EventSetup&) override;
     void endStream() override {}
@@ -88,11 +90,13 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     tensorflow::Session* tfsessionHWWMDHOT_;
     tensorflow::Session* tfsessionHWWlepMDHOT_;
 
-
     bool isHotVR;
+    bool fakeb;
 
     const edm::EDGetTokenT<edm::View<pat::Jet>> src_;
     const edm::EDGetTokenT<edm::View<pat::Jet>> sj_;
+    const edm::EDGetTokenT<std::vector<float>> sjmerger_;
+
     std::string sdmcoll_;
 
     edm::FileInPath pb_path_;
@@ -119,6 +123,7 @@ class ImageProducer : public edm::stream::EDProducer<edm::GlobalCache<ImageTFCac
     edm::FileInPath pb_pathHWWlepMDHOT_;
     std::string extex_;
     bool isHotVR_;
+    bool fakeb_;
     uint nsubs;
 };
 
@@ -148,9 +153,11 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
 ,  tfsessionHWWlepMDHOT_(nullptr)
 ,  src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 ,  sj_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("sj")))
+,  sjmerger_(consumes<std::vector<float>>(iConfig.getParameter<edm::InputTag>("sjmerger")))
 ,  sdmcoll_(iConfig.getParameter<std::string>("sdmcoll"))
 ,  extex_(iConfig.getParameter<std::string>("extex"))
 ,  isHotVR_(iConfig.getParameter<bool>("isHotVR"))
+,  fakeb_(iConfig.getParameter<bool>("fakeb"))
 {
   
   produces<pat::JetCollection>();
@@ -180,8 +187,8 @@ ImageProducer::ImageProducer(const edm::ParameterSet& iConfig,  const ImageTFCac
   tfsessionWWlepMDHOT_ = tensorflow::createSession(cache_->graphDefWWlepMDHOT,sessionOptions);
   tfsessionHWWMDHOT_ = tensorflow::createSession(cache_->graphDefHWWMDHOT,sessionOptions);
   tfsessionHWWlepMDHOT_ = tensorflow::createSession(cache_->graphDefHWWlepMDHOT,sessionOptions);
+  fakeb = fakeb_;
   isHotVR=isHotVR_;
-
 
   //if(iConfig.getParameter<edm::InputTag>("src").label()=="slimmedJetsAK8")sdmcoll="ak8PFJetsCHSSoftDropMass";
 
@@ -325,8 +332,8 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(src_, jets);
   iEvent.getByToken(sj_, subjets);
 
-  TLorentzVector curtlv;
-  TLorentzVector sublv;
+
+
 
   int jindex=0;
 
@@ -353,6 +360,20 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<float> itopdiscHWWMDHOT = {};
   std::vector<float> itopdiscHWWlepMDHOT = {};
   std::vector<float> gmasses = {};
+  edm::Handle<std::vector<float>> sjmergerh;
+  std::vector<float> sjmerger; 
+  if(extex_=="WB" or extex_=="WW")
+	{
+	iEvent.getByToken(sjmerger_, sjmergerh);
+  	sjmerger = *(sjmergerh.product()); 
+	}	
+  //std::cout<<"len sjmerger "<<sjmerger.size()<<std::endl;
+  if(sjmerger.size()<9)
+	{
+	std::cout<<"turn off faking"<<std::endl;
+	fakeb=false;
+	}
+
 
   if(isHotVR) nsubs=4;
   else nsubs=2;
@@ -360,8 +381,10 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::cout<<"running "<<extex_<<std::endl;
   for (const auto &AK8pfjet : *jets)
 	{
-	ntopinit+=1;
 
+
+	ntopinit+=1;
+  	//std::cout<<"1 "<<std::endl;
 
     	if(isHotVR)
 		{
@@ -371,9 +394,6 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  	itopdiscWWlepMDHOT.push_back(-10.0);
 	  	itopdiscHWWMDHOT.push_back(-10.0);
 	  	itopdiscHWWlepMDHOT.push_back(-10.0);
-
-
-
 		}
 	else 
 		{  	
@@ -394,19 +414,21 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  	itopdiscHWWMD.push_back(-10.0);
 	  	itopdiscHWWlepMD.push_back(-10.0);
 		}
+  	//std::cout<<"2 "<<std::endl;
 
   	gmasses.push_back(-10.0);
+	//std::cout<<AK8pfjet.pt()<<" "<<AK8pfjet.eta()<<" "<<AK8pfjet.phi()<<" "<<AK8pfjet.mass()<<std::endl;
 
-        TLorentzVector curtlv;
-	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
 
+    	LorentzVector curtlv = AK8pfjet.p4();
+	//curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
 
 	float mergeval=0.8;
 	if(isHotVR) mergeval=1.2;
 
 	int ndau = AK8pfjet.numberOfDaughters();
         std::vector<pat::PackedCandidate> allpf;
-
+  	//std::cout<<"3 "<<std::endl;
 	std::vector<std::vector<float>> partlist = {{},{},{},{},{},{},{},{}};
 	std::vector<float> sjlist = {};
 	
@@ -419,15 +441,16 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	for(int idau=0;idau<ndau;idau++)
 		{
 	        const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>(AK8pfjet.daughter(idau) );
-
+		
 	  	if (lPack != nullptr)
 			{
+			//std::cout<<lPack->pt()<<std::endl;
 			float dphi = reco::deltaPhi(lPack->phi(),curtlv.Phi());
 
-        		TLorentzVector pfclv;
-			pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),curtlv.Phi()+dphi,lPack->mass());
+        		LorentzVector pfclv = lPack->p4();
+			//pfclv.SetPtEtaPhiM(lPack->pt(),lPack->eta(),curtlv.Phi()+dphi,lPack->mass());
 			if ((pfclv.Pt()<=1.0) and (lPack->charge()!=0)) continue;
-			double funcval =(6.62733e-02) + (2.63732e+02)*(1.0/curtlv.Perp());
+			double funcval =(6.62733e-02) + (2.63732e+02)*(1.0/curtlv.Pt());
 			double drcorval = 0.6/(funcval);
 
 			int pfcflav = std::abs(lPack->pdgId());
@@ -461,34 +484,73 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			idaufill+=1;
 			}
 		}
-	TLorentzVector gjet;
+	LorentzVector gjet;
 
         std::vector<pat::Jet> sjvec;
         std::vector<pat::Jet> sjvecmatch;
 	std::vector<int>lepblacks{5,11};
+	//std::cout<<"sjs"<<std::endl;
+  	//LorentzVector sublv;
+	int nsubtofake=1;
+	if(fakeb)
+		{
+		if (sjmerger[8]<0.5)nsubtofake=0;
+		std::cout<<"sjtofake "<<sjmerger[8]<<" val "<<nsubtofake<<std::endl;
+		}
   	for (const auto &subjet : *subjets)
 		{
 	       
 
 		sjvec.push_back(subjet);
-		sublv.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
+		LorentzVector sublv = subjet.p4();//.SetPtEtaPhiM(subjet.pt(),subjet.eta(),subjet.phi(),subjet.mass());
 		
-		if (sublv.DeltaR(curtlv)>mergeval || sjlist.size()>=(nsubs*6)) continue;
+		if (reco::deltaR(curtlv,sublv)>mergeval || sjlist.size()>=(nsubs*6)) continue;
 		sjvecmatch.push_back(subjet);
 		if(sjlist.size()==0)gjet=sublv;
 		else gjet+=sublv;
+		//std::cout<<"newsubjet fakeb "<<fakeb<<std::endl;
+		bool subcond = (sjlist.size()>=6) ;
+		if(nsubtofake==0) subcond = (sjlist.size()==0);
+		if( fakeb and subcond)
+			{
+			std::cout<<"write fake at "<<sjlist.size()<<std::endl;
+			//std::cout<<"fakem! "<<sjmerger[0]<<std::endl;
+			sjlist.push_back(sjmerger[0]);
+			sjlist.push_back(sjmerger[1]);
+			sjlist.push_back(sjmerger[2]);
+			sjlist.push_back(sjmerger[3]);
+			sjlist.push_back(sjmerger[4]);
+			sjlist.push_back(sjmerger[5]);
+			std::cout<<extex_<<" passed btag "<<sjmerger[0]<<" "<<sjmerger[1]<<" "<<sjmerger[5]<<std::endl;
+			}
+		else
+			{
+			//std::cout<<"ak8sj"<<std::endl;
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
+			//std::cout<<"bonk"<<std::endl;
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probuds"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
+			sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
+			//std::cout<<extex_<<" btag "<<subjet.bDiscriminator("pfDeepFlavourJetTags:probb")<<std::endl;
 
-		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probb"));
-		//std::cout<<"SJB "<<subjet.bDiscriminator("pfDeepFlavourJetTags:probb")<<std::endl;
-		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb"));
-		//std::cout<<"SJBB "<<subjet.bDiscriminator("pfDeepFlavourJetTags:probbb")<<std::endl;
-		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probuds"));
-		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probg"));
-		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probc"));
-		sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:problepb"));
+			if(extex_=="WB" and  sjlist.size()>=6)
+				{
+				float bfromim = subjet.bDiscriminator("pfDeepFlavourJetTags:probb")+subjet.bDiscriminator("pfDeepFlavourJetTags:probbb");
+				float bfromf = sjmerger[0]+sjmerger[1];
+				float lfromim = subjet.bDiscriminator("pfDeepFlavourJetTags:probuds")+subjet.bDiscriminator("pfDeepFlavourJetTags:probg");
+				float lfromf = sjmerger[2]+sjmerger[3];
+				std::cout<<"bdiscdelta  "<<bfromf-bfromim<<std::endl;
+				std::cout<<"ldiscdelta "<<lfromf-lfromim<<std::endl;
+				}
+			//std::cout<<"bdiscfromim lep b "<<sjlist.push_back(subjet.bDiscriminator("pfDeepFlavourJetTags:probbb")<<std::endl;
+			}
+
+
 		}
 	float gmass = 0.0;
-
+ 	//std::cout<<"1"<<std::endl;
 	if(isHotVR)	
 		{
 		//nsjh = sjvecmatch.size();
@@ -506,19 +568,18 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 	else	gmass=std::max(float(0.0),AK8pfjet.userFloat(sdmcoll_));
 
-
+ 	//std::cout<<"2"<<std::endl;
 	uint sjlsize=sjlist.size();
 
 	for(uint isj=0;isj<(nsubs*6-sjlsize);isj++) sjlist.push_back(0.);
 	uint DBindex=sjlist.size();
 
 	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
-	if(extex_=="WB")std::cout<<"WB gmass "<<gmass<<std::endl;
         sjlist.push_back(gmass/172.0);
         sjlist.push_back(AK8pfjet.pt()/2000.0);
 	gmasses[ntopinit]=gmass;
 
-	
+	std::cout<<extex_<<" mass "<<gmass<<std::endl;
 
 
         int npoints=38;
@@ -586,7 +647,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 					}
 			}
 		}
-	
+	//std::cout<<"3"<<std::endl;
 	//flipping horiz and vert
 	uint half_img=(npoints-2)/2;
 	float left_sum=0.0;
@@ -678,7 +739,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			}	
 		}
 
-
+ 	//std::cout<<"4"<<std::endl;
 
 	
 	//Actually run tensorflow
@@ -714,7 +775,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
        
   }
 
-
+  //std::cout<<"done1"<<std::endl;
   //Add to jet userfloats
   auto outputs = std::make_unique<pat::JetCollection>();
   jindex=0;
@@ -724,6 +785,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     if(isHotVR)
 		{
     		//newJet.addUserFloat("Image"+extex_+":top", itopdisc[jindex]);
+		//std::cout<<"itopHOT "<<itopdiscMDHOT[jindex]<<std::endl;
     		newJet.addUserFloat("ImageMD"+extex_+":top", itopdiscMDHOT[jindex]);
     		newJet.addUserFloat("ImageMD"+extex_+":ww", itopdiscWWMDHOT[jindex]);
     		newJet.addUserFloat("ImageMD"+extex_+":wwlep", itopdiscWWlepMDHOT[jindex]);
@@ -734,6 +796,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     else
 		{
 	    	newJet.addUserFloat("Image"+extex_+":top", itopdisc[jindex]);
+		std::cout<<"itop "<<itopdiscMD[jindex]<<std::endl;
 	    	newJet.addUserFloat("ImageMD"+extex_+":top", itopdiscMD[jindex]);
 	    	//newJet.addUserFloat("Image"+extex_+":pho", itopdiscPho[jindex]);
 	    	newJet.addUserFloat("ImageMD"+extex_+":pho", itopdiscPhoMD[jindex]);
@@ -750,12 +813,13 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    	newJet.addUserFloat("ImageMD"+extex_+":hww", itopdiscHWWMD[jindex]);
 	    	newJet.addUserFloat("ImageMD"+extex_+":hwwlep", itopdiscHWWlepMD[jindex]);
 		}
+    //std::cout<<"5"<<std::endl;
 
     newJet.addUserFloat("Image"+extex_+":mass", gmasses[jindex]);
 
     outputs->push_back(newJet);
     jindex+=1;
-
+    //std::cout<<"done2"<<std::endl;
   }
   // put into the event
   iEvent.put(std::move(outputs));

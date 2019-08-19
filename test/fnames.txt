@@ -1,5 +1,1 @@
-root://eoscms.cern.ch://store/user/knash/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1_NanoWtagProducer2017mc_v0/190723_091002/0000/MINIskim_17.root
-root://eoscms.cern.ch://store/user/knash/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1_NanoWtagProducer2017mc_v0/190723_091002/0000/MINIskim_2.root
-root://eoscms.cern.ch://store/user/knash/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1_NanoWtagProducer2017mc_v0/190723_091002/0000/MINIskim_20.root
-root://eoscms.cern.ch://store/user/knash/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1_NanoWtagProducer2017mc_v0/190723_091002/0000/MINIskim_5.root
-root://eoscms.cern.ch://store/user/knash/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1_NanoWtagProducer2017mc_v0/190723_091002/0000/MINIskim_8.root
+temp.root

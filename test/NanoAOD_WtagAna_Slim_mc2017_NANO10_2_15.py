@@ -20,7 +20,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(35000)
+    input = cms.untracked.int32(10000)
 )
 
 # Input source
@@ -35,23 +35,18 @@ process.source = cms.Source("PoolSource",
    #  fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/70000/72D87D33-6941-E911-823F-0025905B859A.root"),
    #fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/20000/6074D5E8-929A-E811-B7AD-B496910A90B8.root"),
 	fileNames = cms.untracked.vstring(
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/1649677B-49BC-E811-BFF1-0242AC130002.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/189F902B-5ABB-E811-87AC-20CF3019DF19.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/E0AB4E92-A6BB-E811-B7C4-001EC9ADCD0C.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/A8488F82-6ABC-E811-A5E0-0CC47AFC3C72.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/A8685FAB-04BE-E811-BC7B-7CD30AD09B08.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/2880148E-55BB-E811-920F-0025905A6056.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/EAE5867E-0BBC-E811-95B3-0025905A60D2.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/22587777-E2BA-E811-B181-1C6A7A26E149.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/E0CD5188-F0BA-E811-B108-0CC47AD9908C.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/30994A38-7BBC-E811-BC8F-0242AC130002.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/E24F2B9D-41BB-E811-8D62-0242AC130002.root",
-	"/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/1649677B-49BC-E811-BFF1-0242AC130002.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/969DFD44-5026-E911-87FD-0CC47AFCC65E.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/206C93D7-872C-E911-B7A8-0025905A6080.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/AA721AB1-2C2D-E911-97C7-0CC47A78A426.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/D29BEDF1-A625-E911-9FF7-AC1F6B239D78.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/92479E5F-9426-E911-8959-AC1F6B23C94C.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/2890CCC2-2C2D-E911-91D7-48FD8E2824A9.root",
 	),
 	#fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravTohhTohbbhbb_width0p05_M-1200_TuneCP2_13TeV-madgraph_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/260000/E077ADA4-A254-E911-84BC-0CC47A545298.root"),
 	#fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravToZZToZhadZhad_narrow_M-1000_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/80000/507F0D65-ED1C-E911-851E-E0071B73B6E0.root"),
 	#fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravToWW_narrow_M-1200_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/10000/CEECBDDE-4C20-E911-AE4C-90E2BAD4912C.root"),
-    secondaryFileNames = cms.untracked.vstring()
+    secondaryFileNames = cms.untracked.vstring(),
+    #firstEvent = cms.untracked.uint32(20792524)
 )
 
 process.options = cms.untracked.PSet(
@@ -76,6 +71,9 @@ outputCommandsHRT = process.MINIAODSIMEventContent.outputCommands
 #outputCommandsHRT.append("drop *")
 outputCommandsHRT.append("keep *_WtagProducerpuppi_*_*")
 outputCommandsHRT.append("keep *_offlineSlimmedPrimaryVertices_*_*")
+outputCommandsHRT.append("keep *_slimmedSecondaryVertices_*_*")
+outputCommandsHRT.append("keep *_slimmedMuons_*_*")
+outputCommandsHRT.append("keep *_slimmedElectrons_*_*")
 
 #outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
 #outputCommandsHRT.append("keep nanoaodFlatTable_genParticleTable_*_*")
@@ -107,15 +105,66 @@ process.MINIAODSIMoutput = cms.OutputModule("PoolOutputModule",
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_mc2017_realistic_v7', '')
 
+
+Bdiscs = ['pfDeepFlavourJetTags:probb', 'pfDeepFlavourJetTags:probbb', 'pfDeepFlavourJetTags:probuds', 'pfDeepFlavourJetTags:probg' , 'pfDeepFlavourJetTags:problepb', 'pfDeepFlavourJetTags:probc','pfCombinedInclusiveSecondaryVertexV2BJetTags','pfDeepCSVJetTags:probb', 'pfDeepCSVJetTags:probbb']
+
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
+JETCorrLevels = ['L2Relative', 'L3Absolute', 'L2L3Residual']
+
+bTagDiscriminators = [
+        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+        'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+    ]
+subjetBTagDiscriminators = [
+        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+        'pfDeepCSVJetTags:probb',
+        'pfDeepCSVJetTags:probbb',
+    ]
+from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
+jetToolbox(process, 'ak8', 'dummySeq', 'out', associateTask=False,
+               PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+               Cut='pt > 150.0 && abs(rapidity()) < 2.4',
+               miniAOD=True, runOnMC=True,
+               addNsub=True, maxTau=4, addEnergyCorrFunc=True,
+	       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
+               addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
+               bTagDiscriminators=bTagDiscriminators,subjetBTagDiscriminators=subjetBTagDiscriminators,subjetBTagInfos = ['pfImpactParameterTagInfos', 'pfSecondaryVertexTagInfos', 'pfInclusiveSecondaryVertexFinderTagInfos'],postFix='newak8')
+
+
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
+		updateCollection='selectedPatJetsAK8PFPuppinewak8SoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+                Cut='pt > 150.0 && abs(rapidity()) < 2.4', PUMethod='Puppi',
+                miniAOD=True, runOnMC=True,bTagDiscriminators=Bdiscs,
+		updateCollectionSubjets='selectedPatJetsAK8PFPuppinewak8SoftDropSubjets', subjetBTagDiscriminators=Bdiscs,  subjetBTagInfos = ['pfImpactParameterTagInfos', 'pfSecondaryVertexTagInfos', 'pfInclusiveSecondaryVertexFinderTagInfos'],
+		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix='withbtag')
+
 # Path and EndPath definitions
+#++patJets "patJetsAK8PFPuppinewak8" "" "NANOHRT" (productId = 6:68)
+#++patJets "patJetsAK8PFPuppinewak8SoftDrop" "" "NANOHRT" (productId = 6:69)
+#++patJets "patJetsAK8PFPuppinewak8SoftDropSubjets" "" "NANOHRT" (productId = 6:70)
+#++patJets "selectedPatJetsAK8PFPuppinewak8" "" "NANOHRT" (productId = 6:71)
+#++patJets "selectedPatJetsAK8PFPuppinewak8SoftDrop" "" "NANOHRT" (productId = 6:72)
+#++patJets "selectedPatJetsAK8PFPuppinewak8SoftDropPacked" "" "NANOHRT" (productId = 6:73)
+#++patJets "selectedPatJetsAK8PFPuppinewak8SoftDropPacked" "SubJets" "NANOHRT" (productId = 6:74)
+#++patJets "selectedPatJetsAK8PFPuppinewak8SoftDropSubjets" "" "NANOHRT" (productId = 6:75)
+
+
 process.WtagProducerpuppi = cms.EDProducer('WtagProducer',
         		src=cms.InputTag('slimmedJetsAK8'),
 			srcAK4 = cms.InputTag("slimmedJets"),
+        		sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiwithbtagSoftDropPacked'),
+			mu=cms.InputTag('slimmedMuons'),
+			el=cms.InputTag('slimmedElectrons'),
+			sec=cms.InputTag('slimmedSecondaryVertices'),
         		merge=cms.bool(False),
         		mergeb=cms.bool(False),
+        		mergemj=cms.bool(False),
+        		load=cms.bool(False),
         		pnum=cms.uint32(1),
         		tnum=cms.uint32(0))
-
 
 process.NanoAODFilterSlep = cms.EDFilter('NanoAODFilterSlep',
         		merge=cms.bool(False),
@@ -128,6 +177,8 @@ process.NanoAODFilterSlep = cms.EDFilter('NanoAODFilterSlep',
 process.NanoAOD_Filter_Slep_post= cms.EDFilter('NanoAOD_Filter_Slep_post',
 			srcAK8 = cms.InputTag("WtagProducerpuppi","wjet"),
 			srcAK4 = cms.InputTag("WtagProducerpuppi","bjet"))
+
+
 process.filt_step = cms.Path(process.NanoAODFilterSlep)
 process.filt_step_post = cms.Path(process.NanoAOD_Filter_Slep_post)
 process.filt_step_full = cms.Path(process.NanoAODFilterSlep*process.NanoAOD_Filter_Slep_post)
@@ -149,20 +200,21 @@ process.options.numberOfStreams=cms.untracked.uint32(0)
 # customisation of the process.
 
 # Automatic addition of the customisation function from PhysicsTools.NanoAOD.nano_cff
-from PhysicsTools.NanoAOD.nano_cff import nanoAOD_customizeMC 
+#from PhysicsTools.NanoAOD.nano_cff import nanoAOD_customizeMC 
 
 #call to customisation function nanoAOD_customizeMC imported from PhysicsTools.NanoAOD.nano_cff
-process = nanoAOD_customizeMC(process)
+#process = nanoAOD_customizeMC(process)
 
-from PhysicsTools.NanoHRT.nanoHRT_cff import nanoHRT_customizeMC 
-process = nanoHRT_customizeMC(process)
+#from PhysicsTools.NanoHRT.nanoHRT_cff import nanoHRT_customizeMC 
+#process = nanoHRT_customizeMC(process)
 
 # Automatic addition of the customisation function from Configuration.DataProcessing.Utils
 from Configuration.DataProcessing.Utils import addMonitoring 
 
 #call to customisation function addMonitoring imported from Configuration.DataProcessing.Utils
 process = addMonitoring(process)
-
+#process.SimpleMemoryCheck.jobReportOutputOnly = cms.untracked.bool(False)
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 # End of customisation functions
 
 # Customisation from command line

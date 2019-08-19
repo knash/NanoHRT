@@ -24,7 +24,9 @@
 class  NanoAODFilterSlep : public edm::stream::EDFilter<> {
 public:
   int windex;
+  int tindex;
   int bindex;
+  int mindex;
   explicit NanoAODFilterSlep( const edm::ParameterSet & );   
 
 private:
@@ -54,7 +56,9 @@ NanoAODFilterSlep::NanoAODFilterSlep(const edm::ParameterSet& iConfig):
  {   
   vtxl_ = consumes<std::vector<reco::Vertex>>(edm::InputTag("offlineSlimmedPrimaryVertices"));
   produces<int>("windex");
+  produces<int>("tindex");
   produces<int>("bindex");
+  produces<int>("mindex");
  }
 
 
@@ -76,7 +80,7 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
 
   bool foundmu = false;
   int muindex = 999;
-  int curmuindex = 0;
+
 
 
 
@@ -88,7 +92,7 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::Handle<std::vector<reco::Vertex>> vtx;
   iEvent.getByToken(vtxl_, vtx);
   const std::vector<reco::Vertex>* vtxvec  = vtx.product();
-
+  int curmuindex = 0;
   for (const auto &mu : *mus)
 	{
         float isol = (mu.pfIsolationR04().sumChargedHadronPt + std::max(0., mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5*mu.pfIsolationR04().sumPUPt))/mu.pt();
@@ -153,7 +157,9 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
   for (const auto &AK8pfjet : *jetsAK8)
 	{
 	//and  (AK8pfjet.userFloat("NjettinessAK8Puppi:tau2")/AK8pfjet.userFloat("NjettinessAK8Puppi:tau1")<0.45) 
-	if(AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")>60.0 and AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")<110.0 and   AK8pfjet.pt()>200.0) 
+	//float tau21=1.0;
+	//if(AK8pfjet.userFloat("NjettinessAK8Puppi:tau1")>0.0) tau21=AK8pfjet.userFloat("NjettinessAK8Puppi:tau2")/AK8pfjet.userFloat("NjettinessAK8Puppi:tau1");
+	if(AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")>65.0 and AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")<105.0 and AK8pfjet.pt()>250.0) 
 		{
 		int nbs=0;
 		for(uint bind=0;bind<bindices.size();bind++)
@@ -162,23 +168,60 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
 				{
 				nbs+=1;
 				//std::cout<<"abs "<<fabs(reco::deltaPhi(metphi,AK8pfjet.p4().phi()))<<std::endl;
-				if ((reco::deltaR( AK8pfjet.p4(),mus->at(muindex).p4())>1.8) and nbs>=1 and fabs(reco::deltaPhi(metphi,AK8pfjet.p4().phi()))>1.7) 
+				if ((reco::deltaR( AK8pfjet.p4(),mus->at(muindex).p4())>1.7) and nbs>=1 and fabs(reco::deltaPhi(metphi,AK8pfjet.p4().phi()))>1.7) 
 					{
 					windex=iak8;
+					tindex=-1;
 					bindex=bind;
-
+					mindex=curmuindex;
 					auto outputsw = std::make_unique<int>(windex);
 					iEvent.put(std::move(outputsw),"windex");
+					auto outputst = std::make_unique<int>(tindex);
+					iEvent.put(std::move(outputst),"tindex");
 					auto outputsb = std::make_unique<int>(bindex);
 					iEvent.put(std::move(outputsb),"bindex");
-					std::cout<<"windex "<<windex<<std::endl;
-					std::cout<<"bindex "<<bindex<<std::endl;
-					std::cout<<"PASS"<<std::endl;
+					auto outputsm = std::make_unique<int>(mindex);
+					iEvent.put(std::move(outputsm),"mindex");
+					//std::cout<<"windex "<<windex<<std::endl;
+					//std::cout<<"bindex "<<bindex<<std::endl;
+					//std::cout<<"PASS"<<std::endl;
+					return false;
+					}
+				}
+			}
+		}
+
+	else if(AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")>150.0 and AK8pfjet.pt()>400.0) 	
+		{
+		int nbs=0;
+		for(uint bind=0;bind<bindices.size();bind++)
+			{
+			if ((reco::deltaR( AK8pfjet.p4(),jetsAK4->at(bind).p4())>1.2) and (reco::deltaR( mus->at(muindex).p4(),jetsAK4->at(bind).p4())>0.4)) 
+				{
+				nbs+=1;
+				//std::cout<<"abs "<<fabs(reco::deltaPhi(metphi,AK8pfjet.p4().phi()))<<std::endl;
+				if ((reco::deltaR( AK8pfjet.p4(),mus->at(muindex).p4())>1.7) and nbs>=1 and fabs(reco::deltaPhi(metphi,AK8pfjet.p4().phi()))>1.7) 
+					{
+					windex=-1;
+					tindex=iak8;
+					bindex=bind;
+					mindex=curmuindex;
+					auto outputsw = std::make_unique<int>(windex);
+					iEvent.put(std::move(outputsw),"windex");
+					auto outputst = std::make_unique<int>(tindex);
+					iEvent.put(std::move(outputst),"tindex");
+					auto outputsb = std::make_unique<int>(bindex);
+					iEvent.put(std::move(outputsb),"bindex");
+					auto outputsm = std::make_unique<int>(mindex);
+					iEvent.put(std::move(outputsm),"mindex");
+					//std::cout<<"windex "<<windex<<std::endl;
+					//std::cout<<"bindex "<<bindex<<std::endl;
+					//std::cout<<"PASS mt"<<std::endl;
 					return true;
 					}
 				}
 			}
-		}	
+		}
 	iak8+=1;
 	}
    return false;

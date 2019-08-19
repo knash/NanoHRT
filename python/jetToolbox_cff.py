@@ -35,6 +35,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		# blank means default list of discriminators, None means none
 		bTagDiscriminators = '',
 		bTagInfos = None, 
+		rerunivf = False, 
 		subjetBTagDiscriminators = '',
 		subjetBTagInfos = None, 
 		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=True,
@@ -43,6 +44,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addSoftDrop=False, betaCut=0.0,  zCutSD=0.1, addSoftDropSubjets=False,
 		addTrimming=False, rFiltTrim=0.2, ptFrac=0.03,
 		addFiltering=False, rfilt=0.3, nfilt=3,
+		svLabel = cms.InputTag("slimmedSecondaryVertices"),
+		muLabel = cms.InputTag("slimmedMuons"),
+		elLabel = cms.InputTag("slimmedElectrons"),
 		addCMSTopTagger=False,
 		addMassDrop=False,
 		addHEPTopTagger=False,
@@ -150,10 +154,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			genParticlesLabel = 'prunedGenParticles'
 			pvLabel = 'offlineSlimmedPrimaryVertices'
-			svLabel = 'slimmedSecondaryVertices'
+			
 			tvLabel = 'unpackedTracksAndVertices'
-			muLabel = 'slimmedMuons'
-			elLabel = 'slimmedElectrons'
+			
 			pfCand = nameNewPFCollection if newPFCollection else 'packedPFCandidates'
 
 			if runOnMC:
@@ -182,10 +185,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			genParticlesLabel = 'genParticles'
 			pvLabel = 'offlinePrimaryVertices'
 			tvLabel = 'generalTracks'
-			muLabel = 'muons'
 			elLabel = 'gedGsfElectrons'
 			pfCand =  nameNewPFCollection if newPFCollection else 'particleFlow'
-			svLabel = 'inclusiveCandidateSecondaryVertices'
+			
 
 			if runOnMC:
 				proc.load('RecoJets.Configuration.GenJetParticles_cff')
@@ -336,13 +338,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				postfix = postFix, 
 				algo = jetalgo,
 				rParam = jetSize,
+				runIVF = rerunivf,
 				jetCorrections = JEC if JEC is not None else None, 
 				pfCandidates = cms.InputTag( pfCand ),  
-				svSource = cms.InputTag( svLabel ),  
+				svSource = svLabel ,  
 				genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
 				pvSource = cms.InputTag( pvLabel ), 
-				muSource = cms.InputTag( muLabel ),
-				elSource = cms.InputTag( elLabel ),
+				muSource = muLabel ,
+				elSource = elLabel ,
 				btagDiscriminators = bTagDiscriminators,
 				btagInfos = bTagInfos,
 				getJetMCFlavour = GetJetMCFlavour,
@@ -361,10 +364,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollection+' collection')
 		genParticlesLabel = 'prunedGenParticles'
 		pvLabel = 'offlineSlimmedPrimaryVertices'
-		svLabel = 'slimmedSecondaryVertices'
+		
 		tvLabel = 'unpackedTracksAndVertices'
-		muLabel = 'slimmedMuons'
-		elLabel = 'slimmedElectrons'
 
 		if not JETCorrPayload: 
 			raise ValueError('|---- jetToolBox: updateCollection option requires to add JETCorrPayload.')
@@ -377,7 +378,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				jetSource = cms.InputTag( updateCollection ),
 				labelName = mod["PATJetsLabel"],
 				jetCorrections = JEC, 
+				svSource = svLabel ,
+				muSource = muLabel ,
+				elSource = elLabel ,
+				runIVF = rerunivf,   
 				btagDiscriminators = bTagDiscriminators,
+				btagInfos = bTagInfos,
 				)
 		mod["PATJetsCorrFactors"] = 'patJetCorrFactors'+mod["PATJetsLabelPost"]
 		getattr( proc, mod["PATJetsCorrFactors"] ).payload = JETCorrPayload
@@ -398,15 +404,21 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetSource = cms.InputTag( updateCollectionSubjets ),
 					labelName = mod["PATSubjetsLabel"],
 					jetCorrections = JEC, 
+					muSource = muLabel ,
+					elSource = elLabel ,
 					explicitJTA = True,
 					fatJets = cms.InputTag( updateCollection ),
+					svSource = svLabel , 
+					runIVF = rerunivf, 
 					rParam = jetSize, 
 					algo = jetALGO,
 					btagDiscriminators = subjetBTagDiscriminators,
+					btagInfos = subjetBTagInfos,
 					)
 			mod["PATSubjetsCorrFactors"] = 'patJetCorrFactors'+mod["PATSubjetsLabel"]
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).payload = subJETCorrPayload
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).levels = subJETCorrLevels
+
 			patSubJets = 'updatedPatJets'+mod["PATSubjetsLabel"]
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger or addMassDrop or addHEPTopTagger or addPruning or addSoftDrop: 
@@ -475,6 +487,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					rParam = jetSize,
 					jetCorrections = JEC if JEC is not None else None, 
 					pvSource = cms.InputTag( pvLabel ),
+					svSource = svLabel ,  
+					runIVF = rerunivf, 
 					btagDiscriminators = ['None'],
 					genJetCollection = cms.InputTag( mod["GenJetsNoNu"]),
 					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
@@ -496,11 +510,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetCorrections = subJEC if subJEC is not None else None, 
 					pfCandidates = cms.InputTag( pfCand ), 
 					pvSource = cms.InputTag( pvLabel), 
-					svSource = cms.InputTag( svLabel ),  
-					muSource = cms.InputTag( muLabel ),
-					elSource = cms.InputTag( elLabel ),
+					svSource = svLabel ,  
+					runIVF = rerunivf, 
+					muSource =muLabel ,
+					elSource = elLabel ,
 					btagDiscriminators = subjetBTagDiscriminators,
-					btagInfos = bTagInfos,
+					btagInfos = subjetBTagInfos,
 					genJetCollection = cms.InputTag( mod["GenJetsNoNuSoftDrop"],'SubJets'),
 					getJetMCFlavour = GetSubjetMCFlavour,
 					genParticles = cms.InputTag(genParticlesLabel),
@@ -523,6 +538,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						subjetSrc=cms.InputTag(mod["selPATSubjetsSoftDrop"])
 						))
 			jetSeq += getattr(proc, mod["selPATJetsSoftDropPacked"] )
+			getattr(proc, mod["PATSubjetsSoftDrop"]).addTagInfos = cms.bool(True)
 			elemToKeep += [ 'keep *_'+mod["selPATJetsSoftDropPacked"]+'_SubJets_*' ]
 			toolsUsed.append( mod["selPATJetsSoftDropPacked"]+':SubJets' )
 
@@ -594,6 +610,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					rParam = jetSize,
 					jetCorrections = JEC if JEC is not None else None, 
 					pvSource = cms.InputTag( pvLabel ),
+					svSource = svLabel , 
+					runIVF = rerunivf, 
 					btagDiscriminators = ['None'],
 					genJetCollection = cms.InputTag( mod["GenJetsNoNu"]),
 					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
@@ -615,13 +633,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetCorrections = subJEC if subJEC is not None else None, 
 					pfCandidates = cms.InputTag( pfCand ),  
 					pvSource = cms.InputTag( pvLabel), 
-					svSource = cms.InputTag( svLabel ), 
-					muSource = cms.InputTag( muLabel ),
-					elSource = cms.InputTag( elLabel ),
+					svSource = svLabel , 
+					runIVF = rerunivf, 
+					muSource =muLabel ,
+					elSource = elLabel ,
 					getJetMCFlavour = GetSubjetMCFlavour,
 					genParticles = cms.InputTag(genParticlesLabel),
 					btagDiscriminators = subjetBTagDiscriminators,
-					btagInfos = bTagInfos,
+					btagInfos = subjetBTagInfos,
 					genJetCollection = cms.InputTag( mod["GenJetsNoNuPruned"],'SubJets'),
 					explicitJTA = True,  # needed for subjet b tagging
 					svClustering = True, # needed for subjet b tagging
@@ -763,9 +782,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetCorrections = JEC if JEC is not None else None, 
 					pfCandidates = cms.InputTag( pfCand ),  
 					pvSource = cms.InputTag( pvLabel), 
-					svSource = cms.InputTag( svLabel ), 
-					muSource = cms.InputTag( muLabel ),
-					elSource = cms.InputTag( elLabel ),
+					svSource = svLabel , 
+					runIVF = rerunivf, 
+					muSource = muLabel ,
+					elSource = elLabel ,
 					btagDiscriminators = bTagDiscriminators,
 					btagInfos = bTagInfos,
 					genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
@@ -788,9 +808,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetCorrections = subJEC if subJEC is not None else None, 
 					pfCandidates = cms.InputTag( pfCand ),  
 					pvSource = cms.InputTag( pvLabel), 
-					svSource = cms.InputTag( svLabel ), 
-					muSource = cms.InputTag( muLabel ),
-					elSource = cms.InputTag( elLabel ),
+					svSource = svLabel , 
+					runIVF = rerunivf, 
+					muSource = muLabel ,
+					elSource =  elLabel ,
 					btagDiscriminators = bTagDiscriminators,
 					btagInfos = bTagInfos,
 					genJetCollection = cms.InputTag( mod["GenJetsNoNu"]),
@@ -1058,7 +1079,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if updateCollectionSubjets:
 		mod["PATSubjets"] = patJets+mod["PATSubjetsLabel"]
 		mod["selPATSubjets"] = selPatJets+mod["PATSubjetsLabel"]
+
 		_addProcessAndTask(proc, mod["selPATSubjets"], selectedPatJets.clone(src=mod["PATSubjets"], cut=Cut))
+
+		getattr(proc, mod["PATSubjets"]).addTagInfos = cms.bool(True)
+		#getattr(proc, mod["selPATSubjets"]).addTagInfos = cms.bool(True)
 		elemToKeep += [ 'keep *_'+mod["selPATSubjets"]+'__*' ]
 
 

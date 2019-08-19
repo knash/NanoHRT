@@ -15,26 +15,25 @@ print substr,substr1
 ver ='_v'+version
 
 config.section_('General')
-config.General.requestName = substr+'NanoMergedWtagProducer2017mc'+ver
+config.General.requestName = substr+'NanoWtagProducer2017mc'+ver
 config.General.workArea = 'crab_projects'
 config.General.transferLogs = False
 config.General.transferOutputs = True
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'NanoAOD_WtagMerge_Slim_mc2017_NANO10_2_15.py'
-config.JobType.numCores = 1
+config.JobType.psetName = 'NanoAOD_WtagAna_Slim_mc2017_NANO10_2_15.py'
+config.JobType.numCores = 4
 config.JobType.sendExternalFolder = True
 config.JobType.maxMemoryMB = 6000
 config.JobType.allowUndistributedCMSSW = True
-config.JobType.inputFiles = ['wwmass.root', 'topmass.root', 'fnames.txt']
 config.section_('Data')
 config.Data.inputDataset = curset
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'EventAwareLumiBased'
-config.Data.unitsPerJob = 300000
+config.Data.unitsPerJob = 700000
 config.Data.outLFNDirBase = outloc
 config.Data.publication = False
-config.Data.outputDatasetTag =substr1+'_NanoMergedWtagProducer2017mc'+ver
+config.Data.outputDatasetTag =substr1+'_NanoWtagProducer2017mc'+ver
 if runloc:
 	config.section_('Site')
 	config.Site.storageSite = store

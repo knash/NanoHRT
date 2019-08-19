@@ -16,7 +16,7 @@ def nanoHRT_customizeCommon(process, runOnMC):
 
 def nanoHRT_customizeData(process):
     process = nanoHRT_customizeCommon(process, False)
-    process.add_(cms.Service('InitRootHandlers', EnableIMT = cms.untracked.bool(False)))
+    #process.add_(cms.Service('InitRootHandlers', EnableIMT = cms.untracked.bool(False)))
     #process.NANOAODoutput.fakeNameForCrab = cms.untracked.bool(True)  # needed for crab publication
     return process
 
@@ -50,6 +50,6 @@ def nanoHRT_customizeData_METMuEGClean(process):
 
 def nanoHRT_customizeMC(process):
     process = nanoHRT_customizeCommon(process, True)
-    process.add_(cms.Service('InitRootHandlers', EnableIMT = cms.untracked.bool(False)))
+    #process.add_(cms.Service('InitRootHandlers', EnableIMT = cms.untracked.bool(False)))
     #process.NANOAODSIMoutput.fakeNameForCrab = cms.untracked.bool(True)  # needed for crab publication
     return process

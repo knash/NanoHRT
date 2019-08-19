@@ -70,6 +70,8 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
 
     process.imageJetsAK8Puppi = cms.EDProducer('ImageProducer',
         src=cms.InputTag('boostedEventShapeJetsAK8Puppi'),
+	fakeb=cms.bool(False),
+        sjmerger=cms.InputTag("NONE"),
         sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppiAK8WithPuppiDaughtersSoftDropPacked'),
         sdmcoll=cms.string('ak8PFJetsPuppiSoftDropMass'),
         pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MC_output.pb'),
@@ -297,7 +299,7 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
     jetToolbox(process, 'ak8', 'dummySeq', 'out', associateTask=False,
 		       PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
 		       Cut='pt > 170.0 && abs(rapidity()) < 2.4',
-		       postFix=pfix,miniAOD=True, runOnMC=runOnMC,
+		       postFix=pfix,miniAOD=True, runOnMC=runOnMC,svLabel=cms.InputTag("WWProducerpuppi","newvecs"),elLabel=cms.InputTag("WWProducerpuppi","newels"), muLabel=cms.InputTag("WWProducerpuppi","newmus"),  
 		       addNsub=True, maxTau=4, addEnergyCorrFunc=True,
 		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
 		       addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
@@ -321,7 +323,7 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
     jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
 		updateCollection='packedPatJetsAK8PFPuppi'+pfix+'SoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
-                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',svLabel=cms.InputTag("WWProducerpuppi","newvecs"), elLabel=cms.InputTag("WWProducerpuppi","newels"), muLabel=cms.InputTag("WWProducerpuppi","newmus"), 
                 miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
 		updateCollectionSubjets='selectedPatJetsAK8PFPuppi'+pfix+'SoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
 		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix=pfix+'AK8WithPuppiDaughters',
@@ -330,6 +332,8 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
 
     process.imageJetsWWAK8Puppi = cms.EDProducer('ImageProducer',
         src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfix+'AK8WithPuppiDaughters'),
+    	fakeb=cms.bool(False),
+    	sjmerger=cms.InputTag("WWProducerpuppi","sjmerger"),
         sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfix+'AK8WithPuppiDaughtersSoftDropPacked'),
         sdmcoll=cms.string('ak8PFJetsPuppiWWProducerpuppiSoftDropMass'),
         pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MC_output.pb'),
@@ -456,14 +460,14 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
 		       PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
 		       Cut='pt > 170.0 && abs(rapidity()) < 2.4',
 		       postFix=pfixb,miniAOD=True, runOnMC=runOnMC,
-		       addNsub=True, maxTau=4, addEnergyCorrFunc=True,
-		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
+		       addNsub=True, maxTau=4, addEnergyCorrFunc=True,elLabel=cms.InputTag("WBProducerpuppi","newels"), muLabel=cms.InputTag("WBProducerpuppi","newmus"), 
+		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,svLabel=cms.InputTag("WBProducerpuppi","newvecs"), 
 		       addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
 		       bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators,
 	               newPFCollection=True, nameNewPFCollection=pfixb)
     jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
 		updateCollection='packedPatJetsAK8PFPuppi'+pfixb+'SoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
-                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',svLabel=cms.InputTag("WBProducerpuppi","newvecs"), elLabel=cms.InputTag("WBProducerpuppi","newels"), muLabel=cms.InputTag("WBProducerpuppi","newmus"), 
                 miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
 		updateCollectionSubjets='selectedPatJetsAK8PFPuppi'+pfixb+'SoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
 		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix=pfixb+'AK8WithPuppiDaughters',
@@ -471,6 +475,8 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
 
 
     process.imageJetsWBAK8Puppi = process.imageJetsWWAK8Puppi.copy()
+    process.imageJetsWBAK8Puppi.fakeb=cms.bool(False)
+    process.imageJetsWBAK8Puppi.sjmerger=cms.InputTag("WBProducerpuppi","sjmerger")
     process.imageJetsWBAK8Puppi.src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfixb+'AK8WithPuppiDaughters')
     process.imageJetsWBAK8Puppi.sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfixb+'AK8WithPuppiDaughtersSoftDropPacked')
     process.imageJetsWBAK8Puppi.sdmcoll=cms.string('ak8PFJetsPuppiWBProducerpuppiSoftDropMass')
@@ -520,6 +526,90 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
         )
     )
 
+
+
+
+
+
+    pfixm = "MJProducerpuppi"
+    print "Running pfc collection",pfixm
+    from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
+    jetToolbox(process, 'ak8', 'dummySeq', 'out', associateTask=False,
+		       PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+		       Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+		       postFix=pfixm,miniAOD=True, runOnMC=runOnMC,
+		       addNsub=True, maxTau=4, addEnergyCorrFunc=True,
+		       GetSubjetMCFlavour=False,GetJetMCFlavour=False,
+		       addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
+		       bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators,
+	               newPFCollection=True, nameNewPFCollection=pfixm)
+    jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', associateTask=False, 
+		updateCollection='packedPatJetsAK8PFPuppi'+pfixm+'SoftDrop', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
+                Cut='pt > 170.0 && abs(rapidity()) < 2.4',
+                miniAOD=True, runOnMC=runOnMC,bTagDiscriminators=bTagDiscriminators + _pfDeepBoostedJetTagsProbs + _pfMassDecorrelatedDeepBoostedJetTagsProbs,
+		updateCollectionSubjets='selectedPatJetsAK8PFPuppi'+pfixm+'SoftDropPacked:SubJets', subjetBTagDiscriminators=Bdiscs, 
+		subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,postFix=pfixm+'AK8WithPuppiDaughters',
+	        newPFCollection=True, nameNewPFCollection=pfixm)
+
+
+    process.imageJetsMJAK8Puppi = process.imageJetsWWAK8Puppi.copy()
+    process.imageJetsMJAK8Puppi.src=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfixm+'AK8WithPuppiDaughters')
+    process.imageJetsMJAK8Puppi.fakeb=cms.bool(False)
+    process.imageJetsMJAK8Puppi.sjmerger=cms.InputTag("NONE")
+    process.imageJetsMJAK8Puppi.sj=cms.InputTag('selectedUpdatedPatJetsAK8PFPuppi'+pfixm+'AK8WithPuppiDaughtersSoftDropPacked')
+    process.imageJetsMJAK8Puppi.sdmcoll=cms.string('ak8PFJetsPuppiMJProducerpuppiSoftDropMass')
+    process.imageJetsMJAK8Puppi.extex=cms.string('MJ')
+    srcJetsB = cms.InputTag('imageJetsMJAK8Puppi')
+    process.tightJetIdCustomMJAK8 = process.tightJetIdCustomWWAK8.copy()
+    process.tightJetIdCustomMJAK8.src=srcJetsB
+    process.tightJetIdLepVetoCustomMJAK8 = process.tightJetIdLepVetoCustomWWAK8.copy()
+    process.tightJetIdLepVetoCustomMJAK8.src=srcJetsB
+    process.customMJAK8WithUserData = cms.EDProducer("PATJetUserDataEmbedder",
+        src=srcJetsB,
+        userFloats=cms.PSet(),
+        userInts=cms.PSet(
+           tightId=cms.InputTag("tightJetIdCustomMJAK8"),
+           tightIdLepVeto=cms.InputTag("tightJetIdLepVetoCustomMJAK8"),
+        ),
+    )
+
+
+    process.customMJAK8Table = cms.EDProducer("SimpleCandidateFlatTableProducer",
+        src=cms.InputTag("customMJAK8WithUserData"),
+        name=cms.string("CustomMJAK8Puppi"+pfixm),
+        cut=cms.string(""),
+        doc=cms.string("customized ak8 puppi jets for HRT"),
+        singleton=cms.bool(False),  # the number of entries is variable
+        extension=cms.bool(False),  # this is the main table for the jets
+        variables=cms.PSet(P4Vars,
+            jetId=Var("userInt('tightId')*2+4*userInt('tightIdLepVeto')", int, doc="Jet ID flags bit1 is loose (always false in 2017 since it does not exist), bit2 is tight, bit3 is tightLepVeto"),
+
+            itop=Var("userFloat('ImageMJ:top')", float, doc="Image top tagger score", precision=-1),
+            iMDtop=Var("userFloat('ImageMDMJ:top')", float, doc="Image MD top tagger score", precision=-1),
+            #iPho=Var("userFloat('ImageMJ:pho')", float, doc="Image photonjet tagger score", precision=-1),
+            iMDPho=Var("userFloat('ImageMDMJ:pho')", float, doc="Image MD photonjet tagger score", precision=-1),
+            iW=Var("userFloat('ImageMJ:w')", float, doc="Image w tagger score", precision=-1),
+            iMDW=Var("userFloat('ImageMDMJ:w')", float, doc="Image MD w tagger score", precision=-1),
+            iMDH=Var("userFloat('ImageMDMJ:h')", float, doc="Image MD h tagger score", precision=-1),
+            iMDHfless=Var("userFloat('ImageMDMJ:hfless')", float, doc="Image MD h tagger score (without b tagging)", precision=-1),
+            #iMDHfonly=Var("userFloat('ImageMD:hfonly')", float, doc="Image MD h tagger score (only b tagging)", precision=-1),
+            iMDZ=Var("userFloat('ImageMDMJ:z')", float, doc="Image MD z tagger score", precision=-1),
+            iMDZfless=Var("userFloat('ImageMDMJ:zfless')", float, doc="Image MD z tagger score (without b tagging)", precision=-1),
+            #iMDZfonly=Var("userFloat('ImageMDMJ:zfonly')", float, doc="Image MD z tagger score (only b tagging)", precision=-1),
+            iMDWW=Var("userFloat('ImageMDMJ:ww')", float, doc="Image MD ww->qqqq tagger score", precision=-1),
+            iMDWWlep=Var("userFloat('ImageMDMJ:wwlep')", float, doc="Image MD ww->lnuqq tagger score", precision=-1),
+            iMDHWW=Var("userFloat('ImageMDMJ:hww')", float, doc="Image MD h->ww->qqqq tagger score", precision=-1),
+            iMDHWWlep=Var("userFloat('ImageMDMJ:hwwlep')", float, doc="Image MD h->ww->lnuqq tagger score", precision=-1),
+            itopmass=Var("userFloat('ImageMJ:mass')", float, doc="Image tagger groomed mass", precision=-1),
+        )
+    )
+
+
+
+
+
+
+
     process.customizedWWAK8Task = cms.Task(
         process.imageJetsWWAK8Puppi,
         process.tightJetIdCustomWWAK8,
@@ -530,7 +620,12 @@ def setupCustomizedWWAK8(process, runOnMC=False, path=None):
         process.tightJetIdCustomWBAK8,
         process.tightJetIdLepVetoCustomWBAK8,
         process.customWBAK8WithUserData,
-        process.customWBAK8Table
+        process.customWBAK8Table,
+        process.imageJetsMJAK8Puppi,
+        process.tightJetIdCustomMJAK8,
+        process.tightJetIdLepVetoCustomMJAK8,
+        process.customMJAK8WithUserData,
+        process.customMJAK8Table
         )
 
     _customizedWWAK8Task_80X = process.customizedWWAK8Task.copy()
