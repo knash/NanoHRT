@@ -118,6 +118,7 @@ process.options = cms.untracked.PSet ( wantSummary = cms.untracked.bool ( True )
 #Setup FWK for multithreaded
 process.options.numberOfThreads=cms.untracked.uint32(4)
 process.options.numberOfStreams=cms.untracked.uint32(0)
+
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
