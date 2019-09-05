@@ -63,8 +63,7 @@ if options.mode == "recover":
 		written=False
 		with open(curcrab) as fp:
    			for line in fp:
-				if line.split("=")[0]!="config.Data.outputDatasetTag":
-					line=line.replace("NanoSlimNtuples","NanoSlimNtuples_recovery")
+
        				lsplit = line.split("=")
 				if len(lsplit)==2:
 					lsplit[0]=lsplit[0].replace(" ","")
@@ -73,6 +72,10 @@ if options.mode == "recover":
 					if lsplit[0]=="config.Data.lumiMask":
 						written=True
 						lsplit[1]='\"'+NFL+'\"'+"\n"
+					#print lsplit[0]
+					if lsplit[0]!="config.Data.outputDatasetTag":
+						#print "Found"
+						lsplit[1]=lsplit[1].replace("NanoSlimNtuples","NanoSlimNtuples_recovery")
 					fil.write(lsplit[0]+"="+lsplit[1])
 				else:
 					fil.write(line)
