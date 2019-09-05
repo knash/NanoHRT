@@ -60,23 +60,24 @@ if options.mode == "recover":
 		curcrab = "debug/crabConfig.py"
 		crabpyname =fold.split("/")[-1]+"_recov.py"
 		fil= open(crabpyname,"w+")
-
+		written=False
 		with open(curcrab) as fp:
    			for line in fp:
-
-				line=line.replace("NanoSlimNtuples","NanoSlimNtuples_recov")
+				if line.split("=")[0]!="config.Data.outputDatasetTag":
+					line=line.replace("NanoSlimNtuples","NanoSlimNtuples_recovery")
        				lsplit = line.split("=")
 				if len(lsplit)==2:
 					lsplit[0]=lsplit[0].replace(" ","")
 					if lsplit[0]=="config.Data.unitsPerJob":
 						lsplit[1]=str(int(0.5*int(lsplit[1])))+"\n"
 					if lsplit[0]=="config.Data.lumiMask":
-						lsplit[1]='\"'+NFL+'\"'+"\n"
-					if lsplit[0]=="config.Data.lumiMask":
+						written=True
 						lsplit[1]='\"'+NFL+'\"'+"\n"
 					fil.write(lsplit[0]+"="+lsplit[1])
 				else:
 					fil.write(line)
+		if not written:
+			fil.write('config.Data.lumiMask=\"'+NFL+'\"'+"\n")
 		#commands.append("crab submit "+crabpyname)
 #for s in commands :
     #print 'executing ' + s
