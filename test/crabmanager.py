@@ -123,10 +123,8 @@ if options.mode=="submit":
 	LOC = options.location
 	VER = options.version
 	STO = options.site
-	RLO = "False"
-	OFNA = "False"
-	if options.runloc:
-		RLO = "True"
+	RLO = options.runloc
+
 	lmask = 	{
 			'2016':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'	,
 			'2017':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt',
