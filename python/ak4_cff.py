@@ -26,7 +26,7 @@ def setupCustomizedAK4(process, runOnMC=False, path=None):
     from PhysicsTools.NanoHRT.jetToolbox_cff import jetToolbox
     jetToolbox(process, 'ak4', 'dummySeq', 'out', associateTask=False,
                PUMethod='CHS', JETCorrPayload='AK4PFchs', JETCorrLevels=JETCorrLevels,
-	       postFix='MuSub',	
+	       postFix='MuSub',runOnMC=runOnMC,	
 	       newPFCollection=True, nameNewPFCollection="MuSubProducer",
                Cut='pt > 20.0 && abs(rapidity()) < 2.4',
                bTagDiscriminators=bTagDiscriminators)

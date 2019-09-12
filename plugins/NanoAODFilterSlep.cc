@@ -11,7 +11,8 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
-#include "TLorentzVector.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
+
 
 #include <iostream>
 #include <fstream>
@@ -71,19 +72,17 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
   edm::Handle<edm::View<pat::Muon>> mus;
   iEvent.getByToken(srcmu_, mus);
 
+  math::PtEtaPhiMLorentzVector lepp4;
 
-
-  edm::Handle<std::vector<reco::Vertex>> vtx;
-  iEvent.getByToken(vtxl_, vtx);
-  const std::vector<reco::Vertex>* vtxvec  = vtx.product();
   int curmuindex = 0;
   for (const auto &mu : *mus)
 	{
-        //float isol = (mu.pfIsolationR04().sumChargedHadronPt + std::max(0., mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5*mu.pfIsolationR04().sumPUPt))/mu.pt();
-	//std::cout<<"isol "<<isol<<std::endl;
-	if(mu.pt()>50.0 and mu.isHighPtMuon(vtxvec->at(0)))
+	//std::cout<<"mu pt "<<mu.pt()<<" idval "<<mu.isMediumMuon()<<std::endl;
+	if(mu.pt()>60.0 and mu.isMediumMuon() and fabs(mu.eta())<2.4)
 		{
 		foundmu=true;
+		lepp4 = mu.p4();
+		break;
 		}
 	curmuindex+=1;
 	}
@@ -99,19 +98,19 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
 
   for (const auto &el : *els)
 	{
-        //float isol = (mu.pfIsolationR04().sumChargedHadronPt + std::max(0., mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5*mu.pfIsolationR04().sumPUPt))/mu.pt();
-	//std::cout<<"isol "<<isol<<std::endl;
-	std::cout<<"ept "<<el.pt()<<" idval "<<el.electronID("eidTight")<<std::endl;
-	if(el.pt()>50.0 and el.electronID("eidTight"))
+	//std::cout<<"el pt "<<el.pt()<<" idval "<<el.electronID("mvaEleID-Fall17-noIso-V1-wp90")<<std::endl;
+	if(el.pt()>60.0 and (el.electronID("mvaEleID-Fall17-noIso-V1-wp90")>0.5) and fabs(el.eta())<2.4)
 		{
-		foundmu=true;
+		//std::cout<< "Found EL "<<std::endl;
+		foundel=true;
+		lepp4 = el.p4();
+		break;
 		}
-	curmuindex+=1;
 	}
 
 
   if(not (foundmu or foundel)) return false;
-
+  if(foundmu and foundel) return false;
   edm::Handle<edm::View<pat::MET>> met;
   iEvent.getByToken(srcmet_, met);
   //for (const auto &mm : *met)
@@ -120,31 +119,23 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
 	//}
   if (met->at(0).corPt()<50.0) return false;
 
-
-  edm::Handle<edm::View<pat::Jet>> jetsAK4;
-  iEvent.getByToken(srcAK4_, jetsAK4);
-
-
-
-  float htval = 0.0;
-  for (const auto &AK4pfjet : *jetsAK4)
-	{
-	float AK4pt = AK4pfjet.pt();
-	if (AK4pfjet.pt()>30.0)
-		{
- 		htval+=AK4pt;
-		}
-	}
-
-  if(htval<200.0) return false;
+  bool foundak8 = false;
 
   edm::Handle<edm::View<pat::Jet>> jetsAK8;
   iEvent.getByToken(srcAK8_, jetsAK8);
 
   if (jetsAK8->size()==0)return false;
-  if (jetsAK8->at(0).pt()<200.0)return false;
+  for (const auto &AK8pfjet : *jetsAK8)
+	{
+  	//std::cout<<"pt "<<AK8pfjet.pt()<<" DR "<<reco::deltaR(AK8pfjet.p4(),lepp4)<<std::endl;
+	if (AK8pfjet.pt()>150.0 and (reco::deltaR(AK8pfjet.p4(),lepp4)>1.5))foundak8=true;
+	}
+
+  if (not foundak8)return false;
+
+  //std::cout<<"passed MET "<<met->at(0).corPt()<<" leppt "<<lepp4.pt()<<std::endl;
   
-   return true;
+  return true;
  }
 
 

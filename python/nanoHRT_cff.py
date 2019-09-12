@@ -1,9 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 from PhysicsTools.NanoHRT.ak8_cff import setupCustomizedAK8
+from PhysicsTools.NanoHRT.ak4_cff import setupCustomizedAK4
 from PhysicsTools.NanoHRT.hotvr_cff import setupHOTVR
 
 def nanoHRT_customizeCommon(process, runOnMC):
     setupCustomizedAK8(process, runOnMC=runOnMC)
+
     setupHOTVR(process, runOnMC=runOnMC)
 
 
@@ -13,6 +15,10 @@ def nanoHRT_customizeCommon(process, runOnMC):
 
     return process
 
+def nanoHRT_customizeAK4(process, runOnMC):
+    setupCustomizedAK4(process, runOnMC=runOnMC)
+
+    return process
 
 def nanoHRT_customizeData(process):
     process = nanoHRT_customizeCommon(process, False)

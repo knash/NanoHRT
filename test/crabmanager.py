@@ -70,6 +70,10 @@ parser.add_option('--runloc', metavar='F', action='store_true',
 	          default=False,
 	          dest='runloc',
 	          help='runloc')
+parser.add_option('--singlelep', metavar='F', action='store_true',
+	          default=False,
+	          dest='singlelep',
+	          help='singlelep')
 
 (options, args) = parser.parse_args()
 
@@ -130,6 +134,8 @@ if options.mode=="submit":
 			'2017':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt',
 			'2018':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'	
 			}
+
+
 	#not sure how much granulariy we need here
 	nevperjob = 	{
 			"2016_sig":20000,"2017_sig":20000,"2018_sig":20000,
@@ -137,13 +143,22 @@ if options.mode=="submit":
 			"2016_qcd":50000,"2017_qcd":50000,"2018_qcd":50000,
 			"2016_data":100000,"2017_data":100000,"2018_data":100000,
 			}
+
+	extrastr = ""
+	if options.singlelep:
+		extrastr = "singlelep"
+		nevperjob = 	{
+				"2016_sig":30000,"2017_sig":30000,"2018_sig":30000,
+				"2016_ttbar":500000,"2017_ttbar":500000,"2018_ttbar":500000,
+				"2016_qcd":1000000,"2017_qcd":1000000,"2018_qcd":1000000,
+				"2016_data":1000000,"2017_data":1000000,"2018_data":1000000,
+				}
+
 	nconf=0
-
-
 	for year in years:
 		for cset in sets: 
 			idstr=year+"_"+cset
-			for RSET in open("txtfiles/sets_"+idstr+".txt", "r"):
+			for RSET in open("txtfiles"+extrastr+"/sets_"+idstr+".txt", "r"):
 				config = Configuration()
 
 
@@ -158,7 +173,7 @@ if options.mode=="submit":
 					typestr = "data"
 					exstr=minset
 				config.section_('General')
-				rname= majset+exstr+'NanoSlimNtuples'+year+typestr+ver
+				rname= majset+exstr+'NanoSlimNtuples'+extrastr+year+typestr+ver
 				config.General.requestName = rname
 				config.General.workArea = 'crab_projects'
 				config.General.transferLogs = False
@@ -166,7 +181,7 @@ if options.mode=="submit":
 				config.section_('JobType')
 
 				config.JobType.pluginName = 'Analysis'
-				config.JobType.psetName = 'NanoAOD_Slim_'+typestr+year+'_NANO10_2_15.py'
+				config.JobType.psetName = 'NanoAOD_Slim_'+extrastr+typestr+year+'_NANO10_2_15.py'
 				config.JobType.numCores = 4
 				config.JobType.sendExternalFolder = True
 				config.JobType.maxMemoryMB = 8000
@@ -178,7 +193,7 @@ if options.mode=="submit":
 				config.Data.unitsPerJob = nevperjob[idstr]
 				config.Data.outLFNDirBase = LOC
 				config.Data.publication = True
-				config.Data.outputDatasetTag =minset+'_NanoSlimNtuples'+year+typestr+ver
+				config.Data.outputDatasetTag =minset+'_NanoSlimNtuples'+extrastr+year+typestr+ver
 				if cset=="data":
 					config.Data.lumiMask=lmask[year]
 				if RLO:
@@ -281,7 +296,7 @@ else:
 			if options.mode == "recover":
 				commands.append("tar xvf "+fold+"/inputs/debugFiles.tgz")
 			if options.mode == "lumicalc":
-				commands.append("brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_BRIL.json -i "+fold+"/results/processedLumis.json -u /fb")
+				commands.append("brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_PHYSICS.json -i "+fold+"/results/processedLumis.json -u /fb")
 
 	for s in commands :
 	    print 'executing ' + s
