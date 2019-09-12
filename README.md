@@ -64,7 +64,7 @@ Check that these look ok and then add--submit to submit all of the datasets auto
 for other crab commands, you can use this script for example
 
 ```bash
-python crabmanager.py -S crab_projects/\*v8 -o "--maxmemory=8000" -m status
+python crabmanager.py -S crab_projects/\*v8 -o "--maxmemory 9000" -m status
 ```
 
 will analyze the status output of all files matching the search string in the -S command.  Jobs in failed status are resubmitted using the options in the -o command.
