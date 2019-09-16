@@ -508,7 +508,7 @@ void ImageProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	for(uint isj=0;isj<(nsubs*6-sjlsize);isj++) sjlist.push_back(0.);
 	uint DBindex=sjlist.size();
 
-	sjlist.push_back(AK8pfjet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
+	sjlist.push_back(AK8pfjet.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
 
         sjlist.push_back(gmass/172.0);
         sjlist.push_back(AK8pfjet.pt()/2000.0);
