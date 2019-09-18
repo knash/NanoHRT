@@ -134,14 +134,12 @@ if options.mode=="submit":
 			'2017':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt',
 			'2018':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'	
 			}
-
-
 	#not sure how much granulariy we need here
 	nevperjob = 	{
 			"2016_sig":20000,"2017_sig":20000,"2018_sig":20000,
 			"2016_ttbar":300000,"2017_ttbar":300000,"2018_ttbar":300000,
 			"2016_qcd":50000,"2017_qcd":50000,"2018_qcd":50000,
-			"2016_data":100000,"2017_data":100000,"2018_data":100000,
+			"2016_data":200000,"2017_data":200000,"2018_data":200000,
 			}
 
 	extrastr = ""
@@ -268,15 +266,18 @@ else:
 				print "Error!"
 				output.append([fold,None])
 			if output[-1][1]!=None and options.mode=="status":
-				#toresubmit=False
-				if output[-1][1]["status"]=="FAILED":
+				toresubmit=False
+				for oo in output[-1][1]["jobsPerStatus"]:
+					if oo == "failed":
+						toresubmit=True
+				if toresubmit:
 					#for jj in output[-1][1]["jobsPerStatus"]:
 					#	print jj
 					#	if jj=="failed":
 					#		toresubmit=True
 					#		break
 
-					
+
 					print "Failed - resubmitting"
 					try:
 						sys.stdout = log
@@ -317,11 +318,11 @@ else:
 						lsplit[0]=lsplit[0].replace(" ","")
 						if lsplit[0]=="config.Data.unitsPerJob":
 							lsplit[1]=str(int(0.5*int(lsplit[1])))+"\n"
-						if lsplit[0]=="config.Data.lumiMask":
+						elif lsplit[0]=="config.Data.lumiMask":
 							written=True
 							lsplit[1]='\"'+NFL+'\"'+"\n"
 						#print lsplit[0]
-						if lsplit[0]!="config.Data.outputDatasetTag":
+						elif lsplit[0]!="config.Data.outputDatasetTag":
 							#print "Found"
 							lsplit[1]=lsplit[1].replace("NanoSlimNtuples","NanoSlimNtuples_recovery")
 						fil.write(lsplit[0]+"="+lsplit[1])

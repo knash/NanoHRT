@@ -21,12 +21,12 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(1000)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2016H/JetHT/MINIAOD/17Jul2018-v1/50000/FE17E94B-FE8F-E811-A146-0025905C3D3E.root '),
+    fileNames = cms.untracked.vstring('/store/data/Run2016H/JetHT/MINIAOD/17Jul2018-v1/50000/FE17E94B-FE8F-E811-A146-0025905C3D3E.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -43,7 +43,7 @@ process.configurationMetadata = cms.untracked.PSet(
 
 
 # Path and EndPath definitions
-outputoutputCommandsHRT = process.NANOAODSIMEventContent.outputCommands
+outputCommandsHRT = process.NANOAODEventContent.outputCommands
 #outputCommandsHRT.append("drop *")
 #outputCommandsHRT.append("keep nanoaodFlatTable_customAK8Table_*_*")
 #outputCommandsHRT.append("keep nanoaodFlatTable_hotvrTable_*_*")
@@ -107,6 +107,12 @@ process = nanoAOD_customizeData(process)
 
 #call to customisation function nanoHRT_customizeData_METMuEGClean imported from PhysicsTools.NanoHRT.nanoHRT_cff
 #process = nanoHRT_customizeData_METMuEGClean(process)
+
+
+from PhysicsTools.NanoHRT.nanoHRT_cff import nanoHRT_customizeData
+
+#call to customisation function nanoHRT_customizeData_METMuEGClean imported from PhysicsTools.NanoHRT.nanoHRT_cff
+process =  nanoHRT_customizeData(process)
 
 # End of customisation functions
 

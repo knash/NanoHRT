@@ -94,7 +94,31 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
         pb_pathHWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_HOT_output.pb'),
         extex=cms.string(''),
         isHotVR=cms.bool(False),
-    )                           
+    )      
+    #These trainings are for 2016 miniv2 which will fail on the miniv3 version -- at least the doubleb trainings are required which run on doublecsv.  
+    #Originally these are meant to be run on all 2016 samples, but the sensitivity is nearly identical to the 2017 training so it is left out for miniv3.              
+    #for modifier in run2_miniAOD_80XLegacy, run2_nanoAOD_94X2016:
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_path=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MC_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MD_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathPhoflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/pho_MD_flavorless_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathPhoMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/pho_nolep_MD_doubleB_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathW=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/w_MC_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/w_MD_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathH=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_nolep_MC_doubleB_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathHMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_nolep_MD_doubleB_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathHflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hbb_MD_flavorless_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathZ=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_nolep_MC_doubleB_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathZflessMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_MD_flavorless_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathZMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/z_nolep_MD_doubleB_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/ww_MD_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathWWlepMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/wwlep_MD_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathHWWMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathHWWlepMD=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hwwlep_MD_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/top_MD_HOT_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathWWlepMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/wwlep_MD_HOT_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/ww_MD_HOT_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathHWWlepMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hwwlep_MD_HOT_2016_output.pb'))
+    #    modifier.toModify( process.imageJetsAK8Puppi, pb_pathHWWMDHOT=cms.untracked.FileInPath('PhysicsTools/NanoHRT/data/Image/hww_MD_HOT_2016_output.pb'))
 
     # src
     srcJets = cms.InputTag('imageJetsAK8Puppi')
