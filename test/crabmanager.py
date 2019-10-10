@@ -137,7 +137,7 @@ if options.mode=="submit":
 	#not sure how much granulariy we need here
 	nevperjob = 	{
 			"2016_sig":20000,"2017_sig":20000,"2018_sig":20000,
-			"2016_ttbar":300000,"2017_ttbar":300000,"2018_ttbar":300000,
+			"2016_ttbar":200000,"2017_ttbar":300000,"2018_ttbar":300000,
 			"2016_qcd":50000,"2017_qcd":50000,"2018_qcd":50000,
 			"2016_data":200000,"2017_data":200000,"2018_data":200000,
 			}
@@ -245,7 +245,7 @@ else:
 	output = []
 	for fold in folders:
 		print "Running",options.mode,"on",fold
-		if options.mode in ("status","kill","resubmit"):
+		if options.mode in ("status","kill","resubmit","report"):
 			#processes.append(Process(target=pcrabp, args=(queue,options.mode,fold,)))
 			
 			try:
@@ -298,7 +298,8 @@ else:
 				commands.append("tar xvf "+fold+"/inputs/debugFiles.tgz")
 			if options.mode == "lumicalc":
 				commands.append("brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_PHYSICS.json -i "+fold+"/results/processedLumis.json -u /fb")
-
+		#else:
+		#	commands.append("crab "+options.mode+" "+fold)
 	for s in commands :
 	    print 'executing ' + s
 	    subprocess.call( [s], shell=True )
@@ -336,7 +337,7 @@ else:
 	    #subprocess.call( [s], shell=True )
 	if options.mode=="status":
 		temptosub=open("unsubbed.txt","w+")
-		jobdict = {'finished': 0, 'transferring': 0, 'running': 0, 'idle': 0, 'failed': 0, 'cooloff': 0, 'unsubmitted':0}
+		jobdict = {'finished': 0, 'transferring': 0, 'running': 0, 'idle': 0, 'failed': 0, 'cooloff': 0, 'killed': 0, 'unsubmitted':0}
 		Ntot = len(output)
 		Ncomp = 0		
 		Nsub = 0
