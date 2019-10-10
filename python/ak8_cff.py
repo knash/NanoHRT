@@ -126,7 +126,6 @@ def setupCustomizedAK8(process, runOnMC=False, path=None):
 
 
     process.lepInJetVars = cms.EDProducer("LepInJetProducer",
-	    srcPF = cms.InputTag("packedPFCandidates"),
 	    src = srcJets,
 	    srcEle = cms.InputTag("slimmedElectrons"),
 	    srcMu = cms.InputTag("slimmedMuons")
