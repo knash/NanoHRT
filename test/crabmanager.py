@@ -134,35 +134,24 @@ if options.mode=="submit":
 			'2017':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt',
 			'2018':'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'	
 			}
-	#not sure how much granulariy we need here
-	nevperjob = 	{
-			"2016_sig":20000,"2017_sig":20000,"2018_sig":20000,
-			"2016_ttbar":200000,"2017_ttbar":300000,"2018_ttbar":300000,
-			"2016_qcd":50000,"2017_qcd":50000,"2018_qcd":50000,
-			"2016_data":200000,"2017_data":200000,"2018_data":200000,
-			}
 
 	extrastr = ""
 	if options.singlelep:
 		extrastr = "singlelep"
-		nevperjob = 	{
-				"2016_sig":30000,"2017_sig":30000,"2018_sig":30000,
-				"2016_ttbar":500000,"2017_ttbar":500000,"2018_ttbar":500000,
-				"2016_qcd":1000000,"2017_qcd":1000000,"2018_qcd":1000000,
-				"2016_data":1000000,"2017_data":1000000,"2018_data":1000000,
-				}
 
 	nconf=0
 	for year in years:
 		for cset in sets: 
 			idstr=year+"_"+cset
-			for RSET in open("txtfiles"+extrastr+"/sets_"+idstr+".txt", "r"):
+			for curline in open("txtfiles"+extrastr+"/sets_"+idstr+".txt", "r"):
 				config = Configuration()
 
-
-				RSET = RSET.replace("\n","")
+				RSET=curline.split(',')[0]
+				NEV=curline.split(',')[1]
+				NEV = NEV.replace("\n","").replace(" ","")
+				RSET = RSET.replace("\n","").replace(" ","")
 				ver ='_v'+VER
-				print RSET
+				print RSET,NEV
 				majset = RSET.split('/')[1]
 				minset = RSET.split('/')[2]
 				typestr = "mc"
@@ -188,7 +177,7 @@ if options.mode=="submit":
 				config.Data.inputDataset = RSET
 				config.Data.inputDBS = 'global'
 				config.Data.splitting = 'EventAwareLumiBased'
-				config.Data.unitsPerJob = nevperjob[idstr]
+				config.Data.unitsPerJob = int(NEV)
 				config.Data.outLFNDirBase = LOC
 				config.Data.publication = True
 				config.Data.outputDatasetTag =minset+'_NanoSlimNtuples'+extrastr+year+typestr+ver
@@ -211,6 +200,7 @@ if options.mode=="submit":
 				tempname = "tempcrabfiles/crab_"+rname+".py"
 				tempfile = open(tempname, "w")
 				print "saving "+tempname
+				print
 				tempfile.write(str(config))
 				tempfile.close() 
 				if options.submit:
@@ -257,7 +247,7 @@ else:
 				else:
 					crabout = crabCommand(options.mode, dir=fold,*options.ops.split())
 				output.append([fold,crabout])	
-				#crabout["status"]
+
 				sys.stdout = sys.__stdout__
 
 			
@@ -265,6 +255,7 @@ else:
 				sys.stdout = sys.__stdout__
 				print "Error!"
 				output.append([fold,None])
+			
 			if output[-1][1]!=None and options.mode=="status":
 				toresubmit=False
 				for oo in output[-1][1]["jobsPerStatus"]:
@@ -286,6 +277,9 @@ else:
 					except:
 						sys.stdout = sys.__stdout__
 						print "Resubmit Error!"
+				elif output[-1][1]["status"]=="SUBMITFAILED":
+					print "Submit Failed"
+					output.append([fold,None])
 				elif output[-1][1]["status"]=="COMPLETED":
 					print "Completed"
 				else:

@@ -73,7 +73,7 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
   iEvent.getByToken(srcmu_, mus);
 
   math::PtEtaPhiMLorentzVector lepp4;
-
+  float maxleppt=0.0;
   int curmuindex = 0;
   for (const auto &mu : *mus)
 	{
@@ -81,6 +81,7 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
 	if(mu.pt()>60.0 and mu.isMediumMuon() and fabs(mu.eta())<2.4)
 		{
 		foundmu=true;
+		maxleppt = mu.pt();
 		lepp4 = mu.p4();
 		break;
 		}
@@ -103,14 +104,18 @@ bool NanoAODFilterSlep::filter( edm::Event& iEvent, const edm::EventSetup& iSetu
 		{
 		//std::cout<< "Found EL "<<std::endl;
 		foundel=true;
-		lepp4 = el.p4();
+		if(el.pt()>maxleppt)
+			{	
+			maxleppt = el.pt();
+			lepp4 = el.p4();
+			}
 		break;
 		}
 	}
 
 
   if(not (foundmu or foundel)) return false;
-  if(foundmu and foundel) return false;
+  //if(foundmu and foundel) return false;
   edm::Handle<edm::View<pat::MET>> met;
   iEvent.getByToken(srcmet_, met);
   //for (const auto &mm : *met)
