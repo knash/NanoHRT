@@ -246,6 +246,8 @@ else:
 					crabout = crabCommand(options.mode, dir=fold)
 				else:
 					crabout = crabCommand(options.mode, dir=fold,*options.ops.split())
+					if options.mode=="kill":
+						print crabout
 				output.append([fold,crabout])	
 
 				sys.stdout = sys.__stdout__
@@ -261,7 +263,11 @@ else:
 				for oo in output[-1][1]["jobsPerStatus"]:
 					if oo == "failed":
 						toresubmit=True
-				if toresubmit:
+				if output[-1][1]["status"]!=output[-1][1]["dbStatus"]:
+					print "status",output[-1][1]["status"],"dbStatus",output[-1][1]["dbStatus"]
+				if output[-1][1]["status"]=="KILLED" or output[-1][1]["dbStatus"]=="KILLED":
+					print "Killed"
+				elif toresubmit:
 					#for jj in output[-1][1]["jobsPerStatus"]:
 					#	print jj
 					#	if jj=="failed":
@@ -277,10 +283,10 @@ else:
 					except:
 						sys.stdout = sys.__stdout__
 						print "Resubmit Error!"
-				elif output[-1][1]["status"]=="SUBMITFAILED":
+				elif output[-1][1]["status"]=="SUBMITFAILED" or output[-1][1]["dbStatus"]=="SUBMITFAILED":
 					print "Submit Failed"
 					output.append([fold,None])
-				elif output[-1][1]["status"]=="COMPLETED":
+				elif output[-1][1]["status"]=="COMPLETED" or output[-1][1]["dbStatus"]=="COMPLETED":
 					print "Completed"
 				else:
 					print "In Progress"
