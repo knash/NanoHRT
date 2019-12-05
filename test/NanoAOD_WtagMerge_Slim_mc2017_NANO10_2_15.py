@@ -36,30 +36,29 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(30000)
+    input = cms.untracked.int32(90000)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-   # fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/270000/48E78AC0-5CBB-E811-AF83-0CC47AF9B306.root"),
-    #fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/270000/48E78AC0-5CBB-E811-AF83-0CC47AF9B306.root"),
-    #fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/62B46A64-9964-E811-9292-0025905C9726.root"),
-    # fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/120000/30994A38-7BBC-E811-BC8F-0242AC130002.root"),
-    # fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/ZprimeToWWToWlepWhad_narrow_M-1400_TuneCP5_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/10000/20B24084-9C1D-E911-8162-0CC47AB360C6.root"),
-     #fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/WpToTpB_Wp3500Nar_Tp1700Nar_Zt_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/48968C14-7359-E911-81FC-0242AC130002.root"),
-  #   fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/WJetsToQQ_HT600to800_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/D8BAB5EE-DC42-E811-BA23-0CC47A78A3EC.root"),
-   #  fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/GJets_HT-600ToInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/70000/72D87D33-6941-E911-823F-0025905B859A.root"),
-   #fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/20000/6074D5E8-929A-E811-B7AD-B496910A90B8.root"),
 	fileNames = cms.untracked.vstring(
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/5271DA24-8D29-E911-9050-EC0D9A8221DE.root",
 "/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/DC54D60B-942C-E911-8055-B083FED04CAA.root",
-"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/421BAEBD-792C-E911-B27E-AC1F6B23C814.root",
 "/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/74C6CAA1-2C2D-E911-A212-B02628342C70.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/4C041404-9229-E911-856C-0242AC130002.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/969DFD44-5026-E911-87FD-0CC47AFCC65E.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/482FB5AE-8D29-E911-9BAE-001E6779250C.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/908292DC-8C29-E911-8C54-8CDCD4A9A484.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/F04A14F5-8D29-E911-9199-0CC47A4C8E1E.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/D29BEDF1-A625-E911-9FF7-AC1F6B239D78.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/92479E5F-9426-E911-8959-AC1F6B23C94C.root",
 "/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/1427EC0B-142D-E911-A3D9-0025905C53A6.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/421BAEBD-792C-E911-B27E-AC1F6B23C814.root",
 "/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/A2C99C71-5F2C-E911-9297-FA163ED68858.root",
-	),
-	#fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravTohhTohbbhbb_width0p05_M-1200_TuneCP2_13TeV-madgraph_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/260000/E077ADA4-A254-E911-84BC-0CC47A545298.root"),
-	#fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravToZZToZhadZhad_narrow_M-1000_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/80000/507F0D65-ED1C-E911-851E-E0071B73B6E0.root"),
-	#fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravToWW_narrow_M-1200_13TeV-madgraph/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/10000/CEECBDDE-4C20-E911-AE4C-90E2BAD4912C.root"),
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/90000/0CEEF95F-8D29-E911-B68D-0CC47A545060.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/AA721AB1-2C2D-E911-97C7-0CC47A78A426.root",
+"/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M2000_W20_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/40000/206C93D7-872C-E911-B7A8-0025905A6080.root",	
+),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -198,6 +197,13 @@ process.WWProducerpuppi = cms.EDProducer('WtagProducer',
         		pnum=cms.uint32(options.ijob),
         		tnum=cms.uint32(options.totjobs))
 
+process.WWProducerpuppi1 = cms.EDProducer('WtagProducer1',
+        		links= cms.InputTag("WWProducerpuppi","secvertrekey"),
+			sec = cms.InputTag("WWProducerpuppi","newvecs"),
+        		pfcs=cms.InputTag("WWProducerpuppi"),
+			mus=cms.InputTag("WWProducerpuppi","newmus"))
+
+
 process.WBProducerpuppi = cms.EDProducer('WtagProducer',
         		src=cms.InputTag('slimmedJetsAK8'),
 			srcAK4 = cms.InputTag("slimmedJets"),
@@ -211,6 +217,14 @@ process.WBProducerpuppi = cms.EDProducer('WtagProducer',
         		load=cms.bool(True),
         		pnum=cms.uint32(options.ijob),
         		tnum=cms.uint32(options.totjobs))
+
+process.WBProducerpuppi1 = cms.EDProducer('WtagProducer1',
+        		links= cms.InputTag("WBProducerpuppi","secvertrekey"),
+			sec = cms.InputTag("WBProducerpuppi","newvecs"),
+        		pfcs=cms.InputTag("WBProducerpuppi"),
+			mus=cms.InputTag("WBProducerpuppi","newmus"))
+
+
 
 process.MJProducerpuppi = cms.EDProducer('WtagProducer',
         		src=cms.InputTag('slimmedJetsAK8'),
@@ -242,9 +256,12 @@ process.matchvartableWW = cms.EDProducer("GlobalVariablesTableProducer",
         WWoeta = ExtVar(cms.InputTag("WWProducerpuppi","matchvals9"), float, doc = "aaa"),
         WWfmatch = ExtVar(cms.InputTag("WWProducerpuppi","matchvals10"), float, doc = "aaa"),
         WWfmatchdr = ExtVar(cms.InputTag("WWProducerpuppi","matchvals11"), float, doc = "aaa"),
-        WWmatch = ExtVar(cms.InputTag("WWProducerpuppi","matchvals12"), float, doc = "aaa"),
-        WWmatchdr = ExtVar(cms.InputTag("WWProducerpuppi","matchvals13"), float, doc = "aaa"),
-        WWismergetop = ExtVar(cms.InputTag("WWProducerpuppi","matchvals14"), float, doc = "aaa"),
+        WWsumdiffb = ExtVar(cms.InputTag("WWProducerpuppi","matchvals12"), float, doc = "aaa"),
+        WWmatch = ExtVar(cms.InputTag("WWProducerpuppi","matchvals13"), float, doc = "aaa"),
+        WWmatchdr = ExtVar(cms.InputTag("WWProducerpuppi","matchvals14"), float, doc = "aaa"),
+        WWismergetop = ExtVar(cms.InputTag("WWProducerpuppi","matchvals15"), float, doc = "aaa"),
+        WWnelsrot = ExtVar(cms.InputTag("WWProducerpuppi","matchvals16"), float, doc = "aaa"),
+        WWnmusrot = ExtVar(cms.InputTag("WWProducerpuppi","matchvals17"), float, doc = "aaa"),
     )
 )
 		
@@ -262,13 +279,16 @@ process.matchvartableWB = cms.EDProducer("GlobalVariablesTableProducer",
         WBoeta = ExtVar(cms.InputTag("WBProducerpuppi","matchvals9"), float, doc = "aaa"),
         WBfmatch = ExtVar(cms.InputTag("WBProducerpuppi","matchvals10"), float, doc = "aaa"),
         WBfmatchdr = ExtVar(cms.InputTag("WBProducerpuppi","matchvals11"), float, doc = "aaa"),
-        WBmatch = ExtVar(cms.InputTag("WBProducerpuppi","matchvals12"), float, doc = "aaa"),
-        WBmatchdr = ExtVar(cms.InputTag("WBProducerpuppi","matchvals13"), float, doc = "aaa"),
-        WBismergetop = ExtVar(cms.InputTag("WBProducerpuppi","matchvals14"), float, doc = "aaa"),
+        WBsumdiffb = ExtVar(cms.InputTag("WBProducerpuppi","matchvals12"), float, doc = "aaa"),
+        WBmatch = ExtVar(cms.InputTag("WBProducerpuppi","matchvals13"), float, doc = "aaa"),
+        WBmatchdr = ExtVar(cms.InputTag("WBProducerpuppi","matchvals14"), float, doc = "aaa"),
+        WBismergetop = ExtVar(cms.InputTag("WBProducerpuppi","matchvals15"), float, doc = "aaa"),
+        WBnelsrot = ExtVar(cms.InputTag("WBProducerpuppi","matchvals16"), float, doc = "aaa"),
+        WBnmusrot = ExtVar(cms.InputTag("WBProducerpuppi","matchvals17"), float, doc = "aaa"),
     )
 )
 
-
+'''
 process.matchvartableMJ = cms.EDProducer("GlobalVariablesTableProducer",
     variables = cms.PSet(
         MJdrorig = ExtVar(cms.InputTag("MJProducerpuppi","matchvals0"), float, doc = "aaa"),
@@ -283,24 +303,32 @@ process.matchvartableMJ = cms.EDProducer("GlobalVariablesTableProducer",
         MJoeta = ExtVar(cms.InputTag("MJProducerpuppi","matchvals9"), float, doc = "aaa"),
         MJfmatch = ExtVar(cms.InputTag("MJProducerpuppi","matchvals10"), float, doc = "aaa"),
         MJfmatchdr = ExtVar(cms.InputTag("MJProducerpuppi","matchvals11"), float, doc = "aaa"),
-        MJmatch = ExtVar(cms.InputTag("MJProducerpuppi","matchvals12"), float, doc = "aaa"),
-        MJmatchdr = ExtVar(cms.InputTag("MJProducerpuppi","matchvals13"), float, doc = "aaa"),
-        MJismergetop = ExtVar(cms.InputTag("MJProducerpuppi","matchvals14"), float, doc = "aaa"),
+        MJmatch = ExtVar(cms.InputTag("MJProducerpuppi","matchvals13"), float, doc = "aaa"),
+        MJmatchdr = ExtVar(cms.InputTag("MJProducerpuppi","matchvals14"), float, doc = "aaa"),
+        MJismergetop = ExtVar(cms.InputTag("MJProducerpuppi","matchvals15"), float, doc = "aaa"),
     )
 )
+'''
+#process.slimmedSecondaryVerticesWBRot = cms.EDProducer("PATSecondaryVertexSlimmer",
+#     src = cms.InputTag("WBProducerpuppi","newvecs"),
+#     packedPFCandidates = cms.InputTag("WBProducerpuppi")
+#)
 
-
-process.w_step = cms.Path(process.NanoAODFilterSlep*process.WWProducerpuppi*process.WBProducerpuppi*process.MJProducerpuppi*process.matchvartableWW*process.matchvartableWB*process.matchvartableMJ)
 process.dump=cms.EDAnalyzer('EventContentAnalyzer')
-process.p = cms.Path( process.dump)
+process.p = cms.Path(process.NanoAODFilterSlep*process.dump)
 
-process.schedule = cms.Schedule(process.filt_step,process.w_step,process.filt_step_full,process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
+process.w_step = cms.Path(process.NanoAODFilterSlep*process.WBProducerpuppi*process.WWProducerpuppi*process.MJProducerpuppi)
+process.w_step_m = cms.Path(process.NanoAODFilterSlep*process.matchvartableWB*process.matchvartableWW)
+process.w_step_1 = cms.Path(process.NanoAODFilterSlep*process.WBProducerpuppi1*process.WWProducerpuppi1)
+
+process.schedule = cms.Schedule(process.filt_step,process.w_step,process.w_step_1,process.w_step_m,process.filt_step_full,process.nanoAOD_step,process.endjob_step,process.NANOAODSIMoutput_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
 #Setup FWK for multithreaded
 process.options.numberOfThreads=cms.untracked.uint32(1)
 process.options.numberOfStreams=cms.untracked.uint32(0)
+process.options.SkipEvent = cms.untracked.vstring('ProductNotFound')
 
 # customisation of the process.
 
@@ -314,8 +342,8 @@ from PhysicsTools.NanoHRT.nanoHRT_cff import nanoHRT_customizeMC
 process = nanoHRT_customizeMC(process)
 from PhysicsTools.NanoHRT.ak8_cff import setupCustomizedWWAK8
 setupCustomizedWWAK8(process, runOnMC=False, path=None)
-from PhysicsTools.NanoHRT.hotvr_cff import setupWWHOTVR
-setupWWHOTVR(process, runOnMC=False, path=None)
+#from PhysicsTools.NanoHRT.hotvr_cff import setupWWHOTVR
+#setupWWHOTVR(process, runOnMC=False, path=None)
 # Automatic addition of the customisation function from Configuration.DataProcessing.Utils
 from Configuration.DataProcessing.Utils import addMonitoring 
 

@@ -18,7 +18,6 @@
 
 #include <memory>
 #include <iostream>
-#include <Python.h>
 
 
 class  NanoAODFilterSlep : public edm::stream::EDFilter<> {

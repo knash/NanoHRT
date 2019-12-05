@@ -6,7 +6,7 @@
 
 #include  "DataFormats/FWLite/interface/ChainEvent.h"
 
-
+#include "DataFormats/Math/interface/normalizedPhi.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
@@ -20,7 +20,6 @@
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
 #include "DataFormats/Candidate/interface/LeafCandidate.h"
 #include "DataFormats/TrackReco/interface/TrackBase.h"
-
 
 #include "DataFormats/FWLite/interface/Event.h"
 
@@ -39,7 +38,8 @@ class WtagProducer : public edm::stream::EDProducer<> {
 
 
   private:
-
+    //math::XYZPoint protate(math::XYZPoint,reco::Vertex,float,float);
+    //reco::Track trotate(reco::Track ,float ,float ,float ,float ,float,reco::Vertex );
     void beginStream(edm::StreamID) override {}
     void produce(edm::Event&, const edm::EventSetup&) override;
     void endStream() override {}
@@ -59,12 +59,16 @@ class WtagProducer : public edm::stream::EDProducer<> {
     edm::EDGetTokenT<int> windex_;
     edm::EDGetTokenT<int> tindex_;
     edm::EDGetTokenT<int> bindex_;
+
+
     edm::EDGetTokenT<std::vector<reco::Vertex>> opv_;
     uint pnum_;
     uint tnum_;
-    TFile* inputTFile_;
+    const edm::EDGetTokenT<edm::View<pat::PackedCandidate>> pfcs_;
+     
+    //TFile* inputTFile_;
     //fwlite::Event* ev_;
-    std::atomic<fwlite::ChainEvent*> ev_;
+    fwlite::ChainEvent* ev_;
     std::atomic<TH1F*> topmass_;
     std::atomic<TH1F*> wwmass_;
     edm::EDGetTokenT<std::vector<reco::GenParticle>> gplab ;
@@ -87,22 +91,25 @@ src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 , load_(iConfig.getParameter<bool>("load"))
 , pnum_(iConfig.getParameter<uint>("pnum"))
 , tnum_(iConfig.getParameter<uint>("tnum"))
-//pfcs_(consumes<edm::View<pat::PackedCandidate>>(iConfig.getParameter<edm::InputTag>("pfcs")))
+, pfcs_(consumes<edm::View<pat::PackedCandidate>>(edm::InputTag("packedPFCandidates")))
 {
-  nvals=15;
+  nvals=18;
 
   if(merge_ or mergeb_ or mergemj_)
 	{
-
   	produces<std::vector<pat::PackedCandidate>>("");
   	produces<std::vector<pat::Jet>>("jet");
   	produces<std::vector<int>>("wmatch");
   	produces<std::vector<float>>("wmatchdr");
   	produces<std::vector<float>>("sjmerger");
-
+  	produces<std::vector<reco::Track>>("newtracks");
+	produces<std::vector<reco::Vertex>>("newopvs");
   	produces<std::vector<pat::Electron>>("newels");
+  	produces<std::vector<reco::GsfTrack>>("gsftracks");
+  	produces<std::vector<reco::GsfElectronCore>>("gsfcores");
   	produces<std::vector<pat::Muon>>("newmus");
   	produces<reco::VertexCompositePtrCandidateCollection>("newvecs");
+  	produces<std::vector<std::pair<int,int>>>("secvertrekey");
 	for(int ival=0;ival<nvals;ival++)produces<float>("matchvals"+std::to_string(ival));
 	}
   else
@@ -111,19 +118,16 @@ src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
   	produces<std::vector<pat::PackedCandidate>>("bcands");
   	produces<std::vector<pat::Jet>>("wjet");
   	produces<std::vector<pat::Jet>>("bjet");
-
-
   	produces<std::vector<pat::Muon>>("allmusb");
   	produces<std::vector<pat::Electron>>("allelsb");
-
   	produces<std::vector<pat::Muon>>("allmus");
   	produces<std::vector<pat::Electron>>("allels");
-
   	produces<std::vector<int>>("wmatch");
   	produces<std::vector<float>>("wmatchdr");
   	produces<std::vector<bool>>("ismerge");
   	produces<std::vector<float>>("sjw");
   	produces<std::vector<float>>("sjb");
+  	produces<std::vector<reco::Vertex>>("newopv");
   	produces<reco::VertexCompositePtrCandidateCollection>("wvecs");
   	produces<reco::VertexCompositePtrCandidateCollection>("bvecs");
 	}
@@ -144,7 +148,9 @@ src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src")))
 	myfile.open("fnames.txt");
 	while(getline(myfile, line))fnames.push_back(line);
 	ev_ =  new fwlite::ChainEvent(fnames);
-	nevmix=ev_.load()->size();
+	nevmix=ev_->size();
+	ev_->toBegin();
+	//nevmix=100;
 	//std::cout<<"mixing "<<nevmix<<" events";
 	}
   //windex_ = consumes<edm::View<int>>(edm::InputTag("windex","NanoAODFilterSlep"));
@@ -173,19 +179,25 @@ void WtagProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions
 
 void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  std::cout<<"startproducer"<<std::endl;
+  std::cout<<"startproducer "<<iEvent.id().event()<<std::endl;
   std::srand(iEvent.id().event()+9 );
   //std::cout<<"1"<<std::endl;
   edm::Handle<edm::View<pat::Jet>>jets;
   edm::Handle<std::vector<pat::Muon>>muons;
-  edm::Handle<std::vector<reco::Vertex>>opv;
+
+
+  //edm::ESHandle<TrackerTopology> tTopoHandle;
+  //iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
+  //const TrackerTopology* const tTopo = tTopoHandle.product();
+
   edm::Handle<std::vector<pat::Electron>>electrons;
   edm::Handle<int>windex;  
   edm::Handle<int>tindex;
   edm::Handle<int>bindex;
   edm::Handle<edm::View<pat::PackedCandidate>>PackedCandidates;
   iEvent.getByToken(src_, jets);
-  iEvent.getByToken(opv_, opv);
+
+
   iEvent.getByToken(windex_, windex);
   iEvent.getByToken(tindex_, tindex);
   iEvent.getByToken(bindex_, bindex);  
@@ -193,11 +205,11 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(mu_, muons);
   iEvent.getByToken(el_, electrons); 
 
-  std::vector<reco::Vertex> newopv = *(opv.product()); 
+
+
   std::vector<pat::Muon> newmu = *(muons.product()); 
   std::vector<pat::Electron> newel = *(electrons.product()) ; 
 
-  //VertexRef = pvref;
 
   int iwindex=*(windex.product());
   int itindex=*(tindex.product());
@@ -206,7 +218,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   bool isfmerge=false;
   if(iwindex<0)isfmerge=true;
-  //iEvent.getByToken(pfcs_, PackedCandidates);
+  iEvent.getByToken(pfcs_, PackedCandidates);
   edm::Handle<edm::View<pat::Jet>> jetsAK4;
   iEvent.getByToken(srcAK4_, jetsAK4);
 
@@ -253,11 +265,13 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   bool mergemj=mergemj_;
   bool load=load_;
   float fakefac=1.0;
-
+  std::vector<reco::GsfTrack>gsftracks={};
+  std::vector<reco::GsfElectronCore>gsfcores={};
   pat::Jet AK8pfjet;
   pat::Jet AK4pfjet;
   //float fdr=0.0;
   float fang=0.0;
+  //float fwpt=0.0;
   float fdetaval=0.0;
   float fdphival=0.0;
   std::vector<float> sjlistw = {};
@@ -266,10 +280,14 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   reco::VertexCompositePtrCandidateCollection newvecs = newSV;
   std::vector<pat::Muon> newmus = newmu;
   std::vector<pat::Electron> newels = newel;
-  //reco::VertexRef pvref = ;
+  float sumdiffb = 0.0;
+  int nmusrot=0;
+  int nelsrot=0;
   //edm::EDProductGetter pget;
   //std::cout<<"pget"<<std::endl;
   //edm::EDProductGetter pget=(jets->at(0)).daughter(idau)->productGetter();
+  std::vector<std::pair<uint,std::pair<float,float>>> rekeyvec={};
+  std::vector<std::pair<int,int>> rekeyvec2={};
   if(isfmerge)
 	{
 	std::cout<<"running merged version"<<std::endl;
@@ -321,11 +339,19 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 	else
 		{
+		//std::cout<<"rmv1"<<std::endl;
 		auto const & sdSubjetsPuppi = (jets->at(itindex)).subjets("SoftDropPuppi");
 
 		AK8pfjet = sdSubjetsPuppi[0];
 		//std::cout<<"subjetpt "<<AK8pfjet.pt()<<std::endl;
 		//std::cout<<"sjlistwTRY "<<AK8pfjet.bDiscriminator("pfDeepFlavourJetTags:probb")<<std::endl;
+		//uint ipc=0;
+		//for (const auto &pc : *PackedCandidates)
+		//	{
+		//	std::cout<<"ALLDAU "<<ipc<<" pt "<<pc.pt()<<std::endl;
+		//	ipc+=1;
+		//	}
+
   		for (const auto &csj : *sj)
 			{
 
@@ -341,8 +367,16 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				//std::cout<<"getit "<<std::endl;	
 				uint nvtx = curvert->nVertices();
 				//std::cout<<"nv "<<nvtx<<std::endl;	
-				for (uint ii = 0; ii < nvtx; ii++)allvecs.push_back(curvert->secondaryVertex(ii));
-				//std::cout<<"endv "<<std::endl;	
+				for (uint ii = 0; ii < nvtx; ii++)
+					{
+					allvecs.push_back(curvert->secondaryVertex(ii));
+					//for(auto dp:curvert->secondaryVertex(ii).daughterPtrVector())
+					//	{		
+					//	std::cout<<"id "<<dp.id()<<" key "<<dp.key()<<std::endl;
+					//	std::cout<<"pt "<<dp.get()->pt()<<std::endl;
+					//	}
+					}
+									//std::cout<<"endv "<<std::endl;	
 				//std::cout<<"bdisc "<<csj.bDiscriminator("pfDeepFlavourJetTags:probb")<<std::endl;
 				//std::cout<<"Found!"<<std::endl;
 				sjlistw.push_back(csj.bDiscriminator("pfDeepFlavourJetTags:probb"));
@@ -359,7 +393,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//std::cout<<"NsjlistW "<<sjlistw.size()<<std::endl;
 		AK4pfjet = sdSubjetsPuppi[1];
 		//std::cout<<"starttag1 "<<std::endl;	
-
+		//std::cout<<"rmv2"<<std::endl;
 		//std::cout<<"sjlistbTRY "<<AK4pfjet.bDiscriminator("pfDeepFlavourJetTags:probb")<<std::endl;
 
   		for (const auto &csj : *sj)
@@ -399,6 +433,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		uint ndau2 = sdSubjetsPuppi[1]->numberOfDaughters();
 		uint gdau = ndau1+ndau2;
 		uint ndau = (jets->at(itindex)).numberOfDaughters();
+		//std::cout<<"rmv3.1"<<std::endl;
 		for(uint idau=0;idau<ndau1;idau++)
 			{
 
@@ -414,7 +449,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			{
 			const pat::PackedCandidate * daunb = dynamic_cast<const pat::PackedCandidate *>((jets->at(itindex)).daughter(idau) );
 			allpfsjb.push_back(*daunb);
-
+			//std::cout<<"pt "<<daunb->pt()<<"  ->  "<<(jets->at(itindex)).daughterPtr(idau).key()<<std::endl;
 			//const pat::PackedCandidate * daunb1 = dynamic_cast<const pat::PackedCandidate *>((jets->at(itindex)).daughter(idau) );
 			//std::cout<<"running"<<std::endl;
 			//std::cout<<"id "<<daunb1->vertexRef().id()<<std::endl;
@@ -437,6 +472,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//std::cout<<"fdetaval "<<fdetaval<<" fdphival "<<fdphival<<std::endl;
 		//fdr = deltaR(sdSubjetsPuppi[0]->p4(),sdSubjetsPuppi[1]->p4());
 		fang = std::atan(fdetaval/fdphival);
+		//fwpt=sdSubjetsPuppi[0]->p4().pt();
 		}
 
 
@@ -495,37 +531,34 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   	//std::cout<<"AK8 mass "<<AK8pfjet.userFloat("ak8PFJetsPuppiSoftDropMass")<<std::endl;
 	}
   //std::vector<fwlite::Event>::iterator curev = ev_.load()->toBegin() + evtoload;
-
+  edm::Handle<std::vector<reco::Vertex>>opv;
+  iEvent.getByToken(opv_, opv);
+  reco::VertexRef PVRef(opv.id());
+  reco::VertexRefProd PVRefProd(opv);
+  std::vector<reco::Vertex> newopv = *(opv.product());
+  std::vector<reco::Track>newtracks={};
+  uint trackindex=0; 
   if(merge or mergeb)
 	{
 	//std::cout<<"Events to mix "<<nevmix<<std::endl;
-	
-
 	edm::Handle<std::vector<pat::Jet>> Wjets;
 	edm::Handle<std::vector<bool>> ismergetemp;
 	edm::Handle<std::vector<pat::PackedCandidate>> Wjetspfc;
+	edm::Handle<std::vector<pat::PackedCandidate>> Allpfc;
 	edm::Handle<std::vector<int>> wmatchf;
 	edm::Handle<std::vector<float>> wmatchdr;
 	edm::Handle<std::vector<float>> sjwh;
 	edm::Handle<std::vector<float>> sjbh;
-
-
-
-
-	edm::Handle<std::vector<pat::Muon>> allmuswh;
+	//edm::Handle<std::vector<pat::Muon>> allmuswh;
 	edm::Handle<std::vector<pat::Muon>> allmusbh;
-
-
-
 	edm::Handle<std::vector<pat::Electron>> allelswh;
 	edm::Handle<std::vector<pat::Electron>> allelsbh;
-
-
-
 	edm::Handle<reco::VertexCompositePtrCandidateCollection> wvecsh;
 	edm::Handle<reco::VertexCompositePtrCandidateCollection> bvecsh;
+	edm::Handle<std::vector<reco::Vertex>>opvfh;
 
 
+	std::vector<reco::Vertex>opvf;
   	//edm::Handle<reco::VertexCompositePtrCandidateCollection> svsfh;
 	//float DRmin=0.0;
 	//float DRmax=0.0;
@@ -538,128 +571,118 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	std::vector<float> sjw;
 	std::vector<float> sjb;
 
-
-
-	std::vector<pat::Muon> allmuswf;
+	//std::vector<pat::Muon> allmuswf;
 	std::vector<pat::Muon> allmusbf;
 
-
-
-	std::vector<pat::Electron> allelswf;
+	//std::vector<pat::Electron> allelswf;
 	std::vector<pat::Electron> allelsbf;
-
 
 	reco::VertexCompositePtrCandidateCollection wvecsf;
 	//reco::VertexCompositePtrCandidateCollection bvecsf;
 
   	//reco::VertexCompositePtrCandidateCollection svsf;
-
+	//std::cout<<"vrec1"<<std::endl;
   	//std::cout<<"tnum "<<tnum_<<" pnum "<<pnum_<<std::endl;
 	bool foundev=false;
 	int tries = 0;
-	int maxtries=70;
+	int maxtries=100;
+	//inputTFile_->cd();
 
 	if(load){		
 	std::lock_guard<std::mutex> lock(write_mutex);
+	std::cout<<"load"<<std::endl;
 	while(foundev==false and tries<maxtries)
 		{
 		tries+=1;
-		auto loadev = ev_.load();
 		bool foundmerge=false;
 		while(!foundmerge)
 			{
 	 		evtoload=std::rand()%nevmix;
 			if(evtoload%tnum_==(pnum_-1))
 				{
-	  			//std::cout<<"evtoload "<<evtoload<<std::endl;
-				loadev->to(evtoload);
-   				for( loadev->to(evtoload); !(loadev->atEnd()); ++(*loadev)) 
-					{
-	  				//std::cout<<"loaded"<<std::endl;
-					loadev->getByLabel(edm::InputTag("WtagProducerpuppi","ismerge"), ismergetemp);
-					bool ismergetempval=(ismergetemp.product())->at(0);
+	  			//std::cout<<"evtoload "<<evtoload<<" - "<<nevmix<<std::endl;
 
+
+				int iload=0;
+   				for( ev_->to(evtoload); !(ev_->atEnd()); ++(*ev_)) 
+					{
+	  				//std::cout<<"loaded "<<iload+evtoload<<std::endl;
+					ev_->getByLabel(edm::InputTag("WtagProducerpuppi","ismerge"), ismergetemp);
+	  				//std::cout<<"1"<<std::endl;
+					bool ismergetempval = false;
+					if ((ismergetemp.product()->size())>0)ismergetempval=(ismergetemp.product())->at(0);
+	  				//std::cout<<"2"<<std::endl;
+					iload+=1;
 					//std::cout<<"im fromfile "<<ismergetempval<<" im "<<isfmerge<<std::endl;
 					if(isfmerge and ismergetempval)foundmerge=true;
 					if((not isfmerge) and (not ismergetempval))foundmerge=true;
 					if (foundmerge) break;
+	  				//std::cout<<"3"<<std::endl;
 					}
 				}
 			}
 
-		float deltabtag = 0.0;
-		float deltawtag = 0.0;
-		if(merge)
+	  	//std::cout<<"4"<<std::endl;
+		//float deltabtag = 0.0;
+		//float deltawtag = 0.0;
+	  	ev_->getByLabel(edm::InputTag("offlineSlimmedPrimaryVertices"), opvfh);
+	  	opvf = *(opvfh.product());
+		//std::cout<<opvfh.id()<<std::endl;
+	  	//ev_->getByLabel(edm::InputTag("slimmedSecondaryVertices"), opvfh);
+		//std::cout<<"id1 "<<wvecsh.id()<<std::endl;
+
+		if(merge or mergeb)
 			{
-			
-			std::cout<<"Load W"<<std::endl;
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wjet"), Wjets);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wcands"), Wjetspfc);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wmatch"), wmatchf);
-	  		//loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wmatchhot"), wmatchfhot);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wmatchdr"), wmatchdr);
- 
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","sjb"), sjbh);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","sjw"), sjwh);
-	  		//loadev->getByLabel(edm::InputTag("slimmedSecondaryVertices"), svsfh);
-
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","allmusb"), allmuswh);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","allelsb"), allelswh);
-
-	  		//loadev->getByLabel(edm::InputTag("WtagProducerpuppi","bvecs"), bvecsh);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wvecs"), wvecsh);
-
-			wvecsf = *(wvecsh);
-			//bvecsf = *(bvecsh);
+			//std::cout<<"Load W"<<std::endl;
+	  		//ev_->getByLabel(edm::InputTag("offlineSlimmedPrimaryVertices"), opvfh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wvecs"), wvecsh);
+			//std::cout<<"id1 "<<wvecsh.id()<<std::endl;
+			//std::cout<<"jet"<<std::endl;
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wjet"), Wjets);
+			//std::cout<<"cands"<<std::endl;
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wcands"), Wjetspfc);
+			//std::cout<<"id2 "<<Wjetspfc.id()<<std::endl;
+			//std::cout<<"match"<<std::endl;
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wmatch"), wmatchf);
+	  		//ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wmatchhot"), wmatchfhot);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wmatchdr"), wmatchdr);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","sjb"), sjbh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","sjw"), sjwh);
+	  		//ev_->getByLabel(edm::InputTag("slimmedSecondaryVertices"), svsfh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","allmus"), allmusbh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","allels"), allelsbh);
 
 
-			allmuswf = *(allmuswh.product());
-			allelswf = *(allelswh.product());
-
+			allmusbf = *(allmusbh.product());
+			allelsbf = *(allelsbh.product());
 			sjb = *(sjbh.product());
 			sjw = *(sjwh.product());
-			//svsf = *(svsfh.product());
+			
 
 
-			//std::cout<<"start insert"<<std::endl;
-
-			//newvecs.insert(newvecs.end(),wvecsf.begin(),wvecsf.end());
-			//std::cout<<"end insert"<<std::endl;
-			//std::cout<<sjw.size()<<","<<sjb.size()<<std::endl;
-
-
-
-			if (sjw.size()<6 or sjb.size()<6)
+			if (sjw.size()<6 or sjb.size()<6 or sjlistw.size()<6 or sjlistb.size()<6)
 				{
-				std::cout<<"NOOBTAGINFO"<<std::endl;
+				std::cout<<"NOBTAGINFO"<<std::endl;
 				continue;
 				}
-			float wsj = sjw[0]+sjw[1]+sjw[5];
-			float bsj = sjb[0]+sjb[1]+sjb[5];
-			float curwsj = sjlistw[0]+sjlistw[1]+sjlistw[5];
-			float curbsj = sjlistb[0]+sjlistb[1]+sjlistb[5];
+		
+			sumdiffb=0;
+			for (int ibt=0;ibt<6;ibt++) sumdiffb+=fabs(sjw[ibt]-sjlistw[ibt]);
 			//std::cout<<"1"<<std::endl;
 			sjmerger=sjw;
-			//std::cout<<"2"<<std::endl;
-			//std::cout<<" passed btag "<<sjw[0]<<" "<<sjw[1]<<" "<<sjw[5]<<std::endl;
-
-			deltabtag = curbsj-bsj;
-			deltawtag = curwsj-wsj;
-			//std::cout<<deltabtag<<","<<deltawtag<<std::endl;
-			//std::cout<<" passed btag B "<<sjb[0]<<" "<<sjb[1]<<" "<<sjb[5]<<std::endl;
-			//std::cout<<" passed btag B "<<sjlistb[0]<<" "<<sjlistb[1]<<" "<<sjlistb[5]<<std::endl;
-			if (curwsj>curbsj) 
+			
+			if ((sumdiffb>1.2) )
 				{
-				std::cout<<"B CONTAMINATE break"<<std::endl;
-				break;
-				}
-			//std::cout<<"3"<<std::endl;
-			if (wsj>bsj)continue;
-			if ((std::fabs(deltabtag)>0.4) or (std::fabs(deltawtag)>0.4) )
-				{
-				std::cout<<"flavour mismatch"<<std::endl;
+				//std::cout<<"flavour mismatch "<<sumdiffb<<std::endl;
 				continue;
 				}
+
+
+			wvecsf = *(wvecsh.product());
+			//bvecsf = *(bvecsh.product());
+
+
+
 			Wjetsmatchf = *(wmatchf.product());
 			Wjetsmatchfdr = *(wmatchdr.product());
 			//std::cout<<"3"<<std::endl;
@@ -669,34 +692,39 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			if(isfmerge)
 				{
 				dptcut=0.5;
-				detacut=1.6;
+				detacut=1.3;
 				}
 			}
-		if(mergeb)
+		if (false)//(mergeb)
 			{
 
-			std::cout<<"Load B"<<std::endl;
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","bjet"), Wjets);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","bcands"), Wjetspfc);
+			//std::cout<<"Load B"<<std::endl;
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","bvecs"), bvecsh);
+			//std::cout<<"id1 "<<bvecsh.id()<<std::endl;
+			//std::cout<<"jet"<<std::endl;
+	  		//ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wjet"), Wjets);
+			//std::cout<<"cands"<<std::endl;
+	  		//ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wcands"), Wjetspfc);
+			//std::cout<<"id2 "<<Wjetspfc.id()<<std::endl;
+
+
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","bjet"), Wjets);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","bcands"), Wjetspfc);
+
 			Wjetsmatchf.push_back(-1);
 			Wjetsmatchfdr.push_back(-1.0);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","sjb"), sjbh);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","sjw"), sjwh);
-	  		//loadev->getByLabel(edm::InputTag("slimmedSecondaryVertices"), svsfh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","sjb"), sjbh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","sjw"), sjwh);
+	  		//ev_->getByLabel(edm::InputTag("slimmedSecondaryVertices"), svsfh);
 
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","allmusb"), allmusbh);
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","allelsb"), allelsbh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","allmusb"), allmusbh);
+	  		ev_->getByLabel(edm::InputTag("WtagProducerpuppi","allelsb"), allelsbh);
 
-
-	  		loadev->getByLabel(edm::InputTag("WtagProducerpuppi","bvecs"), bvecsh);
-	  		//loadev->getByLabel(edm::InputTag("WtagProducerpuppi","wvecs"), wvecsh);
-
-			//wvecsf = *(wvecsh);
-			wvecsf = *(bvecsh);
 
 			//std::cout<<"start insert"<<std::endl;
 			//newvecs.insert(newvecs.end(),bvecsf.begin(),bvecsf.end());
 			//std::cout<<"end insert"<<std::endl;
+			
 			allmusbf = *(allmusbh.product());
 			allelsbf = *(allelsbh.product());
 
@@ -705,7 +733,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			//std::cout<<"1"<<std::endl;
 			//svsf = *(svsfh.product());
 			//std::cout<<sjw.size()<<","<<sjb.size()<<std::endl;
-			if (sjw.size()<6 or sjb.size()<6)
+			if (sjw.size()<6 or sjb.size()<6 or sjlistw.size()<6 or sjlistb.size()<6)
 				{
 				std::cout<<"NOOBTAGINFO"<<std::endl;
 				continue;
@@ -714,22 +742,14 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			float bsj = sjb[0]+sjb[1]+sjb[5];
 			float curwsj = sjlistw[0]+sjlistw[1]+sjlistw[5];
 			float curbsj = sjlistb[0]+sjlistb[1]+sjlistb[5];
-
-			/*std::cout<<"bdisc  "<<sjlistw[0]+sjlistw[1]<<std::endl;
-			std::cout<<"udsgbdisc  "<<sjlistw[2]+sjlistw[3]<<std::endl;
-			std::cout<<"cdisc  "<<sjlistw[4]<<std::endl;
-			std::cout<<"lepbdisc "<<sjlistw[5]<<std::endl;
-
-
-			std::cout<<"bdisc  "<<sjb[0]+sjb[1]<<std::endl;
-			std::cout<<"udsgbdisc  "<<sjb[2]+sjb[3]<<std::endl;
-			std::cout<<"cdisc  "<<sjb[4]<<std::endl;
-			std::cout<<"lepbdisc "<<sjb[5]<<std::endl;*/
+			sumdiffb=0;
+			for (int ibt=0;ibt<6;ibt++) sumdiffb+=fabs(sjb[ibt]-sjlistb[ibt]);
+			
 			sjmerger=sjb;
 
 
-			deltabtag = curbsj-bsj;
-			deltawtag = curwsj-wsj;
+			//deltabtag = curbsj-bsj;
+			//deltawtag = curwsj-wsj;
 			//std::cout<<deltabtag<<","<<deltawtag<<std::endl;
 			//std::cout<<" passed btag B "<<sjb[0]<<" "<<sjb[1]<<" "<<sjb[5]<<std::endl;
 			//std::cout<<" passed btag B "<<sjlistb[0]<<" "<<sjlistb[1]<<" "<<sjlistb[5]<<std::endl;
@@ -738,30 +758,48 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				//std::cout<<"SJMM B "<<wsj<<","<<bsj<<" "<<curwsj<<","<<curbsj<<std::endl;
 				continue;
 				}
-			if ((std::fabs(deltabtag)>0.6) or (std::fabs(deltawtag)>0.6) )
-				{
-				std::cout<<"flavour mismatch"<<std::endl;
-				continue;
-				}
-			dptcut=99999.0;
-			detacut=1.4;
+			//if ((sumdiffb>1.2) )
+			//	{
+				//std::cout<<"flavour mismatch "<<sumdiffb<<std::endl;
+			//	continue;
+			//	}
+
+	  		//ev_->getByLabel(edm::InputTag("WtagProducerpuppi","wvecs"), wvecsh);
+
+			//wvecsf = *(wvecsh.product());
+			wvecsf = *(bvecsh.product());
+
+
+			dptcut=0.5;
+			detacut=1.3;
 			}
-		//std::cout<<"maxtries MMMM "<<maxtries<<std::endl;
+
 		Wjetsprod = *(Wjets.product());
 		Wjetspfcprod = *(Wjetspfc.product());
-
-		std::cout<<deltabtag<<","<<deltawtag<<std::endl;
+		//std::cout<<"Wjetspfcprod "<<Wjetspfc.id()<<std::endl;
+		//std::cout<<deltabtag<<","<<deltawtag<<std::endl;
 		if (Wjetsprod.size()>0)
 			{
-
-
 			float deta = std::fabs(Wjetsprod[0].eta()-AK8pfjet.eta());
 			float dpt = std::fabs(Wjetsprod[0].pt()-AK8pfjet.pt());
 			float dptfrac = dpt/(0.5*(AK8pfjet.pt()+Wjetsprod[0].pt()));
+			if(false)
+				{
+				deta = std::fabs(Wjetsprod[0].eta()-AK4pfjet.eta());
+				dpt = std::fabs(Wjetsprod[0].pt()-AK4pfjet.pt());
+				dptfrac = dpt/(0.5*(AK4pfjet.pt()+Wjetsprod[0].pt()));
+				if (abs(int(Wjetspfcprod.size()-AK4pfjet.numberOfDaughters()))>15)
+					{
+					std::cout<<"SKIP cands"<<std::endl;
+					continue;
+					}
+				}
+
+
 
 			//std::cout<<"pt comp "<<Wjetsprod[0].pt()<<" , "<<AK8pfjet.pt()<<std::endl;
 			//std::cout<<"pt frac "<<dptfrac<<std::endl;
-			//std::cout<<tries<<","<<deta<<","<<dpt<<std::endl;
+			//std::cout<<tries<<","<<deta<<","<<dptfrac<<std::endl;
 			if(deta<detacut and dptfrac<dptcut)foundev=true;
 				
 			}
@@ -772,14 +810,15 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
 	else
 		{
-		if(merge)
+		std::cout<<"inelse"<<std::endl;
+		if(merge or mergeb)
 			{
 			Wjetsprod={AK8pfjet};
 			Wjetspfcprod=allpfsj;
 			Wjetsmatchf.push_back(-1);
 			Wjetsmatchfdr.push_back(-1.0);
 			}
-		if(mergeb)
+		if(false)//(mergeb)
 			{
 			Wjetsprod={AK4pfjet};
 			//std::cout<<"allpfsjb "<<allpfsjb.size()<<std::endl;
@@ -795,7 +834,10 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	if (Wjetsprod.size()>0)
 		{
 		//std::cout<<"PT ratio "<<Wjetsprod[0].pt()/AK8pfjet.pt();
-		//std::cout<<"Found!"<<std::endl;
+		std::string textm = "W";
+		if(mergeb)textm = "b";
+		//std::cout<<"Found "<<textm<<" match. Tries "<<tries<<" of "<<maxtries<<std::endl;
+		//std::cout<<"Tries "<<maxtries<<std::endl;
     		//std::cout<<"prerotate "<<Wjetsprod[0].pt()<<std::endl;
 
 		//if(merge and (not mergeb))
@@ -807,7 +849,11 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//}
 
 		float ang = 2*3.1415*(static_cast <float> (rand()) / static_cast <float> (RAND_MAX));		
-		if(isfmerge)ang=-1.0*fang;
+		if(isfmerge)
+			{
+			if(merge)ang=1.0*fang;
+			if(mergeb)ang=-1.0*fang;
+			}
 		float DRt = 0.0;
 		float detaval = 0.0;
 		float dphival = 0.0;
@@ -816,20 +862,37 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if(mergeb)tmass = 170.0;
 		if(merge) tmass = 180.0 + (120.0*(static_cast <float> (rand()) / static_cast <float> (RAND_MAX)));
 		//std::cout<<"tmass "<<tmass<<std::endl;
-			
+		float ptrat=1.0;//fwpt/Wjetsprod[0].p4().pt();
 		for(uint idr=0;idr<80;idr++)
 				{
 				DRt = float(idr)*0.01;
 				detaval = DRt*std::sin(ang);
 				dphival = DRt*std::cos(ang);
-
-				wjp4 = Wjetsprod[0].p4();
-				wjp4.SetPhi(AK8pfjet.phi()+dphival);
-				wjp4.SetEta(AK8pfjet.eta()+detaval);
-				//std::cout<<"curdR "<<DRt<<" "<<(AK8pfjet.p4()+wjp4).mass()<<std::endl;
-				if ((AK8pfjet.p4()+wjp4).mass()>(tmass*1.12))break;
+				if(mergeb)
+					{
+					wjp4 = Wjetsprod[0].p4();
+					//wjp4.SetPhi(AK4pfjet.phi()+dphival);
+					//wjp4.SetEta(AK4pfjet.eta()+detaval);
+					wjp4.SetPhi(AK4pfjet.phi()+dphival);
+					wjp4.SetEta(AK4pfjet.eta()+detaval);
+					if ((AK4pfjet.p4()+wjp4*ptrat).mass()>(tmass*1.12))break;
+					}
+				if(merge)
+					{
+					wjp4 = Wjetsprod[0].p4();
+					wjp4.SetPhi(AK8pfjet.phi()+dphival);
+					wjp4.SetEta(AK8pfjet.eta()+detaval);
+					if ((AK8pfjet.p4()+wjp4).mass()>(tmass))break;
+					}
 				}
-		//std::cout<<"dR found "<<DRt<<std::endl;
+		if(mergeb)	{
+			wjp4.SetPhi(AK8pfjet.p4().phi());
+			wjp4.SetEta(AK8pfjet.p4().eta());
+				}
+  		if(mergeb_)	{
+					std::cout<<"dR W,newW "<<reco::deltaR(AK8pfjet.p4(),wjp4)<<std::endl;
+					std::cout<<"dR B,newW "<<reco::deltaR(AK4pfjet.p4(),wjp4)<<std::endl;
+					}
 			
 			
 		//else
@@ -848,18 +911,39 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//std::cout<<ang<<std::endl;
 		//std::cout<<(AK8pfjet.p4().eta())<<std::endl;
 
-		matchvals[0] = (reco::deltaR(AK8pfjet.p4(),Wjetsprod[0].p4()));
-		matchvals[1] = (reco::deltaR(AK8pfjet.p4(),wjp4));
-		matchvals[2] = (ang);
-		matchvals[3] = ((AK8pfjet.p4()+wjp4).mass());
-		matchvals[4] = (wjp4.pt());
-		matchvals[5] = (AK8pfjet.p4().pt());
-		matchvals[6] = (Wjetsprod[0].pt());
-		matchvals[7] = (wjp4.eta());
-		matchvals[8] = (AK8pfjet.p4().eta());
-		matchvals[9] = (Wjetsprod[0].eta());
-		matchvals[10] = (Wjetsmatchf[0]);
-		matchvals[11] = (Wjetsmatchfdr[0]);
+		if(merge)
+			{
+			matchvals[0] = (reco::deltaR(AK8pfjet.p4(),Wjetsprod[0].p4()));
+			matchvals[1] = (reco::deltaR(AK8pfjet.p4(),wjp4));
+			matchvals[2] = (ang);
+			matchvals[3] = ((AK8pfjet.p4()+wjp4).mass());
+			matchvals[4] = (wjp4.pt());
+			matchvals[5] = (AK8pfjet.p4().pt());
+			matchvals[6] = (Wjetsprod[0].pt());
+			matchvals[7] = (wjp4.eta());
+			matchvals[8] = (AK8pfjet.p4().eta());
+			matchvals[9] = (Wjetsprod[0].eta());
+			matchvals[10] = (Wjetsmatchf[0]);
+			matchvals[11] = (Wjetsmatchfdr[0]);
+			matchvals[12] = (sumdiffb);
+			}
+		if(mergeb)
+			{
+			matchvals[0] = (reco::deltaR(AK8pfjet.p4(),Wjetsprod[0].p4()));
+			matchvals[1] = (reco::deltaR(AK8pfjet.p4(),wjp4));
+			matchvals[2] = (ang);
+			matchvals[3] = ((AK4pfjet.p4()+wjp4).mass());
+			matchvals[4] = (wjp4.pt());
+			matchvals[5] = (AK8pfjet.p4().pt());
+			matchvals[6] = (Wjetsprod[0].pt());
+			matchvals[7] = (wjp4.eta());
+			matchvals[8] = (AK8pfjet.p4().eta());
+			matchvals[9] = (Wjetsprod[0].eta());
+			matchvals[10] = (Wjetsmatchf[0]);
+			matchvals[11] = (Wjetsmatchfdr[0]);
+			matchvals[12] = (sumdiffb);
+
+			}
 		if (wjp4.pt()>AK8pfjet.p4().pt())sjmerger.push_back(0.0);
 		else sjmerger.push_back(1.0);
 		//std::cout<<"donew"<<std::endl;
@@ -881,54 +965,91 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//std::cout<<"DRt "<<DRt<<std::endl;
 
 		//std::cout<<"nvsize "<<newvecs.size()<<std::endl;
+		//for (auto pv : newopv)std::cout<<"newpv "<<pv.p4().P()<<std::endl;
+		//for (auto pv : opvf)std::cout<<"opvf "<<pv.p4().P()<<std::endl;
 
-
+		float dx = newopv[0].position().x()-opvf[0].position().x();
+		//std::cout<<"x dx "<<newopv[0].position().x()<<" "<<dx<<std::endl;
+		float dy = newopv[0].position().y()-opvf[0].position().y();
+		float dz = newopv[0].position().z()-opvf[0].position().z();
+		float detaj = wjp4.Eta()-Wjetsprod[0].p4().Eta();
+		float dthetaj = wjp4.Theta()-Wjetsprod[0].p4().Theta();
+		float dphij = reco::deltaPhi(wjp4,Wjetsprod[0].p4());
 		//std::cout<<"newmussize "<<newmus.size()<<std::endl;
-		for(const auto curmu : allmusbf)
-			{
-			pat::Muon tempmu = curmu;
-			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > tempp4(curmu.pfP4());
-			tempp4.SetPhi(wjp4.phi()-(reco::deltaPhi(Wjetsprod[0].p4(),tempp4)));
-			tempp4.SetEta(wjp4.eta()-(Wjetsprod[0].p4().eta()-tempp4.eta()));
-			ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > pxyzep4;
-			pxyzep4.SetPxPyPzE(tempp4.Px(),tempp4.Py(),tempp4.Pz(),tempp4.E());
-			tempmu.setPFP4(pxyzep4);
-			newmus.push_back(tempmu);
-			}
-		//std::cout<<"newmussize "<<newmus.size()<<std::endl;
-		//std::cout<<"newelssize "<<newels.size()<<std::endl;
-		for(const auto curel : allelsbf)
-			{
-			pat::Electron tempel = curel;
-			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > tempp4(tempel.p4());
-			tempp4.SetPhi(wjp4.phi()-(reco::deltaPhi(Wjetsprod[0].p4(),tempp4)));
-			tempp4.SetEta(wjp4.eta()-(Wjetsprod[0].p4().eta()-tempp4.eta()));
-			ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > pxyzep4;
-			pxyzep4.SetPxPyPzE(tempp4.Px(),tempp4.Py(),tempp4.Pz(),tempp4.E());
-			tempel.setP4(pxyzep4);
-			newels.push_back(tempel);
-			}
-		//std::cout<<"newelssize "<<newels.size()<<std::endl;
-		//std::cout<<"newvecssize "<<newvecs.size()<<std::endl;
-		for(const auto curv : wvecsf)
+ 		reco::VertexCollection rotatedpvs = {};
+		//uint vi1=0;
+		//for(auto nopv: newopv) 
+		//	{
+		//	std::cout<<"FROMMINI "<<vi1<<" nopv.position().x() "<<nopv.position().x()<<std::endl;
+		//	vi1+=1;
+		//	}
+		uint vi=0;
+		for(auto copv: opvf)
 			{//check charge,chi2
-			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > curvp4(curv.p4());
-			curvp4.SetPhi(wjp4.phi()-(reco::deltaPhi(Wjetsprod[0].p4(),curvp4)));
-			curvp4.SetEta(wjp4.eta()-(Wjetsprod[0].p4().eta()-curvp4.eta()));
+			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > curvp4(copv.p4());
+			curvp4.SetPhi(normalizedPhi(copv.p4().Phi()+dphij));
+			curvp4.SetEta(copv.p4().Eta()+detaj);
 			curvp4 = fakefac*curvp4;
-			float dx = curvp4.x()-(curv.p4()).x();
-			float dy = curvp4.y()-(curv.p4()).y();
-			float dz = curvp4.z()-(curv.p4()).z();
+			//float dx1 = curvp4.x()-(curv.p4()).x();
+			//float dy1 = curvp4.y()-(curv.p4()).y();
+			//float dz1 = curvp4.z()-(curv.p4()).z();
 			//std::cout<<"dx "<<dx<<std::endl;
 			//std::cout<<"dy "<<dy<<std::endl;
 			//std::cout<<"dz "<<dz<<std::endl;
-                        const math::XYZPoint& vtx1 = math::XYZPoint(curv.vertex().x()+dx, curv.vertex().y()+dy, curv.vertex().z()+dz);
 
-
+			//std::cout<<"vi "<<vi<<" copv.position().x() "<<copv.position().x()<<std::endl;
+                        math::XYZPoint vert(copv.position().x()+dx, copv.position().y()+dy, copv.position().z()+dz);
+			math::XYZPoint vtx1 = protate(vert,newopv[0],dthetaj,dphij);
 
 			ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > pxyzep4;
 			pxyzep4.SetPxPyPzE(curvp4.Px(),curvp4.Py(),curvp4.Pz(),curvp4.E());
-     			newvecs.push_back(reco::VertexCompositePtrCandidate(curv.charge(), pxyzep4, vtx1,curv.vertexCovariance(), curv.vertexChi2(), curv.vertexNdof(),curv.pdgId(), curv.status(),true));
+     			rotatedpvs.push_back(reco::Vertex(vtx1, copv.error(), copv.chi2(), copv.ndof(), copv.tracksSize()));
+			vi+=1;
+			}
+
+  		auto outputspvs = std::make_unique<reco::VertexCollection>(rotatedpvs);
+  		edm::OrphanHandle<reco::VertexCollection> ohandpv = iEvent.put(std::move(outputspvs),"newopvs");	
+
+  		std::vector<std::pair<uint,edm::Ref<reco::VertexCollection>>>vertmap = {} ;
+		ev_->getByLabel(edm::InputTag("packedPFCandidates"), Allpfc);
+		std::vector<pat::PackedCandidate> Allpfcv = *(Allpfc.product());
+		//std::cout<<"Number of vecs "<<wvecsf.size()<<std::endl;
+
+		uint nvv=0;
+		for(const auto curv : wvecsf)
+			{//check charge,chi2
+			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > curvp4(curv.p4());
+			curvp4.SetPhi(normalizedPhi(curv.p4().Phi()+dphij));
+			curvp4.SetEta(curv.p4().Eta()+detaj);
+			curvp4 = fakefac*curvp4;
+			//float dx1 = curvp4.x()-(curv.p4()).x();
+			//float dy1 = curvp4.y()-(curv.p4()).y();
+			//float dz1 = curvp4.z()-(curv.p4()).z();
+			//std::cout<<"dx "<<dx<<std::endl;
+			//std::cout<<"dy "<<dy<<std::endl;
+			//std::cout<<"dz "<<dz<<std::endl;
+
+                        math::XYZPoint vert(curv.vertex().x()+dx, curv.vertex().y()+dy, curv.vertex().z()+dz);
+			math::XYZPoint vtx1 = protate(vert,newopv[0],dthetaj,dphij);
+
+			ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > pxyzep4;
+			pxyzep4.SetPxPyPzE(curvp4.Px(),curvp4.Py(),curvp4.Pz(),curvp4.E());
+
+			reco::VertexCompositePtrCandidate curvptr(curv.charge(), pxyzep4, vtx1,curv.vertexCovariance(), curv.vertexChi2(), curv.vertexNdof(),curv.pdgId(), curv.status(),true);
+			for(auto dp:curv.daughterPtrVector())
+				{
+				//edm::Wrapper tempr = ev_->getByProductID(dp.id());
+				//tempr->product();	
+				//std::cout<<"pt "<<Allpfcv[dp.key()].phi()<<" eta "<<Allpfcv[dp.key()].eta()<<std::endl;
+				rekeyvec.push_back(std::pair<uint,std::pair<float,float>>(newvecs.size(),std::pair<float,float>(Allpfcv[dp.key()].phi(),Allpfcv[dp.key()].eta())));
+
+				//edm::Ptr<pat::PackedCandidate>candptr(Allpfc,dp.key());
+				//curvptr.addDaughter(candptr);	
+				
+				}
+     			newvecs.push_back(curvptr);
+			//std::cout<<"DR "<<reco::deltaR(pxyzep4,wjp4)<<std::endl;
+			nvv+=1;
 			}
 		//std::cout<<"newvecssize "<<newvecs.size()<<std::endl;
 
@@ -937,10 +1058,29 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   		//typedef edm::RefProd<VertexCollection> VertexRefProd;
   		//typedef edm::RefVector<VertexCollection> VertexRefVector;
+		//trackmap
+		//std::cout<<"file size "<<Wjetspfcprod.size()<<" b size "<<AK4pfjet.numberOfDaughters()<<" W size "<<AK8pfjet.numberOfDaughters()<<std::endl;
+
+
+		std::vector<uint>trindices={};
+		//for(auto nnv :  newvecs)
+		//	{
+		//	for(auto dp:nnv.daughterPtrVector())
+		//		{
+		//		//edm::Wrapper tempr = ev_->getByProductID(dp.id());
+		//		//tempr->product();			
+		//		std::cout<<"id "<<dp.id()<<" key "<<dp.key()<<std::endl;
+		//		}
+		//	}
+		//for(uint idau=0;idau<Allpfcv.size();idau++)std::cout<<"ALL --- idau "<<idau<<","<<Allpfcv[idau].sourceCandidatePtr(0).key()<<" "<<Allpfcv[idau].fromPV()<<" "<<Allpfcv[idau].pvAssociationQuality()<<std::endl;
+
+
 		for(uint idau=0;idau<Wjetspfcprod.size();idau++)
 			{
+				//std::cout<<"1"<<std::endl;
 				pat::PackedCandidate lPack = Wjetspfcprod[idau];
-
+				//std::cout<<"pt "<<daunb->pt()<<"  ->  "<<(jets->at(itindex)).daughterPtr(idau).key()<<std::endl;
+				//std::cout<<"id "<<dp.id()<<" key "<<dp.key()<<std::endl;
 				//lPack.setVertex(newopv[0].position());
 				ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > packp4(lPack.p4());
 				/*std::cout<<"matchpack "<<packp4.eta()<< "<<packp4.phi()"<<std::endl;
@@ -960,49 +1100,264 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				//std::cout<<"Dphifromw "<<reco::deltaPhi(lPack.p4().phi(),Wjetsprod->at(0).p4().phi())<<std::endl;
 				//std::cout<<"Detafromw "<<Wjetsprod->at(0).p4().eta()-packp4.eta()<<std::endl;
 				//std::cout<<"DRfromw "<<reco::deltaR(Wjetsprod->at(0).p4(),wjp4)<<std::endl;
-				packp4.SetPhi(wjp4.phi()-(reco::deltaPhi(Wjetsprod[0].p4(),packp4)));
-				packp4.SetEta(wjp4.eta()-(Wjetsprod[0].p4().eta()-packp4.eta()));
+				//float packdeta=packp4.eta()-Wjetsprod[0].p4().eta();
+				//float packdphi=reco::deltaPhi(packp4,Wjetsprod[0].p4());
+
+				packp4.SetPhi(lPack.p4().Phi()+dphij);
+				packp4.SetEta(lPack.p4().Eta()+detaj);
 				//packp4.SetPt(Wjetsprod->at(0).p4().pt()*fakefac);
 				//packp4.SetM(Wjetsprod->at(0).p4().mass()*fakefac);
-				packp4 = fakefac*packp4;
-  						
+
+				packp4 = fakefac*packp4*ptrat;
+  				//float dx1 = packp4.x()-(lPack.p4()).x();
+				//float dy1 = packp4.y()-(lPack.p4()).y();
+				//float dz1 = packp4.z()-(lPack.p4()).z();
 				//std::cout<<"pack "<<idau<<" "<<lPack.vertexRef().id()<<" , "<<lPack.fromPV(0)<<std::endl;
- 				float newetav=lPack.etaAtVtx()+(packp4.eta()-lPack.p4().eta());
-				float newphiv=lPack.phiAtVtx()+reco::deltaPhi(packp4,lPack.p4());
+				float newphiv=normalizedPhi((lPack.phiAtVtx()+dphij));
+ 				float newetav=lPack.etaAtVtx()+detaj;
+
   				//pat::PackedCandidate newpack(packp4, newopv[0].position(),lPack.ptTrk(), packp4.eta(), packp4.phi(),lPack.pdgId(),reco::VertexRefProd(VertexRef0.id(),VertexRef0.productGetter()),VertexRef0.key());
-				//std::cout<<pvref.id()<<std::endl;//
+				//std::cout<<pvref.id()<<std::endl;
+				//autovref = ev_->getByProductID()
+
   				//pat::PackedCandidate newpack(packp4, lPack.vertex(),packp4.pt(), packp4.eta(), packp4.phi(),lPack.pdgId(),reco::VertexRefProd(lPack.vertexRef().id(),lPack.vertexRef().productGetter()),lPack.vertexRef().key());
-  				pat::PackedCandidate newpack(packp4, lPack.vertex(),lPack.ptTrk(), newetav, newphiv,lPack.pdgId(),reco::VertexRefProd(lPack.vertexRef().id(),lPack.vertexRef().productGetter()),lPack.vertexRef().key());
-  				//newpack.track_ = lPack.track_;
+				//std::cout<<"vertpoint "<<lPack.vertex().x()<< " "<<lPack.vertex().y()<< " "<<lPack.vertex().z()<<std::endl;
+				//std::cout<<"frompv "<<lPack.fromPV()<<std::endl;
+				//std::cout<<"PVposfromf "<<opvf[0].position().x()<< " "<<opvf[0].position().y()<< " "<<opvf[0].position().z()<<std::endl;
+				//std::cout<<"PVpos "<<newopv[0].position().x()<< " "<<newopv[0].position().y()<< " "<<newopv[0].position().z()<<std::endl;
+				//std::cout<<"LPACK VERT lPack.vertex().x() "<<lPack.vertex().x()<<std::endl;
+				math::XYZPoint vpoint1(lPack.vertex().x()+dx, lPack.vertex().y()+dy, lPack.vertex().z()+dz);
+				math::XYZPoint vpoint = protate(vpoint1,newopv[0],dthetaj,dphij);
+				//reco::Vertex newopv = reco::Vertex(vpoint,lPack.vertex().Error4D(), lPack.vertex().t0(), lPack.vertex().chi2(), lPack.vertex().ndof(), lPack.vertex().tracksSize());
+				//edm::Ref<VertexCollection> tempVertexRef;
+
+				//std::cout<<lPack.vertexRef().id()<<","<<lPack.vertexRef().key()<<std::endl;
+				//bool foundvm=false;
+				//for(auto vm : vertmap)
+				//	{
+				//	if (vm.first==lPack.vertexRef().key())foundvm=true;
+				//	}
+
+				//if(!foundvm)
+				//	{
+				//	std::cout<<"lPack.vertexRef().get() "<<lPack.vertexRef().get()->position().x()<<std::endl;
+				//	edm::Ref<reco::VertexCollection> curref(ohandpv,lPack.vertexRef().key());
+				//	std::cout<<"lPack.vertexRef().key() "<<lPack.vertexRef().key()<<std::endl;
+				//	vertmap.push_back(std::pair<uint,edm::Ref<reco::VertexCollection>>(lPack.vertexRef().key(),curref));
+				//	}
+				//edm::Ref<reco::VertexCollection> curref(ohandpv,lPack.vertexRef().key(),&iEvent.productGetter());
+				//reco::VertexRefProd currefprod(curref.id(),&iEvent.productGetter());
+				//reco::VertexRefProd currefprod(lPack.vertexRef().id(),lPack.vertexRef().productGetter();
+  				pat::PackedCandidate newpack(packp4,vpoint,lPack.ptTrk()*ptrat, newetav, newphiv,lPack.pdgId(),PVRefProd,0);
+
+  				//pat::PackedCandidate newpack(packp4, lPack.vertex(),lPack.ptTrk(), newetav, newphiv,lPack.pdgId(),PVRefProd,PVRef.key());
+				//reco::VertexRef PVRef(opv.id());
+				//reco::VertexRefProd PVRefProd(opv);  	
+				//newpack.track_ = lPack.track_;
 				//newpack.setP4(packp4);
+				//std::cout<<"idau "<<idau<<" "<<lPack.fromPV()<<" "<<lPack.pvAssociationQuality() <<std::endl;
+
 				if (lPack.hasTrackDetails())
 					{
-					auto track = lPack.bestTrack();
-					std::cout<<track->TrackBase::beta()<<std::endl;
-					reco::Track newtrack(track->chi2(),track->ndof(),track->referencePoint(),track->momentum(),track->charge(),track->covariance(),track->algo(),track-> qualityByName("highPurity"),track->TrackBase::t0(),track->TrackBase::beta(),track->covt0t0(),track->covbetabeta());
+					auto track = *(lPack.bestTrack());
 
-					std::cout<<"hastrack "<<track->pt()<<","<<track->eta()<<","<<track->phi()<<std::endl;
-					//newpack.track_=lPack.bestTrack();
-     					newpack.setHits(*track) ;
-     					newpack.setTrackProperties(*track,track->covariance(),lPack.covarianceSchema(),lPack.covarianceVersion() );
+
+					reco::Track newtrack = trotate(track, dx, dy, dz, dthetaj, dphij,newopv[0]);
+
+					auto csch=lPack.covarianceSchema();
+					auto cver=lPack.covarianceVersion();
+					//track->sourceCandidatePtr(0).key()
+
+					if(abs(lPack.pdgId())==13) 
+						{
+						trindices.push_back(trackindex);
+						std::cout<<"MUTRACKETA "<<track.eta()<<std::endl;
+						std::cout<<"ROTTRACKETA "<<newtrack.eta()<<std::endl;
+
+						}
+					trackindex+=1;
+     					newpack.setHits(newtrack) ;
+     					newpack.setTrackProperties(newtrack,newtrack.covariance(), csch,cver);
+					//std::cout<<"Pack.bestTrack().sourceCandidatePtr(i).key() "<< <<std::endl;
+					//std::vector<reco::CandidatePtr> daughters = v.daughterPtrVector();
+					//v.clearDaughters();
+					//for(std::vector<reco::CandidatePtr>::const_iterator it = daughters.begin(); it != daughters.end(); ++it) 
+					//	{
+					//	    if((*pf2pc)[*it].isNonnull() && (*pf2pc)[*it]->numberOfHits() > 0)v.addDaughter(reco::CandidatePtr(edm::refToPtr((*pf2pc)[*it]) ));
+					//	}
+
+		                       // v.addDaughter(reco::CandidatePtr(edm::refToPtr((*pf2pc)[*it]) ));
+
 					}
-				if (newpack.hasTrackDetails())
-					{
-					auto track = newpack.bestTrack();
-					std::cout<<"hastrack POST "<<track->pt()<<","<<track->eta()<<","<<track->phi()<<std::endl;
-					}	
+				//std::cout<<"3"<<std::endl;
+				//if (newpack.hasTrackDetails())
+				//	{
+				//	auto track = newpack.bestTrack();
+					//std::cout<<"hastrack POST "<<track->pt()<<","<<track->eta()<<","<<track->phi()<<std::endl;
+				//	}	
 		 		//lPack.setP4(packp4);
 				//std::cout<<"NEWPACK "<<newpack.phi()<<","<<newpack.eta()<<"  "<<newpack.phiAtVtx()<<","<<newpack.etaAtVtx()<<std::endl;
 				//std::cout<<"DRpost "<<reco::deltaR(newpack.p4(),AK8pfjet.p4())<<std::endl;
 				//std::cout<<"Dphifromwpost "<<reco::deltaPhi(newpack.p4().phi(),wjp4.phi())<<std::endl;
 				//std::cout<<"Detafromwpost "<<wjp4.eta()-packp4.eta()<<std::endl;
 				//std::cout<<"DRfromwpost "<<reco::deltaR(newpack.p4(),wjp4)<<std::endl;
-				
+				//std::cout<<"DR "<<reco::deltaR(newpack.p4(),wjp4)<<std::endl;
+				for(auto keyvec : rekeyvec)
+					{
+					float diffeta = fabs(lPack.p4().eta()-keyvec.second.second);
+					float diffphi = fabs(lPack.p4().phi()-keyvec.second.first);
+					//std::cout<<"diffeta "<<diffeta<<std::endl;
+					//std::cout<<"diffphi "<<diffphi<<std::endl;
+
+					if (diffeta<0.000001 and diffphi<0.000001)
+						{
+						//std::cout<<"Foundit "<<keyvec.first<<std::endl;
+						edm::Ptr<pat::PackedCandidate>candptr(&allpf,idau);	
+						rekeyvec2.push_back(std::pair<int,int>(keyvec.first,idau));
+						//newvecs[keyvec.first].addDaughter(candptr);
+
+						}
+					}
+				//std::cout<<"np"<<std::endl;
+				//std::cout<<lPack.dxy()<<" "<<lPack.dz()<<std::endl;
+				//std::cout<<newpack.dxy()<<" "<<newpack.dz()<<std::endl;
 				allpf.push_back(newpack);
 						
 			  }
 
 
+ 		nmusrot=0;
+		//uint nlmu=0;
+		//std::cout<<"----"<<std::endl;
+  		std::vector<std::pair<int,int>> rekeyvecglobmu={};
+  		//std::vector<std::pair<int,int>> rekeyvecinmu={};
+  		//std::vector<std::pair<int,int>> rekeyvecoutmu={};
+		for(const auto curmu : allmusbf)
+			{
+
+			//std::cout<<"Loosemu "<<muon::isLooseMuon(curmu)<<std::endl;
+
+			//auto itrack=curmu.innerTrack();
+			//std::cout<<"mutrackinfo "<<itrack.get()->innerMomentum().x()<<std::endl;
+			pat::Muon tempmu = curmu;
+			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > tempp4(curmu.p4());
+			//std::cout<<"pfpt "<<curmu.pfP4().pt()<<std::endl;
+			//std::cout<<"pt "<<tempp4.pt()<<std::endl;
+			tempp4.SetPhi(normalizedPhi(curmu.p4().Phi()+dphij));
+			tempp4.SetEta(curmu.p4().Eta()+detaj);
+
+			ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > pxyzep4;
+			pxyzep4.SetPxPyPzE(tempp4.Px(),tempp4.Py(),tempp4.Pz(),tempp4.E());
+			tempmu.setP4(pxyzep4);
+			tempmu.setPFP4(pxyzep4);
+
+			//else if (curmu.innerTrack().isNonnull())std::cout<<"ins "<<curmu.innerTrack().get()->eta()<<","<<curmu.innerTrack().key()<<std::endl;
+			//else if (curmu.outerTrack().isNonnull())std::cout<<"outs "<<curmu.outerTrack().get()->eta()<<","<<curmu.outerTrack().key()<<std::endl;
+
+
+
+			/*if(muon::isLooseMuon(curmu))
+				{
+				//std::cout<<"DR "<<reco::deltaR(tempmu.p4(),wjp4)<<std::endl;
+				std::cout<<" TRUE MUON phi "<<curmu.p4().phi()<<" eta "<<curmu.p4().eta()<<std::endl;
+				std::cout<<" ROT MUON phi "<<tempmu.p4().phi()<<" eta "<<tempmu.p4().eta()<<std::endl;
+				//std::cout<<"mutrackrefs.size() "<<mutrackrefs.size()<<" nlmu "<<nlmu<<std::endl;
+
+				
+				if(mutrackrefs.size()>nlmu)
+					{
+					
+					std::cout<<"Found Track"<<std::endl;
+					tempmu.setInnerTrack(mutrackrefs[nlmu]);
+	 				tempmu.setTrack(mutrackrefs[nlmu]);
+					tempmu.setGlobalTrack(mutrackrefs[nlmu]);
+					}
+				else
+					{
+					std::cout<<"WARNING NO TRACK"<<std::endl;
+					std::cout<<"WARNING NO TRACK"<<std::endl;
+					std::cout<<"WARNING NO TRACK"<<std::endl;
+					}
+				nlmu+=1;
+				}
+			*/
+			//std::cout<<"mu "<<tempmu.eta()<<std::endl;
+			newmus.push_back(tempmu);
+			nmusrot+=1;
+			}
+
+  		auto outputsnewtracks = std::make_unique<std::vector<reco::Track>>(newtracks);
+  		iEvent.put(std::move(outputsnewtracks),"newtracks");
+		//for(auto globmukey : rekeyvecglobmu) 
+		//	{
+		//	std::cout<<"writing new tracks"<<std::endl;
+		//	newmus[globmukey.first].setInnerTrack(reco::TrackRef(trorph,globmukey.second));
+		//	newmus[globmukey.first].setTrack(reco::TrackRef(trorph,globmukey.second));
+		//	newmus[globmukey.first].setGlobalTrack(reco::TrackRef(trorph,globmukey.second));
+		//	}
+		//std::vector<reco::TrackRef>mutrackrefs={};
+		//for(const auto trindex : trindices) mutrackrefs.push_back(reco::TrackRef(trorph,trindex));
+
+		//std::cout<<"----"<<std::endl;
+		
+		//std::cout<<"nmusrot "<<nmusrot<<std::endl;
+		//std::cout<<"newmussize "<<newmus.size()<<std::endl;
+		//std::cout<<"newelssize "<<newels.size()<<std::endl;
+  		nelsrot=0;
+		for(const auto curel : allelsbf)
+			{
+			nelsrot+=1;
+
+			pat::Electron tempel = curel;
+
+			ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > tempp4(tempel.p4());
+			tempp4.SetPhi(normalizedPhi(tempel.p4().Phi()+dphij));
+			tempp4.SetEta(tempel.p4().Eta()+detaj);
+			ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > pxyzep4;
+			pxyzep4.SetPxPyPzE(tempp4.Px(),tempp4.Py(),tempp4.Pz(),tempp4.E());
+			tempel.setP4(pxyzep4);
+			
+ 			auto trvec =  tempel.gsfTrack().get();
+			math::XYZPoint tpoint1(trvec->referencePoint().x()+dx, trvec->referencePoint().y()+dy, trvec->referencePoint().z()+dz);
+			math::XYZPoint tpoint = protate(tpoint1,newopv[0],dthetaj,dphij);
+
+
+			math::XYZVector momVector(pxyzep4.px(),pxyzep4.py(),pxyzep4.pz());
+ 			reco::GsfElectronCore gsfcore = *(tempel.core().get());
+			gsftracks.push_back(reco::GsfTrack(trvec->chi2(), trvec->ndof(), tpoint, momVector, trvec->charge(), trvec->covariance()));
+			gsfcores.push_back(gsfcore);
+
+			gsfcore.setGsfTrack(edm::Ref(&gsftracks,gsftracks.size()-1));
+			reco::GsfElectron curgsfel(edm::Ref(&gsfcores,gsfcores.size()-1));
+			pat::Electron curelcored(curgsfel);
+			newels.push_back(curelcored);
+			//std::cout<<"---------------------"<<trvec->etaMode()<<std::endl;
+			//std::cout<<"gsfeta "<<trvec->etaMode()<<std::endl;
+			//std::cout<<"newgsfeta "<<gsftracks.back().etaMode()<<std::endl;
+			//std::cout<<"curelcored "<<curelcored.gsfTrack().get()->etaMode()<<std::endl;
+			//std::cout<<"p4eta "<<tempel.p4().eta()<<std::endl;
+			//std::cout<<"---------------------"<<trvec->etaMode()<<std::endl;
+
+			//std::cout<<"DR "<<reco::deltaR(tempel.p4(),wjp4)<<std::endl;
+			}
+  	
+	  	auto outputsgsftracks = std::make_unique<std::vector<reco::GsfTrack>>(gsftracks);
+	  	auto gsforhand = iEvent.put(std::move(outputsgsftracks),"gsftracks");
+		for(uint igsf=0;igsf<gsfcores.size();igsf++)
+			{
+			gsfcores[igsf].setGsfTrack(edm::Ref(gsforhand,igsf));
+			}
+	  	auto outputsgsfcores = std::make_unique<std::vector<reco::GsfElectronCore>>(gsfcores);
+	  	auto gsfcoreorhand = iEvent.put(std::move(outputsgsfcores),"gsfcores");
+		for(uint igsf=0;igsf<gsfcores.size();igsf++)
+			{
+			reco::GsfElectron curgsfel(edm::Ref(gsfcoreorhand,igsf));
+			pat::Electron curelcored(curgsfel);
+			newels.push_back(curelcored);
+			}
+		//std::cout<<"nelsrot "<<nelsrot<<std::endl;
+		//std::cout<<"newelssize "<<newels.size()<<std::endl;
+		//std::cout<<"newvecssize "<<newvecs.size()<<std::endl;
 		
 
   		if(isfmerge)
@@ -1015,30 +1370,44 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 			}
 
 		}
-	else std::cout<<"emptyfileevent!"<<std::endl;
+	else std::cout<<"emptyfileevent! Tries "<<tries<<" of "<<maxtries<<std::endl;
 
 	}
+
 	uint ndau = AK8pfjet.numberOfDaughters();
+	if (mergeb)  ndau = AK4pfjet.numberOfDaughters();
 	//std::cout<<"curW len "<<ndau<<std::endl;
 	for(uint idau=0;idau<ndau;idau++)
 		{
-
-		pat::PackedCandidate newpack = allpfsj[idau];
-
-		if (merge or mergeb) 
+		//std::cout<<idau<<ndau<<std::endl;
+		if (merge) 
 			{	
 			auto newpackp4 = allpfsj[idau].polarP4();
+			pat::PackedCandidate newpack = allpfsj[idau];
 			newpackp4 = fakefac*newpackp4;
 			newpack.setP4(newpackp4);
-			//std::cout<<"newpack "<<idau<<" "<<newpack.polarP4().pt()<<std::endl;
-			allpf.push_back(newpack);	
+			allpf.push_back(newpack);
+				
 			}
-		else allpf.push_back(newpack);
+		else if (mergeb) 
+			{
+			auto newpackp4 = allpfsjb[idau].polarP4();
+			pat::PackedCandidate newpack = allpfsjb[idau];
+			newpackp4 = fakefac*newpackp4;
+			newpack.setP4(newpackp4);
+			allpf.push_back(newpack);
+			}
+		else 
+			{
+			pat::PackedCandidate newpack = allpfsj[idau];
+			allpf.push_back(newpack);
+			}
 		}
+	//std::cout<<"a"<<std::endl;
 	alljets.push_back(AK8pfjet);
-
-	std::vector<pat::Muon>allmus;
-	std::vector<pat::Electron>allels;
+	//std::cout<<"b"<<std::endl;
+	std::vector<pat::Muon>allmus = {};
+	std::vector<pat::Electron>allels = {};
 	for(const auto &curmu:*muons)
 		{
 		if (reco::deltaR(curmu.p4(),AK8pfjet)<0.4)allmus.push_back(curmu);
@@ -1047,7 +1416,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		{
 		if (reco::deltaR(curel.p4(),AK8pfjet)<0.4)allels.push_back(curel);
 		}
-
+	//std::cout<<"c"<<std::endl;
         TLorentzVector curtlv;
 	curtlv.SetPtEtaPhiM(AK8pfjet.pt(),AK8pfjet.eta(),AK8pfjet.phi(),AK8pfjet.mass());
         TLorentzVector curtlvb; 
@@ -1059,12 +1428,7 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		
 	wmatch.push_back(matched.first);
 	wmatchdr.push_back(matched.second);
-	if(merge or mergeb or mergemj) 
-		{
-		matchvals[12] = matched.first;
-		matchvals[13] = matched.second;
-		matchvals[14] = float(isfmerge);
-		}
+
 
 	//std::cout<<"matched.first "<<matched.first<<" matched.second "<<matched.second<<std::endl;
 
@@ -1072,18 +1436,24 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	bjettopush.push_back(AK4pfjet);
 	//uint ndaub = (bjettopush[0]).numberOfDaughters();
 
-	std::vector<pat::Muon>allmusb;
-	std::vector<pat::Electron>allelsb;
-
-	for(const auto curmu : newmus)
+	std::vector<pat::Muon>allmusb = {};
+	std::vector<pat::Electron>allelsb = {};
+	for(const auto &curmu:*muons)
 		{
 		if (reco::deltaR(curmu.p4(),AK4pfjet)<0.4)allmusb.push_back(curmu);
 		}
-	for(const auto curel : newels)
+	for(const auto &curel:*electrons)
 		{
 		if (reco::deltaR(curel.p4(),AK4pfjet)<0.4)allelsb.push_back(curel);
 		}
-
+	if(merge or mergeb or mergemj) 
+		{
+		matchvals[13] = matched.first;
+		matchvals[14] = matched.second;
+		matchvals[15] = float(isfmerge);
+		matchvals[16] = float(nelsrot);
+		matchvals[17] = float(nmusrot);
+		}
 
 	allpfb = allpfsjb;
 	//for(uint idau=0;idau<ndaub;idau++)
@@ -1102,32 +1472,39 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	{
 	//std::cout<<"writeallpf"<<std::endl;
   	auto outputs = std::make_unique<std::vector<pat::PackedCandidate>>(allpf);
-  	iEvent.put(std::move(outputs),"");
+  	auto orhand = iEvent.put(std::move(outputs),"");
 	//std::cout<<"writealljet"<<std::endl;
   	auto outputsjet = std::make_unique<std::vector<pat::Jet>>(alljets);
   	iEvent.put(std::move(outputsjet),"jet");
 	//std::cout<<"writewmatch"<<std::endl;
   	auto outputssjmerger = std::make_unique<std::vector<float>>(sjmerger);
   	iEvent.put(std::move(outputssjmerger),"sjmerger");
-	//std::cout<<"writevec"<<std::endl;
+	
+  	auto outputsrekeyvec2 = std::make_unique<std::vector<std::pair<int,int>>>(rekeyvec2);
+  	iEvent.put(std::move(outputsrekeyvec2),"secvertrekey");
+
+  	//auto outputselectronrekey = std::make_unique<std::vector<std::pair<int,int>>>(electronrekey);
+  	//iEvent.put(std::move(outputselectronrekey),"electronrekey");
+
+  	//auto outputsmuonrekey = std::make_unique<std::vector<std::pair<int,int>>>(muonrekey);
+  	//iEvent.put(std::move(outputsmuonrekey),"muonrekey");
+
   	auto outputsnewvecs = std::make_unique<reco::VertexCompositePtrCandidateCollection>(newvecs);
   	iEvent.put(std::move(outputsnewvecs),"newvecs");
-	//std::cout<<"written vec"<<std::endl;
-
 
   	auto outputsnewels = std::make_unique<std::vector<pat::Electron>>(newels);
   	iEvent.put(std::move(outputsnewels),"newels");
+
   	auto outputsnewmus = std::make_unique<std::vector<pat::Muon>>(newmus);
   	iEvent.put(std::move(outputsnewmus),"newmus");
 
 
+
 	for(int ival=0;ival<nvals;ival++)
 		{
-		//std::cout<<ival<<" "<<matchvals[ival]<<std::endl;
   		auto outputsmatchvals = std::make_unique<float>(matchvals[ival]);
   		iEvent.put(std::move(outputsmatchvals),"matchvals"+std::to_string(ival));
 		}
-
 	}
   else
 	{
@@ -1143,51 +1520,31 @@ void WtagProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   	auto outputsbjet = std::make_unique<std::vector<pat::Jet>>(bjettopush);
   	iEvent.put(std::move(outputsbjet),"bjet");
 	//std::cout<<"startv "<<std::endl;	
-
-
-
   	auto outputsallmus = std::make_unique<std::vector<pat::Muon>>(allmus);
   	iEvent.put(std::move(outputsallmus),"allmus");
   	auto outputsallels = std::make_unique<std::vector<pat::Electron>>(allels);
   	iEvent.put(std::move(outputsallels),"allels");
-
-
   	auto outputsallmusb = std::make_unique<std::vector<pat::Muon>>(allmusb);
   	iEvent.put(std::move(outputsallmusb),"allmusb");
   	auto outputsallelsb = std::make_unique<std::vector<pat::Electron>>(allelsb);
   	iEvent.put(std::move(outputsallelsb),"allelsb");
-
-
   	auto outputswmatchdr = std::make_unique<std::vector<float>>(wmatchdr);
   	iEvent.put(std::move(outputswmatchdr),"wmatchdr");		
   	auto outputswmatch = std::make_unique<std::vector<int>>(wmatch);
   	iEvent.put(std::move(outputswmatch),"wmatch");		
-
   	auto outputssjw = std::make_unique<std::vector<float>>(sjlistw);
   	iEvent.put(std::move(outputssjw),"sjw");	
   	auto outputssjb = std::make_unique<std::vector<float>>(sjlistb);
   	iEvent.put(std::move(outputssjb),"sjb");	
-
   	auto outputswvecs = std::make_unique<reco::VertexCompositePtrCandidateCollection>(allvecs);
   	iEvent.put(std::move(outputswvecs),"wvecs");	
   	auto outputsbvecs = std::make_unique<reco::VertexCompositePtrCandidateCollection>(allvecsb);
   	iEvent.put(std::move(outputsbvecs),"bvecs");
-
-
-
-
+  	auto outputsnewopv = std::make_unique<std::vector<reco::Vertex>>(newopv);
+  	iEvent.put(std::move(outputsnewopv),"newopv");
   	auto outputsismerge = std::make_unique<std::vector<bool>>(isfmergev);
   	iEvent.put(std::move(outputsismerge),"ismerge");	
 	}
-
-
-
-
-
-
-
-
-
 }
 
 //define this as a plug-in

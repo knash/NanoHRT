@@ -2,13 +2,15 @@
 <use   name="FWCore/Common"/>
 <use   name="DataFormats/Math"/>
 <use   name="DataFormats/PatCandidates"/>
+<use   name="DataFormats/StdDictionaries" />
+<use   name="DataFormats/WrappedStdDictionaries" />
+<flags LCG_DICT_HEADER="classes.h"/>
+<flags LCG_DICT_XML="classes_def.xml"/>
 <use   name="PhysicsTools/CandUtils"/>
 <use   name="fastjet"/>
 <use   name="lwtnn"/>
 <use   name="tensorflow-cc" />
 <use   name="PhysicsTools/TensorFlow" />
-
-
 <export>
   <lib   name="1"/>
 </export>

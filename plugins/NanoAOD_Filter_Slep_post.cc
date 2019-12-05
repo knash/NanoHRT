@@ -17,7 +17,6 @@
 
 #include <memory>
 #include <iostream>
-#include <Python.h>
 
 
 
@@ -46,10 +45,13 @@ srcAK8_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("srcAK
 bool NanoAOD_Filter_Slep_post::filter( edm::Event& iEvent, const edm::EventSetup& iSetup) {
   edm::Handle<edm::View<pat::Jet>> jetsAK8;
   iEvent.getByToken(srcAK8_, jetsAK8);
-
+  edm::Handle<edm::View<pat::Jet>> jetsAK4;
+  iEvent.getByToken(srcAK4_, jetsAK4);
   int njets = jetsAK8->size();
+  int njets1 = jetsAK4->size();
   //std::cout<<"FROMSLEPPOST"<<std::endl;
-  //std::cout<<"Njets "<< njets <<std::endl;
+  std::cout<<"Njets "<< njets <<std::endl;
+  std::cout<<"Njets1 "<< njets1 <<std::endl;
   //for (const auto &AK8pfjet : *jetsAK8)
 	//{
 	//std::cout<<"SD: "<<AK8pfjet.userFloat("ak8PFJetsPuppiWWSoftDropMass")<<std::endl;
@@ -57,15 +59,7 @@ bool NanoAOD_Filter_Slep_post::filter( edm::Event& iEvent, const edm::EventSetup
 	//std::cout<<"ETA: "<<AK8pfjet.eta()<<std::endl;
 	//std::cout<<"PHI: "<<AK8pfjet.phi()<<std::endl;
 	//}
-  if(njets==0) return false;
-
-
-  edm::Handle<edm::View<pat::Jet>> jetsAK4;
-  iEvent.getByToken(srcAK4_, jetsAK4);
-
-  int njetsak4 = jetsAK4->size();
-  if(njetsak4==0) return false;
-  //std::cout<<"PASS sleppost"<<std::endl;
+  if(njets==0 or njets1==0) return false;
   return true;
 
  }

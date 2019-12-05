@@ -1,4 +1,29 @@
 std::mutex write_mutex;
+#include "DataFormats/Math/interface/normalizedPhi.h"
+math::XYZPoint protate(math::XYZPoint VTX,reco::Vertex PV,float dthetaj,float dphij)
+{
+  math::XYZVector diffv(VTX.x()-PV.position().x(),VTX.y()-PV.position().y(),VTX.z()-PV.position().z());
+  ROOT::Math::Polar3D<double> pdiffv(diffv.R(),diffv.Theta()+dthetaj,normalizedPhi(diffv.Phi()+dphij));
+  math::XYZPoint Rvect(pdiffv.x()+PV.position().x(),pdiffv.y()+PV.position().y(),pdiffv.z()+PV.position().z());
+  return Rvect;
+
+}
+reco::Track trotate(reco::Track tempmutrack,float dx,float dy,float dz,float dthetaj,float dphij,reco::Vertex PV)
+{
+  //reco::Track tempmutrack = *(curmu.globalTrack().get());
+  math::XYZPoint tpointmu1(tempmutrack.referencePoint().x()+dx, tempmutrack.referencePoint().y()+dy, tempmutrack.referencePoint().z()+dz);
+  math::XYZPoint tpointmu = protate(tpointmu1,PV,dthetaj,dphij);
+  ROOT::Math::Polar3DVector polv(tempmutrack.momentum().R(),tempmutrack.momentum().Theta(),tempmutrack.momentum().Phi());
+  polv.SetTheta(polv.Theta()+dthetaj);
+  polv.SetPhi(normalizedPhi(polv.Phi()+dphij));
+
+	
+  math::XYZVector momVector(polv.x(),polv.y(),polv.z());
+  reco::Track newtrack(tempmutrack.chi2(),tempmutrack.ndof(),tpointmu,momVector,tempmutrack.charge(),tempmutrack.covariance(),tempmutrack.algo(),tempmutrack.qualityByName("highPurity"),tempmutrack.t0(),tempmutrack.beta(),tempmutrack.covt0t0(),tempmutrack.covBetaBeta());
+  newtrack.setHitPattern(tempmutrack.hitPattern());
+  return newtrack;
+}
+
 std::pair<int,float> signalmatch(TLorentzVector curtlv ,TLorentzVector curtlvb ,const std::vector<reco::GenParticle>* genpartsvec ,std::string stype ,float mergeval)
 		{
 		int fulltopmatch=0;
