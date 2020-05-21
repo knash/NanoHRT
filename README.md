@@ -27,6 +27,7 @@ scram b -j 16
 
 MC:
 ```bash
+cd test/
 cmsRun test_nanoHRT_mc_102X_NANO.py Settype=YYY
 ```
 
