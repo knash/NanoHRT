@@ -254,54 +254,54 @@ for iset in tosubmitQCDext:
 for iset in tosubmit:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 
 for iset in tosubmittop:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstringtop.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstringtop.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 
 for iset in tosubmitW:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_W.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_W.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 for iset in tosubmitZ:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_Z.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_Z.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 for iset in tosubmitH:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_H.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_H.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 for iset in tosubmitHVV:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_HVV.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstring_HVV.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 
 for iset in tosubmitphojet:
 	iset = iset.replace("/","\/")
 	print iset
-	#commands.append("echo "+ iset)
-	#commands.append("sed 's/RSET/"+iset+"/g' crab_debugstrinphojet.TMP > crab3_TEMP.py")
-	#commands.append("crab submit crab3_TEMP.py")
+	commands.append("echo "+ iset)
+	commands.append("sed 's/RSET/"+iset+"/g' crab_debugstrinphojet.TMP > crab3_TEMP.py")
+	commands.append("crab submit crab3_TEMP.py")
 
 
 

@@ -46,7 +46,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(50)
 )
 
 # Input source
@@ -61,11 +61,11 @@ process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/GluGluToBulkGravitonToHHTo4C_M-2500_narrow_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/40000/C627A459-6CA9-E811-9B66-0242AC130002.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/BulkGravTohhTohVVhbb_narrow_M-4500_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/425131B4-2927-E911-B46A-AC1F6BAB6860.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/60000/FEBFEC07-54B6-E611-BF15-001E677928A4.root'),
-    fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv3/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/110000/E047F225-4EE6-E811-8EC2-0242AC130002.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv3/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/110000/E047F225-4EE6-E811-8EC2-0242AC130002.root'),
     #fileNames = cms.untracked.vstring('file:///afs/cern.ch/user/k/knash/Workspace/NanoHRT/CMSSW_10_2_9/src/PhysicsTools/NanoHRT/test/Failfile.root'),
     #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/ZprimeToTT_M1000_W100_TuneCP2_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/AE3459E4-B525-E911-817F-0CC47AACFCDE.root'),
     #fileNames = cms.untracked.vstring("/store/mc/RunIIFall17MiniAODv2/BulkGravTohhTohbbhbb_width0p05_M-1200_TuneCP2_13TeV-madgraph_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/260000/E077ADA4-A254-E911-84BC-0CC47A545298.root"),
-    #fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/F450DBD1-7841-E811-BB7A-B499BAA67BB8.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAODv2/QCD_Pt_1000to1400_TuneCP5_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/80000/F450DBD1-7841-E811-BB7A-B499BAA67BB8.root'),
     secondaryFileNames = cms.untracked.vstring(),
 
 )
